@@ -1,4 +1,4 @@
-# Tio Urso Studio Alpha 0.5.2
+# Tio Urso Studio Alpha 0.5.3
 
 Correções desta versão:
 
