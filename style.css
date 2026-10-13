@@ -17,3 +17,19 @@
 .mock-controls label{font-size:12px;color:#567488;font-weight:700}
 .mock-controls input[type=range]{width:100%;accent-color:#009cac;min-height:25px}
 .mock-controls p{font-size:11px;color:#7a8e9d;line-height:1.45;margin:0}
+
+/* Alpha 0.4.1 - alinhamento inteligente, interface para uso com toque. */
+.guide-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:-5px 0 12px;}
+.guide-toggle{display:inline-flex;gap:9px;align-items:center;cursor:pointer;font-size:12px;font-weight:800;color:#23546b;user-select:none;min-height:36px;}
+.guide-toggle input{position:absolute;opacity:0;width:1px;height:1px;}
+.toggle-track{position:relative;background:#afbfca;border-radius:30px;width:38px;height:22px;flex:none;transition:.18s;background-color:#a5b4be;}
+.toggle-track::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;box-shadow:0 1px 3px #062b3c33;transition:.18s;}
+.guide-toggle input:checked + .toggle-track{background:#00a4b7;}
+.guide-toggle input:checked + .toggle-track::before{transform:translateX(16px);}
+.guide-toggle input:focus-visible + .toggle-track{outline:3px solid #225f8b;outline-offset:3px;}
+.guide-legend{display:flex;gap:6px;align-items:center;color:#688193;font-size:11px;font-weight:700;}
+.guide-dot{height:9px;width:9px;display:inline-block;border-radius:50%;}
+.guide-dot.center{background:#02a6d6;}.guide-dot.edge{background:#e34254;margin-left:6px;}
+.guide-tip{font-size:11px!important;line-height:1.55!important;color:#6b8797!important;margin:11px 0 0!important;}
+.guide-tip strong{color:#0a819b;}.guide-tip strong:nth-of-type(2){color:#c93f4e;}
+@media(max-width:520px){.guide-legend{font-size:10px}.guide-toggle{font-size:11px}}

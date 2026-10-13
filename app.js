@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.4 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
+/* Tio Urso Studio Alpha 0.4.1 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -12,7 +12,7 @@ const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
 let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{}};
 const imageCache = new Map();
-let drag = null, toastHandle = null, seq = 0, previewQueued=false;
+let drag = null, activeGuides = null, toastHandle = null, seq = 0, previewQueued=false;
 const fontSelector=$('fontFamily');
 const exportChoice=$('exportOrientation');
 const exportPreview=$('exportPreview');
@@ -39,7 +39,24 @@ function paintSurface(target,selection=false){
  target.fillStyle=state.bg;target.fillRect(0,0,1000,H);
  for(const it of state.items) drawElement(target,it,selection&&it.id===state.selected);
 }
-function render(){paintSurface(ctx,true);updateControls();queueExportPreview();}
+// Guias são pintadas somente no canvas do editor e NUNCA no mockup ou no PNG/PDF.
+function drawGuideLine(type,coord,vertical){
+ const H=artH(),color=type==='center'?'#00a8d6':'#e13e52';
+ ctx.save();ctx.strokeStyle='#ffffff';ctx.lineWidth=6;ctx.setLineDash([]);
+ ctx.beginPath();if(vertical){ctx.moveTo(coord,0);ctx.lineTo(coord,H);}else{ctx.moveTo(0,coord);ctx.lineTo(1000,coord);}ctx.stroke();
+ ctx.strokeStyle=color;ctx.lineWidth=3;ctx.setLineDash(type==='center'?[14,8]:[9,5]);ctx.stroke();ctx.setLineDash([]);
+ const label=type==='center'?'CENTRO':'LIMITE';ctx.font='bold 19px Arial';ctx.textBaseline='middle';ctx.textAlign='left';
+ const tx=vertical?Math.min(Math.max(coord+7,6),1000-106):11;
+ const ty=vertical?34:Math.min(Math.max(coord-30,24),H-24);
+ ctx.fillStyle=color;ctx.fillRect(tx,ty-12,100,27);ctx.fillStyle='#ffffff';ctx.fillText(label,tx+7,ty+1);
+ ctx.restore();
+}
+function drawSmartGuides(){
+ if(!drag||!activeGuides||!$('smartGuidesToggle').checked)return;
+ if(activeGuides.x)drawGuideLine(activeGuides.x.type,activeGuides.x.line,true);
+ if(activeGuides.y)drawGuideLine(activeGuides.y.type,activeGuides.y.line,false);
+}
+function render(){paintSurface(ctx,true);drawSmartGuides();updateControls();queueExportPreview();}
 function selected(){return state.items.find(it=>it.id===state.selected);}
 function updateControls(){
  const it=selected();$('selectionControls').hidden=!it;if(!it)return;
@@ -65,9 +82,53 @@ async function addImage(file){if(!file)return;try{const src=await loadFileAsImag
 function setProduct(key){if(!PRODUCTS[key])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();render();}
 function pointerCoord(ev){const r=art.getBoundingClientRect();return {x:(ev.clientX-r.left)/r.width*1000,y:(ev.clientY-r.top)/r.height*artH()};}
 function itemAt(pt){for(let i=state.items.length-1;i>=0;i--){const it=state.items[i],{w,h}=itemDimensions(it),r=-(it.rotation||0)*Math.PI/180,dx=pt.x-it.x,dy=pt.y-it.y,s=it.scale||1;const lx=(dx*Math.cos(r)-dy*Math.sin(r))/s,ly=(dx*Math.sin(r)+dy*Math.cos(r))/s;if(Math.abs(lx)<=w/2+13&&Math.abs(ly)<=h/2+13)return it;}return null;}
-art.addEventListener('pointerdown',ev=>{ev.preventDefault();const pt=pointerCoord(ev),it=itemAt(pt);state.selected=it?.id||null;if(it){drag={id:it.id,offX:pt.x-it.x,offY:pt.y-it.y};try{art.setPointerCapture(ev.pointerId);}catch(_){}}else drag=null;render();});
-art.addEventListener('pointermove',ev=>{if(!drag)return;ev.preventDefault();const it=selected();if(!it||it.id!==drag.id)return;const pt=pointerCoord(ev);it.x=pt.x-drag.offX;it.y=pt.y-drag.offY;render();});
-art.addEventListener('pointerup',()=>{drag=null;});art.addEventListener('pointercancel',()=>{drag=null;});
+// Referências do Canva: centro da página e as quatro bordas da arte.
+// O cálculo usa o retângulo delimitador visível, inclusive quando a imagem está rotacionada.
+function boundsHalfSize(it){
+ const {w,h}=itemDimensions(it),r=(it.rotation||0)*Math.PI/180,s=it.scale||1;
+ return {hx:(Math.abs(w*Math.cos(r))+Math.abs(h*Math.sin(r)))*s/2,
+         hy:(Math.abs(w*Math.sin(r))+Math.abs(h*Math.cos(r)))*s/2};
+}
+function pickGuide(center,half,canvasSize,tolerance){
+ const candidates=[{delta:canvasSize/2-center,line:canvasSize/2,type:'center'}];
+ // Se o elemento é maior que a arte, não tentamos encaixá-lo nas duas bordas.
+ if(half*2<=canvasSize){
+  candidates.push({delta:half-center,line:0,type:'edge'});
+  candidates.push({delta:canvasSize-half-center,line:canvasSize,type:'edge'});
+ }
+ const found=candidates.filter(c=>Math.abs(c.delta)<=tolerance).sort((a,b)=>Math.abs(a.delta)-Math.abs(b.delta))[0];
+ return found||null;
+}
+function snapDraggedItem(it){
+ activeGuides=null;if(!$('smartGuidesToggle').checked)return;
+ const box=art.getBoundingClientRect(),{hx,hy}=boundsHalfSize(it);
+ // Distância de encaixe ~9 pixels físicos da interface, adaptada ao zoom da prévia.
+ const tx=9*1000/Math.max(box.width,1),ty=9*artH()/Math.max(box.height,1);
+ const x=pickGuide(it.x,hx,1000,tx),y=pickGuide(it.y,hy,artH(),ty);
+ if(x)it.x+=x.delta;
+ if(y)it.y+=y.delta;
+ activeGuides={x,y};
+ // Fora da estampa: aviso vermelho sem bloquear o usuário (útil para sangria).
+ if(!x && (it.x-hx<0||it.x+hx>1000))activeGuides.x={type:'edge',line:it.x<500?0:1000};
+ if(!y && (it.y-hy<0||it.y+hy>artH()))activeGuides.y={type:'edge',line:it.y<artH()/2?0:artH()};
+}
+function endDrag(){if(!drag)return;drag=null;activeGuides=null;render();}
+art.addEventListener('pointerdown',ev=>{
+ ev.preventDefault();const pt=pointerCoord(ev),it=itemAt(pt);state.selected=it?.id||null;
+ if(it){drag={id:it.id,pointerId:ev.pointerId,offX:pt.x-it.x,offY:pt.y-it.y};try{art.setPointerCapture(ev.pointerId);}catch(_){}}
+ else drag=null;
+ activeGuides=null;render();
+});
+art.addEventListener('pointermove',ev=>{
+ if(!drag || drag.pointerId!==ev.pointerId)return;
+ ev.preventDefault();const it=selected();if(!it||it.id!==drag.id)return;
+ const pt=pointerCoord(ev);it.x=pt.x-drag.offX;it.y=pt.y-drag.offY;
+ snapDraggedItem(it);render();
+});
+art.addEventListener('pointerup',ev=>{if(drag?.pointerId===ev.pointerId)endDrag();});
+art.addEventListener('pointercancel',ev=>{if(drag?.pointerId===ev.pointerId)endDrag();});
+art.addEventListener('lostpointercapture',endDrag);
+$('smartGuidesToggle').addEventListener('change',()=>{activeGuides=null;render();});
 function changeItem(fn){const it=selected();if(!it)return;fn(it);render();}
 $('addText').addEventListener('click',createText);$('addImage').addEventListener('click',()=>$('imagePicker').click());
 $('imagePicker').addEventListener('change',async ev=>{await addImage(ev.target.files[0]);ev.target.value='';});

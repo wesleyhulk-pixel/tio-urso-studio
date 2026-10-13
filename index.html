@@ -9,12 +9,12 @@
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Montserrat:wght@700&family=Poppins:wght@700&family=Righteous&family=Bangers&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Great+Vibes&family=Permanent+Marker&family=Cinzel:wght@700&family=Playfair+Display:wght@700&family=Fredoka:wght@700&family=Satisfy&family=Kalam:wght@700&family=Abril+Fatface&family=Russo+One&family=Caveat:wght@700&family=Indie+Flower&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="style.css?v=0401">
- <script src="app.js?v=0401" defer></script>
+ <link rel="stylesheet" href="style.css?v=0410">
+ <script src="app.js?v=0410" defer></script>
 </head>
 <body>
  <header class="topbar">
-   <div class="header-inner"><div class="brand-symbol" aria-hidden="true">🐻</div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 0.4</span></div>
+   <div class="header-inner"><div class="brand-symbol" aria-hidden="true">🐻</div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 0.4.1</span></div>
  </header>
  <div class="app-layout">
   <nav class="tabs" aria-label="Navegação principal">
@@ -48,7 +48,9 @@
      <div class="page-heading"><div><span class="eyebrow dark">ÁREA CRIATIVA</span><h1>Editor de artes</h1><p>Toque nos elementos para selecionar e arraste para posicionar.</p></div><button class="subtle-link" data-goto="export" type="button">Exportar ↗</button></div>
      <section class="card compact-card"><div class="field"><label for="product">Produto e medida</label><select id="product"><option value="caneca">Caneca tradicional · 21 × 9,7 cm</option><option value="chopp">Caneca de chopp · 20,5 × 14,5 cm</option><option value="squeeze">Squeeze 600 ml · 24 × 15 cm</option><option value="chaveiro">Chaveiro · 5 × 5 cm</option></select></div><div class="measure"><strong id="dims">210 × 97 mm</strong><span>Arquivo final em 300 DPI</span></div></section>
      <section class="card design-card"><div class="card-head"><div><h2>Sua estampa</h2><p>O tamanho exibido é uma prévia proporcional.</p></div><span class="tag">ARTE</span></div>
-       <div class="canvas-surround"><canvas id="artCanvas" width="1000" height="462" aria-label="Área de edição, arraste os elementos para movê-los"></canvas></div>
+       <div class="guide-toolbar"><label class="guide-toggle"><input id="smartGuidesToggle" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span>Alinhamento inteligente</span></label><span class="guide-legend"><i class="guide-dot center"></i> Centro <i class="guide-dot edge"></i> Borda</span></div>
+       <div class="canvas-surround"><canvas id="artCanvas" width="1000" height="462" aria-label="Área de edição. Arraste imagens ou textos para alinhar usando linhas centrais azuis e limites vermelhos."></canvas></div>
+       <p class="guide-tip">Arraste a imagem ou o texto: as linhas <strong>azuis</strong> indicam o centro da arte e as <strong>vermelhas</strong> indicam quando a borda do elemento encontra os limites da estampa. O elemento encaixa suavemente nas guias.</p>
        <div class="action-row tool-row"><button id="addText" class="btn primary" type="button">＋ Texto</button><button id="addImage" class="btn" type="button">▧ Imagem</button><button id="removeSelected" class="btn danger" type="button">⌫ Excluir</button><input id="imagePicker" type="file" accept="image/png,image/jpeg,image/webp" hidden></div>
        <div id="selectionControls" class="selection-controls" hidden><div class="selection-caption">✎ Editando elemento</div><div id="textControls" class="field" hidden><label for="textValue">Texto</label><input id="textValue" type="text" placeholder="Escreva aqui" maxlength="120"></div>
          <div class="control-grid"><div class="field"><label for="elementScale">Tamanho <output id="scaleValue">100%</output></label><input id="elementScale" type="range" min="20" max="300" value="100"></div><div class="field"><label for="elementRotation">Rotação <output id="rotationValue">0°</output></label><input id="elementRotation" type="range" min="-180" max="180" value="0"></div></div>
@@ -89,7 +91,7 @@
        <div class="action-row"><button id="downloadPng" class="btn primary" type="button">⇩ Exportar PNG</button><button id="downloadPdf" class="btn" type="button">⇩ Exportar PDF</button></div><div class="notice"><strong>Para sublimação:</strong> espelhe apenas quando necessário e desative o espelhamento adicional no software de impressão. Esta Alpha não aplica perfil ICC e não garante as cores finais. Para imprimir no tamanho certo, desative “ajustar à página” no diálogo de impressão.</div>
      </section><button type="button" class="btn ghost full-cta" data-goto="editor">← Voltar ao editor</button>
    </section>
-   <footer>🐻 Tio Urso Studio • Alpha 0.4 experimental • Teste de impressão obrigatório</footer>
+   <footer>🐻 Tio Urso Studio • Alpha 0.4.1 experimental • Teste de impressão obrigatório</footer>
   </main>
  </div>
  <div class="sheet-overlay" id="fontOverlay" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Galeria de fontes"><div class="sheet-head"><div><small>PERSONALIZE SEU TEXTO</small><h2>Escolher fonte</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar fontes">✕</button></div><input id="fontSearch" class="search-input" type="search" placeholder="Buscar fonte pelo nome…"><div class="font-categories"><button type="button" class="font-category active" data-font-category="Todas">Todas</button><button type="button" class="font-category" data-font-category="Divertidas">Divertidas</button><button type="button" class="font-category" data-font-category="Elegantes">Elegantes</button><button type="button" class="font-category" data-font-category="Manuscritas">Manuscritas</button><button type="button" class="font-category" data-font-category="Fortes">Fortes</button></div><div id="fontGallery" class="font-gallery"></div><button type="button" class="btn full-cta" id="fontImportAction">＋ Importar fonte TTF/OTF</button><p class="sheet-note">Fontes online precisam de internet ao carregar. Para uso comercial, confira a licença das fontes importadas.</p></section></div>

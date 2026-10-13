@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 0.4
+# Tio Urso Studio — Alpha 0.4.1
 
 **Versão de testes**, em HTML, CSS e JavaScript, projetada para funcionar diretamente no navegador do celular.
 
@@ -37,3 +37,13 @@ Coloque os quatro arquivos **index.html, app.js, style.css e README.md** na raiz
 
 ## Observação técnica
 Reutiliza a base de documentos de projeto JSON da Alpha 0.2 (`version: 1`). A atualização de HTML/CSS/JS pode ser feita sem criar novo repositório ou refazer o aplicativo.
+
+## Guias de alinhamento inteligente (Alpha 0.4.1)
+
+- Ative ou desative o botão **Alinhamento inteligente** na tela Editor.
+- Arraste uma imagem ou texto para perto do centro da página: aparecem guias azuis verticais/horizontais e o item encaixa em cada eixo.
+- Ao aproximar as bordas visíveis de um elemento das bordas da estampa, aparecem guias vermelhas e o elemento encaixa na linha do limite.
+- Elementos girados levam a rotação em conta no cálculo das bordas.
+- As guias aparecem somente durante o arraste e **não** saem no PNG, PDF ou mockup.
+- Se a imagem ultrapassar a arte, o app avisa com guia vermelha, sem impedir composições com sangria.
+- Teste com toque real no Android; esta versão é experimental.
