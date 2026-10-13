@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.2 — protótipo offline, sem libs ou serviços externos. */
+/* Tio Urso Studio Alpha 0.3 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -44,7 +44,7 @@ function selected(){return state.items.find(it=>it.id===state.selected);}
 function updateControls(){
  const it=selected();$('selectionControls').hidden=!it;if(!it)return;
  $('textControls').hidden=it.kind!=='text';$('colorControl').hidden=it.kind!=='text';$('fontFamily').parentElement.hidden=it.kind!=='text';
- if(it.kind==='text'){$('textValue').value=it.text;$('textColor').value=it.color;$('fontFamily').value=it.font||'Arial';updateFontSample(it.font||'Arial');}
+ if(it.kind==='text'){$('textValue').value=it.text;$('textColor').value=it.color;$('fontFamily').value=it.font||'Arial';updateFontSample(it.font||'Arial');$('textColorSample').style.backgroundColor=it.color||'#123b62';$('fontSelectedName').textContent=state.customFonts[it.font]?.label||it.font||'Arial';$('fontSelectedName').style.fontFamily=`"${String(it.font||'Arial').replace(/["\\]/g,'')}",sans-serif`;}
  $('elementScale').value=Math.round((it.scale||1)*100);$('scaleValue').textContent=Math.round((it.scale||1)*100)+'%';
  $('elementRotation').value=it.rotation||0;$('rotationValue').textContent=(it.rotation||0)+'°';
 }
@@ -111,11 +111,13 @@ $('elementScale').addEventListener('input',ev=>changeItem(it=>{it.scale=+ev.targ
 $('elementRotation').addEventListener('input',ev=>changeItem(it=>{it.rotation=+ev.target.value;}));
 $('layerUp').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<0||i===state.items.length-1)return;[state.items[i],state.items[i+1]]=[state.items[i+1],state.items[i]];render();});
 $('layerDown').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<=0)return;[state.items[i],state.items[i-1]]=[state.items[i-1],state.items[i]];render();});
-$('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;render();});
+$('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;$('bgColorSample').style.backgroundColor=state.bg;render();});
 $('product').addEventListener('change',ev=>setProduct(ev.target.value));
-function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('selected',t.dataset.view===name));if(name==='mockup')renderMockup();if(name==='preco')calculate();}
+function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup')renderMockup();if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
 $('backToEditor').addEventListener('click',()=>switchView('editor'));
+document.querySelectorAll('[data-goto]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.goto)));
+document.querySelectorAll('[data-product]').forEach(btn=>btn.addEventListener('click',()=>{$('product').value=btn.dataset.product;setProduct(btn.dataset.product);switchView('editor');}));
 function artworkCanvas(w,h,mirror=false){
  const off=document.createElement('canvas');off.width=w;off.height=h;const g=off.getContext('2d');
  g.save();if(mirror){g.translate(w,0);g.scale(-1,1);}g.scale(w/1000,h/artH());g.fillStyle=state.bg;g.fillRect(0,0,1000,artH());for(const it of state.items)drawElement(g,it,false);g.restore();return off;
@@ -197,8 +199,8 @@ $('projectPicker').addEventListener('change',async ev=>{const file=ev.target.fil
   if(!/^TUS_[a-z0-9]+$/i.test(family)||typeof info?.src!=='string'||info.src.length>4000000)continue;
   try{await loadCustomFont(family,info.src);state.customFonts[family]={label:String(info.label||'Fonte personalizada').slice(0,90),src:info.src};}catch(_){}
  }
- refreshFontOptions();imageCache.clear();for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;updateMeasurements();render();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
-$('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';imageCache.clear();$('backgroundColor').value='#ffffff';render();toast('Nova arte em branco.');});
+ refreshFontOptions();imageCache.clear();for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;updateMeasurements();render();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
+$('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';imageCache.clear();$('backgroundColor').value='#ffffff';$('bgColorSample').style.backgroundColor='#ffffff';render();toast('Nova arte em branco.');});
 // Orientação explícita para a impressão e prévia fiel à exportação.
 function renderExportPreview(){
  if(!exportPreview)return;
@@ -215,9 +217,10 @@ function updateOrientationUI(){
  const mirrored=exportChoice.value==='mirrored',box=$('orientationHelp');
  $('orientationTitle').textContent=mirrored?'Exportação ESPELHADA':'Exportação NORMAL';
  $('orientationDescription').textContent=mirrored?'O arquivo será invertido horizontalmente para transferência. Use somente quando seu processo de impressão exigir; não espelhe duas vezes.':'O arquivo mantém o texto legível. Ideal para cliente, conferência e fluxos nos quais o espelhamento já é feito pela impressão.';
- box.classList.toggle('mirrored',mirrored);queueExportPreview();
+ box.classList.toggle('mirrored',mirrored);document.querySelectorAll('[data-orient]').forEach(btn=>{btn.classList.toggle('active',btn.dataset.orient===exportChoice.value);btn.setAttribute('aria-pressed',btn.dataset.orient===exportChoice.value?'true':'false');});$('previewMode').textContent=mirrored?'ESPELHADA':'NORMAL';$('previewMode').classList.toggle('mirrored',mirrored);queueExportPreview();
 }
 exportChoice.addEventListener('change',updateOrientationUI);
+document.querySelectorAll('[data-orient]').forEach(btn=>btn.addEventListener('click',()=>{exportChoice.value=btn.dataset.orient;updateOrientationUI();}));
 // Fontes online podem demorar a carregar. Aguarda antes de salvar, para evitar troca de aparência no PNG/PDF.
 async function ensureProjectFonts(){
  if(!document.fonts)return;
@@ -225,7 +228,75 @@ async function ensureProjectFonts(){
  await Promise.race([Promise.all(families.map(f=>document.fonts.load(`bold 65px "${String(f).replace(/["\\]/g,'')}"`).catch(()=>[]))),new Promise(resolve=>setTimeout(resolve,6500))]);
 }
 document.fonts?.ready?.then(()=>{render();}).catch(()=>{});
+
+// Alpha 0.3: galeria de fontes feita para toque, sem depender do seletor nativo Android.
+const fontCategories = {
+ 'Arial':'Fortes','Georgia':'Elegantes','Verdana':'Fortes','Impact':'Fortes','Trebuchet MS':'Fortes',
+ 'Courier New':'Fortes','Times New Roman':'Elegantes','Anton':'Fortes','Bebas Neue':'Fortes',
+ 'Oswald':'Fortes','Montserrat':'Fortes','Poppins':'Divertidas','Righteous':'Divertidas',
+ 'Bangers':'Divertidas','Lobster':'Manuscritas','Pacifico':'Manuscritas','Dancing Script':'Manuscritas',
+ 'Great Vibes':'Elegantes','Permanent Marker':'Divertidas','Cinzel':'Elegantes',
+ 'Playfair Display':'Elegantes','Fredoka':'Divertidas','Satisfy':'Manuscritas',
+ 'Kalam':'Manuscritas','Abril Fatface':'Elegantes','Russo One':'Fortes','Caveat':'Manuscritas',
+ 'Indie Flower':'Manuscritas'
+};
+let fontCategory='Todas';
+const overlays=['fontOverlay','colorOverlay'];
+function closeSheet(){overlays.forEach(id=>$(id).hidden=true);document.body.style.overflow='';}
+function openSheet(id){closeSheet();$(id).hidden=false;document.body.style.overflow='hidden';}
+document.querySelectorAll('[data-close-sheet]').forEach(btn=>btn.addEventListener('click',closeSheet));
+overlays.forEach(id=>$(id).addEventListener('click',event=>{if(event.target===$(id))closeSheet();}));
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeSheet();});
+function fontList(){const query=$('fontSearch').value.trim().toLocaleLowerCase('pt-BR');return [...fontSelector.options].filter(opt=>(fontCategory==='Todas'||(fontCategories[opt.value]||'Divertidas')===fontCategory)&&opt.text.toLocaleLowerCase('pt-BR').includes(query));}
+function fontGalleryRender(){
+ const box=$('fontGallery');box.replaceChildren();const list=fontList();
+ if(!list.length){const msg=document.createElement('p');msg.textContent='Nenhuma fonte encontrada.';box.append(msg);return;}
+ for(const option of list){
+   const name=option.value;
+   const btn=document.createElement('button');btn.type='button';btn.className='font-option'+(selected()?.font===name?' active':'');
+   const sample=document.createElement('span');sample.className='font-title';sample.textContent='Tio Urso';sample.style.fontFamily=`"${String(name).replace(/["\\]/g,'')}",sans-serif`;
+   const label=document.createElement('span');label.className='font-caption';label.textContent=state.customFonts[name]?.label||name;
+   btn.append(sample,label);btn.addEventListener('click',()=>{
+     fontSelector.value=name;fontSelector.dispatchEvent(new Event('change',{bubbles:true}));closeSheet();toast('Fonte: '+label.textContent);
+   });box.append(btn);
+ }
+}
+$('chooseFont').addEventListener('click',()=>{if(!selected()||selected().kind!=='text'){toast('Selecione um texto primeiro.');return;}fontCategory='Todas';$('fontSearch').value='';document.querySelectorAll('.font-category').forEach(el=>el.classList.toggle('active',el.dataset.fontCategory===fontCategory));fontGalleryRender();openSheet('fontOverlay');});
+$('fontSearch').addEventListener('input',fontGalleryRender);
+document.querySelectorAll('.font-category').forEach(btn=>btn.addEventListener('click',()=>{fontCategory=btn.dataset.fontCategory;document.querySelectorAll('.font-category').forEach(b=>b.classList.toggle('active',b===btn));fontGalleryRender();}));
+$('fontImportAction').addEventListener('click',()=>{$('fontPicker').click();});
+$('fontPicker').addEventListener('change',()=>setTimeout(()=>{closeSheet();fontGalleryRender();},250));
+
+// Paleta completa, recent colors, HEX e seletor avançado nativo opcional.
+const predefinedColors = [
+ '#FFFFFF','#F3F4F6','#C7CDD4','#808080','#374151','#000000','#7F1D1D','#AA1111',
+ '#FF0000','#F43F5E','#FF7E8A','#FF9E00','#FFCF00','#FFF500','#A7E300','#51B749',
+ '#00C853','#00BFA5','#00FFFF','#00A6BF','#0088EF','#0041FF','#13267D','#5420A6',
+ '#9600D4','#ED00DB','#FC70C6','#CF7D44','#7B4B2B','#E9BE9B','#FEDFBA','#C6A5FF',
+ '#FCE7F3','#E4F4FF','#BAE6FD','#A7F3D0','#FFEDD5','#FDF2B8','#123B62','#0B2136',
+ '#EC4899','#BE185D','#14B8A6','#0E7490','#65A30D','#B45309','#9333EA','#1D4ED8'
+];
+let colorTarget='text', chosenColor='#ff0000';
+let recentColors=[];try{const saved=JSON.parse(localStorage.getItem('tuStudioRecentColors')||'[]');if(Array.isArray(saved))recentColors=saved.filter(v=>/^#[0-9A-F]{6}$/i.test(v)).slice(0,8);}catch(_){}
+const validHex=s=>/^#[0-9A-F]{6}$/i.test(s);
+function makeSwatch(color,container){const btn=document.createElement('button');btn.type='button';btn.className='swatch'+(chosenColor.toLowerCase()===color.toLowerCase()?' active':'');btn.style.backgroundColor=color;btn.title=color;btn.setAttribute('aria-label','Cor '+color);btn.addEventListener('click',()=>{chosenColor=color.toUpperCase();syncColors();});container.append(btn);}
+function swatchesRender(){const grid=$('colorSwatches'),recent=$('recentSwatches');grid.replaceChildren();recent.replaceChildren();predefinedColors.forEach(c=>makeSwatch(c,grid));(recentColors.length?recentColors:[chosenColor]).forEach(c=>makeSwatch(c,recent));}
+function syncColors(){if(!validHex(chosenColor))return;chosenColor=chosenColor.toUpperCase();$('hexColor').value=chosenColor;$('nativeColor').value=chosenColor;$('selectedColorChip').style.backgroundColor=chosenColor;$('selectedColorLabel').textContent=chosenColor;swatchesRender();}
+function showColor(target){colorTarget=target;chosenColor=(target==='text'?selected()?.color:state.bg)||'#ffffff';syncColors();openSheet('colorOverlay');}
+$('chooseTextColor').addEventListener('click',()=>{if(selected()?.kind==='text')showColor('text');});
+$('chooseBgColor').addEventListener('click',()=>showColor('background'));
+$('hexColor').addEventListener('input',event=>{let value=event.target.value.trim();if(value&&!value.startsWith('#'))value='#'+value;if(validHex(value)){chosenColor=value;syncColors();}});
+$('nativeColor').addEventListener('input',event=>{chosenColor=event.target.value;syncColors();});
+$('applyColor').addEventListener('click',()=>{
+ const hex=$('hexColor').value.trim();if(!validHex(hex)){toast('Informe um HEX válido, exemplo: #FF0000');return;}
+ chosenColor=hex.toUpperCase();const target=colorTarget==='text'?'textColor':'backgroundColor';$(target).value=chosenColor;$(target).dispatchEvent(new Event('input',{bubbles:true}));
+ if(colorTarget==='text')$('textColorSample').style.backgroundColor=chosenColor;
+ recentColors=[chosenColor,...recentColors.filter(c=>c!==chosenColor)].slice(0,8);
+ try{localStorage.setItem('tuStudioRecentColors',JSON.stringify(recentColors));}catch(_){}
+ closeSheet();toast('Cor aplicada: '+chosenColor);
+});
+
 // Inicialização. Sem salvamento remoto nem coleta de dados.
-updateMeasurements();render();calculate();updateOrientationUI();
+updateMeasurements();$('bgColorSample').style.backgroundColor=state.bg;render();calculate();updateOrientationUI();
 // O modo PWA completo será ativado quando os ícones, manifesto e SW estiverem publicados.
 })();

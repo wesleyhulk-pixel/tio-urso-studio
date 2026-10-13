@@ -1,96 +1,97 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <meta name="theme-color" content="#071e37"/>
-  <meta name="description" content="Tio Urso Studio Alpha: editor de estampas e mockups de produtos personalizados."/>
-  <!-- Fontes online opcionais: se offline, o navegador utiliza as fontes locais. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Bebas+Neue&amp;family=Oswald&amp;family=Montserrat&amp;family=Poppins&amp;family=Righteous&amp;family=Bangers&amp;family=Lobster&amp;family=Pacifico&amp;family=Dancing+Script&amp;family=Great+Vibes&amp;family=Permanent+Marker&amp;family=Cinzel&amp;family=Playfair+Display&amp;family=Fredoka&amp;family=Satisfy&amp;family=Kalam&amp;family=Abril+Fatface&amp;family=Russo+One&amp;family=Caveat&amp;family=Indie+Flower&amp;display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css?v=02"/>
-  <title>Tio Urso Studio · Alpha</title>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#071d37">
+ <meta name="description" content="Tio Urso Studio Alpha 0.3 — editor de estampas, mockups e orçamentos para personalizados.">
+ <title>Tio Urso Studio · Alpha 0.3</title>
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Montserrat:wght@700&family=Poppins:wght@700&family=Righteous&family=Bangers&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Great+Vibes&family=Permanent+Marker&family=Cinzel:wght@700&family=Playfair+Display:wght@700&family=Fredoka:wght@700&family=Satisfy&family=Kalam:wght@700&family=Abril+Fatface&family=Russo+One&family=Caveat:wght@700&family=Indie+Flower&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="style.css?v=0302">
+ <script src="app.js?v=0302" defer></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><span class="brand-icon">🐻</span><span><strong>TIO URSO <i>STUDIO</i></strong><small>ALPHA 0.2 · laboratório de criação</small></span></div>
-    <span class="alpha-pill">TESTE</span>
-  </header>
+ <header class="topbar">
+   <div class="header-inner"><div class="brand-symbol" aria-hidden="true">🐻</div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 0.3</span></div>
+ </header>
+ <div class="app-layout">
+  <nav class="tabs" aria-label="Navegação principal">
+   <button class="tab selected" data-view="home" type="button"><span class="tab-icon">⌂</span><span>Início</span></button>
+   <button class="tab" data-view="editor" type="button"><span class="tab-icon">✎</span><span>Editor</span></button>
+   <button class="tab" data-view="mockup" type="button"><span class="tab-icon">☕</span><span>Mockup</span></button>
+   <button class="tab" data-view="products" type="button"><span class="tab-icon">▦</span><span>Produtos</span></button>
+   <button class="tab" data-view="preco" type="button"><span class="tab-icon">＄</span><span>Orçamento</span></button>
+  </nav>
   <main class="shell">
-    <section class="hero"><div><h1>Crie, visualize e personalize.</h1><p>Um primeiro passo para transformar suas artes em produtos reais — direto do celular.</p></div><div class="hero-star">✦</div></section>
-    <nav class="tabs" aria-label="Áreas do aplicativo">
-      <button class="tab selected" data-view="editor" type="button">✏️ <span>Editor</span></button>
-      <button class="tab" data-view="mockup" type="button">☕ <span>Mockup</span></button>
-      <button class="tab" data-view="preco" type="button">💰 <span>Orçamento</span></button>
-    </nav>
+   <section class="view active" id="view-home">
+    <div class="welcome"><div class="eyebrow">✦ FAÇA SUA IDEIA ACONTECER</div><h1>Crie. Personalize.<br><em>Visualize. Venda.</em></h1><p>Artes, mockups e orçamentos para seus produtos personalizados, direto do celular.</p><button class="btn btn-white" type="button" data-goto="editor">＋ Novo projeto <span>→</span></button><div class="welcome-deco" aria-hidden="true">🐻</div></div>
+    <div class="section-title"><h2>Meu estúdio</h2><small>Tudo para começar</small></div>
+    <div class="feature-grid">
+      <button class="feature blue" type="button" data-goto="editor"><span class="feature-icon">✎</span><strong>Editor de artes</strong><small>Crie e personalize</small><span class="feature-arrow">↗</span></button>
+      <button class="feature purple" type="button" data-goto="mockup"><span class="feature-icon">☕</span><strong>Mockups</strong><small>Visualize o resultado</small><span class="feature-arrow">↗</span></button>
+      <button class="feature orange" type="button" data-goto="preco"><span class="feature-icon">▤</span><strong>Orçamentos</strong><small>Calcule seu preço</small><span class="feature-arrow">↗</span></button>
+      <button class="feature green" type="button" data-goto="export"><span class="feature-icon">⇩</span><strong>Exportação</strong><small>Pronto para imprimir</small><span class="feature-arrow">↗</span></button>
+    </div>
+    <div class="section-title"><h2>Produtos populares</h2><button type="button" class="text-button" data-goto="products">Ver todos →</button></div>
+    <div class="product-grid home-products">
+      <button class="product-tile" data-product="caneca" type="button"><span class="product-icon">☕</span><strong>Caneca</strong><small>21 × 9,7 cm</small></button>
+      <button class="product-tile" data-product="squeeze" type="button"><span class="product-icon">♧</span><strong>Squeeze</strong><small>24 × 15 cm</small></button>
+      <button class="product-tile" data-product="chopp" type="button"><span class="product-icon">🍺</span><strong>Chopp</strong><small>20,5 × 14,5 cm</small></button>
+      <button class="product-tile" data-product="chaveiro" type="button"><span class="product-icon">◈</span><strong>Chaveiro</strong><small>5 × 5 cm</small></button>
+    </div>
+    <div class="tip"><span class="tip-icon">✦</span><div><strong>Da ideia à arte final</strong><p>Monte a estampa, confira o mockup e escolha se o arquivo deve sair normal ou espelhado.</p></div></div>
+   </section>
 
-    <section class="view active" id="view-editor">
-      <div class="card">
-        <div class="card-head"><div><h2>Produto & formato</h2><p>As dimensões da estampa são preservadas na exportação.</p></div></div>
-        <div class="field"><label for="product">Produto</label><select id="product"><option value="caneca">Caneca tradicional · 21 × 9,7 cm</option><option value="chopp">Caneca de chopp · 20,5 × 14,5 cm</option><option value="squeeze">Squeeze 600 ml · 24 × 15 cm</option><option value="chaveiro">Chaveiro · 5 × 5 cm</option></select></div>
-        <div class="measure"><span id="dims">210 × 97 mm</span><span>300 DPI na exportação</span></div>
-      </div>
+   <section class="view" id="view-editor">
+     <div class="page-heading"><div><span class="eyebrow dark">ÁREA CRIATIVA</span><h1>Editor de artes</h1><p>Toque nos elementos para selecionar e arraste para posicionar.</p></div><button class="subtle-link" data-goto="export" type="button">Exportar ↗</button></div>
+     <section class="card compact-card"><div class="field"><label for="product">Produto e medida</label><select id="product"><option value="caneca">Caneca tradicional · 21 × 9,7 cm</option><option value="chopp">Caneca de chopp · 20,5 × 14,5 cm</option><option value="squeeze">Squeeze 600 ml · 24 × 15 cm</option><option value="chaveiro">Chaveiro · 5 × 5 cm</option></select></div><div class="measure"><strong id="dims">210 × 97 mm</strong><span>Arquivo final em 300 DPI</span></div></section>
+     <section class="card design-card"><div class="card-head"><div><h2>Sua estampa</h2><p>O tamanho exibido é uma prévia proporcional.</p></div><span class="tag">ARTE</span></div>
+       <div class="canvas-surround"><canvas id="artCanvas" width="1000" height="462" aria-label="Área de edição, arraste os elementos para movê-los"></canvas></div>
+       <div class="action-row tool-row"><button id="addText" class="btn primary" type="button">＋ Texto</button><button id="addImage" class="btn" type="button">▧ Imagem</button><button id="removeSelected" class="btn danger" type="button">⌫ Excluir</button><input id="imagePicker" type="file" accept="image/png,image/jpeg,image/webp" hidden></div>
+       <div id="selectionControls" class="selection-controls" hidden><div class="selection-caption">✎ Editando elemento</div><div id="textControls" class="field" hidden><label for="textValue">Texto</label><input id="textValue" type="text" placeholder="Escreva aqui" maxlength="120"></div>
+         <div class="control-grid"><div class="field"><label for="elementScale">Tamanho <output id="scaleValue">100%</output></label><input id="elementScale" type="range" min="20" max="300" value="100"></div><div class="field"><label for="elementRotation">Rotação <output id="rotationValue">0°</output></label><input id="elementRotation" type="range" min="-180" max="180" value="0"></div></div>
+         <div class="custom-tools"><div id="colorControl"><label class="tool-label">Cor do texto</label><button class="picker-btn" type="button" id="chooseTextColor"><span class="color-dot" id="textColorSample"></span><span>Escolher cor</span><span>›</span></button><input id="textColor" type="color" value="#123b62" hidden></div>
+           <div class="font-field"><label class="tool-label">Fonte</label><button class="picker-btn" type="button" id="chooseFont"><span class="font-selected" id="fontSelectedName">Arial</span><span>Explorar fontes ›</span></button><select id="fontFamily" hidden><option>Arial</option><option>Georgia</option><option>Verdana</option><option>Impact</option><option>Trebuchet MS</option><option>Courier New</option><option>Times New Roman</option><option>Anton</option><option>Bebas Neue</option><option>Oswald</option><option>Montserrat</option><option>Poppins</option><option>Righteous</option><option>Bangers</option><option>Lobster</option><option>Pacifico</option><option>Dancing Script</option><option>Great Vibes</option><option>Permanent Marker</option><option>Cinzel</option><option>Playfair Display</option><option>Fredoka</option><option>Satisfy</option><option>Kalam</option><option>Abril Fatface</option><option>Russo One</option><option>Caveat</option><option>Indie Flower</option></select><div id="fontSample" hidden></div><button id="importFont" type="button" hidden>Importar fonte</button><input id="fontPicker" type="file" accept=".ttf,.otf,font/ttf,font/otf" hidden></div></div>
+         <div class="action-row"><button id="layerDown" class="btn ghost" type="button">↓ Para trás</button><button id="layerUp" class="btn ghost" type="button">↑ Para frente</button></div>
+       </div>
+       <div class="bg-picker"><div><strong>Fundo da estampa</strong><small>Escolha uma cor de fundo</small></div><button id="chooseBgColor" type="button" class="bg-preview" aria-label="Selecionar cor do fundo"><span id="bgColorSample"></span>Alterar ›</button><input id="backgroundColor" type="color" value="#ffffff" hidden></div>
+     </section>
+     <section class="card"><div class="card-head"><div><h2>Meu projeto</h2><p>Guarde seu trabalho para continuar depois.</p></div></div><div class="action-row"><button class="btn" type="button" id="saveProject">⇩ Salvar projeto</button><button class="btn" type="button" id="openProject">↥ Abrir projeto</button><button class="btn ghost" type="button" id="resetProject">↺ Novo</button><input id="projectPicker" type="file" accept="application/json,.json" hidden></div></section>
+     <button class="btn primary full-cta" type="button" data-goto="export">Conferir e exportar arte <span>→</span></button>
+   </section>
 
-      <div class="card design-card">
-        <div class="card-head"><div><h2>Área de criação</h2><p>Toque em um elemento para selecionar. Arraste para mover.</p></div><span class="tag">Prévia</span></div>
-        <div class="canvas-surround"><canvas id="artCanvas" width="1000" height="462" aria-label="Área de edição da arte"></canvas></div>
-        <div class="action-row">
-          <button id="addText" class="btn primary" type="button">＋ Texto</button>
-          <button id="addImage" class="btn" type="button">🖼️ Imagem</button>
-          <button id="removeSelected" class="btn danger" type="button">🗑 Excluir</button>
-          <input id="imagePicker" type="file" accept="image/png,image/jpeg,image/webp" hidden/>
-        </div>
-        <div id="selectionControls" class="selection-controls" hidden>
-          <div class="selection-caption">Elemento selecionado</div>
-          <div id="textControls" class="field" hidden><label for="textValue">Texto</label><input id="textValue" type="text" placeholder="Digite seu texto" maxlength="120"/></div>
-          <div class="control-grid">
-            <div class="field"><label for="elementScale">Tamanho <output id="scaleValue">100%</output></label><input type="range" min="20" max="300" value="100" id="elementScale"/></div>
-            <div class="field"><label for="elementRotation">Rotação <output id="rotationValue">0°</output></label><input type="range" min="-180" max="180" value="0" id="elementRotation"/></div>
-          </div>
-          <div class="control-grid"><div class="field" id="colorControl"><label for="textColor">Cor do texto</label><input type="color" value="#123b62" id="textColor"/></div><div class="field font-field"><label for="fontFamily">Fonte da arte (28 opções)</label><select id="fontFamily"><option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Verdana">Verdana</option><option value="Impact">Impact</option><option value="Trebuchet MS">Trebuchet MS</option><option value="Courier New">Courier New</option><option value="Times New Roman">Times New Roman</option><option value="Anton">Anton</option><option value="Bebas Neue">Bebas Neue</option><option value="Oswald">Oswald</option><option value="Montserrat">Montserrat</option><option value="Poppins">Poppins</option><option value="Righteous">Righteous</option><option value="Bangers">Bangers</option><option value="Lobster">Lobster</option><option value="Pacifico">Pacifico</option><option value="Dancing Script">Dancing Script</option><option value="Great Vibes">Great Vibes</option><option value="Permanent Marker">Permanent Marker</option><option value="Cinzel">Cinzel</option><option value="Playfair Display">Playfair Display</option><option value="Fredoka">Fredoka</option><option value="Satisfy">Satisfy</option><option value="Kalam">Kalam</option><option value="Abril Fatface">Abril Fatface</option><option value="Russo One">Russo One</option><option value="Caveat">Caveat</option><option value="Indie Flower">Indie Flower</option></select><div id="fontSample" class="font-sample">Tio Urso • ABC 123</div><button class="btn ghost font-import" type="button" id="importFont">＋ Importar fonte TTF/OTF</button><input id="fontPicker" type="file" accept=".ttf,.otf,font/ttf,font/otf" hidden/><small class="font-note">Fontes criativas online precisam de conexão na primeira utilização. Também é possível carregar uma fonte do seu celular.</small></div></div>
-          <div class="action-row"><button id="layerDown" class="btn ghost" type="button">↓ Para trás</button><button id="layerUp" class="btn ghost" type="button">↑ Para frente</button></div>
-        </div>
-        <div class="field background-line"><label for="backgroundColor">Cor de fundo da estampa</label><input id="backgroundColor" type="color" value="#ffffff"/></div>
-      </div>
-      <div class="card"><div class="card-head"><div><h2>Projeto</h2><p>Salve uma cópia para não perder o trabalho.</p></div></div>
-        <div class="action-row"><button id="saveProject" class="btn" type="button">💾 Salvar projeto</button><button id="openProject" class="btn" type="button">📂 Abrir projeto</button><button id="resetProject" class="btn ghost" type="button">↺ Novo</button><input id="projectPicker" type="file" accept="application/json,.json" hidden/></div>
-      </div>
-    </section>
+   <section class="view" id="view-mockup"><div class="page-heading"><div><span class="eyebrow dark">PRÉVIA DO PRODUTO</span><h1>Seu mockup</h1><p>Veja sua estampa aplicada ao produto.</p></div><span class="tag">2D</span></div>
+    <section class="card"><div class="mockup-stage"><canvas id="mockCanvas" width="1100" height="660" aria-label="Prévia do produto personalizado"></canvas></div><div class="notice">Simulação ilustrativa 2D. A posição e a curvatura podem variar do produto real; o mockup não substitui a conferência da impressão.</div><div class="action-row"><button id="exportMockup" class="btn primary" type="button">⇩ Salvar mockup PNG</button><button id="backToEditor" class="btn" type="button">✎ Editar arte</button></div></section>
+   </section>
 
-    <section class="view" id="view-mockup">
-      <div class="card"><div class="card-head"><div><h2>Prévia do produto</h2><p>Mockup 2D ilustrativo para apresentar a arte ao cliente.</p></div><span class="tag">2D</span></div>
-        <div class="mockup-stage"><canvas id="mockCanvas" width="1100" height="660"></canvas></div>
-        <div class="notice">Esta é uma simulação visual inicial. Formatos diferentes de caneca e squeeze ainda utilizam uma prévia ilustrativa simplificada.</div>
-        <div class="action-row"><button id="exportMockup" class="btn primary" type="button">⬇ Salvar mockup PNG</button><button id="backToEditor" class="btn" type="button">✏️ Voltar ao editor</button></div>
-      </div>
-    </section>
+   <section class="view" id="view-products"><div class="page-heading"><div><span class="eyebrow dark">BIBLIOTECA DE PRODUTOS</span><h1>Escolha um produto</h1><p>Toque em um modelo para abrir o editor.</p></div></div><div class="product-grid large-products">
+      <button class="product-tile" data-product="caneca" type="button"><span class="product-icon">☕</span><strong>Caneca tradicional</strong><small>21 × 9,7 cm</small></button>
+      <button class="product-tile" data-product="squeeze" type="button"><span class="product-icon">♧</span><strong>Squeeze 600 ml</strong><small>24 × 15 cm</small></button>
+      <button class="product-tile" data-product="chopp" type="button"><span class="product-icon">🍺</span><strong>Caneca de chopp</strong><small>20,5 × 14,5 cm</small></button>
+      <button class="product-tile" data-product="chaveiro" type="button"><span class="product-icon">◈</span><strong>Chaveiro</strong><small>5 × 5 cm</small></button>
+    </div><div class="notice">Mais modelos e templates de produtos serão adicionados durante os testes.</div></section>
 
-    <section class="view" id="view-preco">
-      <div class="card"><div class="card-head"><div><h2>Calculadora de orçamento</h2><p>Exemplo de preço para um produto personalizado.</p></div></div>
-        <div class="control-grid"><div class="field"><label for="productCost">Custo do produto (R$)</label><input id="productCost" type="number" min="0" step="0.01" value="12"/></div><div class="field"><label for="printingCost">Custo da personalização (R$)</label><input id="printingCost" type="number" min="0" step="0.01" value="3"/></div></div>
-        <div class="control-grid"><div class="field"><label for="extraCost">Outros custos (R$)</label><input id="extraCost" type="number" min="0" step="0.01" value="0"/></div><div class="field"><label for="margin">Lucro sobre o custo (%)</label><input id="margin" type="number" min="0" step="1" value="100"/></div></div>
-        <div class="pricing-result"><span>Preço de venda sugerido</span><strong id="salePrice">R$ 30,00</strong><small id="priceExplanation">Custo R$ 15,00 · Lucro R$ 15,00</small></div>
-        <div class="action-row"><button id="copyPrice" class="btn primary" type="button">📋 Copiar orçamento</button></div>
-      </div>
-    </section>
+   <section class="view" id="view-preco"><div class="page-heading"><div><span class="eyebrow dark">PRECIFICAÇÃO</span><h1>Orçamento</h1><p>Descubra seu preço de venda em segundos.</p></div></div><section class="card"><div class="card-head"><div><h2>Custos do produto</h2><p>Preencha os valores para calcular.</p></div></div>
+       <div class="control-grid"><div class="field"><label for="productCost">Custo do produto (R$)</label><input id="productCost" type="number" min="0" step="0.01" value="12" inputmode="decimal"></div><div class="field"><label for="printingCost">Personalização (R$)</label><input id="printingCost" type="number" min="0" step="0.01" value="3" inputmode="decimal"></div></div>
+       <div class="control-grid"><div class="field"><label for="extraCost">Outros custos (R$)</label><input id="extraCost" type="number" min="0" step="0.01" value="0" inputmode="decimal"></div><div class="field"><label for="margin">Lucro sobre o custo (%)</label><input id="margin" type="number" min="0" step="1" value="100" inputmode="decimal"></div></div>
+       <div class="pricing-result"><span>Preço sugerido de venda</span><strong id="salePrice">R$ 30,00</strong><small id="priceExplanation">Custo R$ 15,00 · Lucro R$ 15,00</small></div><div class="action-row"><button id="copyPrice" class="btn primary" type="button">▤ Copiar orçamento</button></div>
+     </section></section>
 
-    <section class="card export-card"><div class="card-head"><div><h2>Exportar para impressão</h2><p>Arte plana, sem mockup, no tamanho do produto.</p></div></div>
-      <div class="export-details"><span>Formato <b id="exportSize">210 × 97 mm</b></span><span>Resolução <b id="exportPixels">2480 × 1146 px</b></span></div>
-      <div class="field"><label for="exportOrientation">Como deseja salvar a arte?</label>
-        <select id="exportOrientation" aria-describedby="orientationHelp">
-          <option value="normal">NORMAL — texto e imagens na posição correta</option>
-          <option value="mirrored">ESPELHADA — para transferência sublimática</option>
-        </select>
-      </div>
-      <div class="export-mode" id="orientationHelp"><strong id="orientationTitle">Exportação NORMAL</strong><span id="orientationDescription">Indicada para apresentar, compartilhar ou imprimir quando seu fluxo de impressão já faz o espelhamento.</span></div>
-      <div class="export-preview"><div class="export-preview-label">Prévia exata da orientação do arquivo</div><canvas id="exportPreview" width="600" height="277" aria-label="Prévia do arquivo que será exportado"></canvas></div>
-      <div class="action-row"><button class="btn primary" id="downloadPng" type="button">⬇ Salvar PNG</button><button class="btn" id="downloadPdf" type="button">⬇ Salvar PDF</button></div>
-      <div class="notice"><b>Atenção:</b> o PNG terá resolução física de referência de 300 DPI, e o PDF terá as medidas da estampa. Na impressora, utilize escala 100% e confira as margens. Selecione espelhamento somente quando necessário no seu processo; não espelhe duas vezes. Esta versão <b>não aplica perfis ICC</b> nem garante fidelidade de cores na sublimação.</div>
-    </section>
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <footer>🐻 Tio Urso Studio · Alpha experimental · Não é um produto comercial</footer>
+   <section class="view" id="view-export"><div class="page-heading"><div><span class="eyebrow dark">PREPARAR IMPRESSÃO</span><h1>Exportar sua arte</h1><p>Confira a orientação antes de salvar.</p></div></div>
+     <section class="card export-card"><div class="export-details"><div><small>Medida da estampa</small><strong id="exportSize">210 × 97 mm</strong></div><div><small>Resolução 300 DPI</small><strong id="exportPixels">2480 × 1146 px</strong></div></div>
+       <div class="field"><label>Orientação do arquivo</label><div class="orientation-switch" role="group" aria-label="Orientação da exportação"><button type="button" class="orient-btn active" data-orient="normal">✓ Normal</button><button type="button" class="orient-btn" data-orient="mirrored">⇄ Espelhada</button></div><select id="exportOrientation" hidden><option value="normal">Normal</option><option value="mirrored">Espelhada</option></select></div>
+       <div class="export-mode" id="orientationHelp"><strong id="orientationTitle">Exportação NORMAL</strong><span id="orientationDescription">Texto na posição correta para apresentação e compartilhamento.</span></div>
+       <div class="export-preview"><div class="preview-bar"><span>PRÉVIA DO ARQUIVO FINAL</span><strong id="previewMode">NORMAL</strong></div><canvas id="exportPreview" width="620" height="286" aria-label="Prévia da estampa exatamente na orientação de exportação"></canvas><p>O que você vê aqui é a orientação que será salva em PNG ou PDF.</p></div>
+       <div class="action-row"><button id="downloadPng" class="btn primary" type="button">⇩ Exportar PNG</button><button id="downloadPdf" class="btn" type="button">⇩ Exportar PDF</button></div><div class="notice"><strong>Para sublimação:</strong> espelhe apenas quando necessário e desative o espelhamento adicional no software de impressão. Esta Alpha não aplica perfil ICC e não garante as cores finais. Para imprimir no tamanho certo, desative “ajustar à página” no diálogo de impressão.</div>
+     </section><button type="button" class="btn ghost full-cta" data-goto="editor">← Voltar ao editor</button>
+   </section>
+   <footer>🐻 Tio Urso Studio • Alpha 0.3 experimental • Teste de impressão obrigatório</footer>
   </main>
-  <script src="app.js?v=02" defer></script>
+ </div>
+ <div class="sheet-overlay" id="fontOverlay" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Galeria de fontes"><div class="sheet-head"><div><small>PERSONALIZE SEU TEXTO</small><h2>Escolher fonte</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar fontes">✕</button></div><input id="fontSearch" class="search-input" type="search" placeholder="Buscar fonte pelo nome…"><div class="font-categories"><button type="button" class="font-category active" data-font-category="Todas">Todas</button><button type="button" class="font-category" data-font-category="Divertidas">Divertidas</button><button type="button" class="font-category" data-font-category="Elegantes">Elegantes</button><button type="button" class="font-category" data-font-category="Manuscritas">Manuscritas</button><button type="button" class="font-category" data-font-category="Fortes">Fortes</button></div><div id="fontGallery" class="font-gallery"></div><button type="button" class="btn full-cta" id="fontImportAction">＋ Importar fonte TTF/OTF</button><p class="sheet-note">Fontes online precisam de internet ao carregar. Para uso comercial, confira a licença das fontes importadas.</p></section></div>
+ <div class="sheet-overlay" id="colorOverlay" hidden><section class="sheet color-sheet" role="dialog" aria-modal="true" aria-label="Paleta de cores"><div class="sheet-head"><div><small>PERSONALIZE AS CORES</small><h2>Escolher cor</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar cores">✕</button></div><div class="swatch-title">Paleta de cores</div><div class="swatch-grid" id="colorSwatches"></div><div class="swatch-title">Cores recentes</div><div class="swatch-grid recent" id="recentSwatches"></div><div class="custom-color"><div class="field"><label for="hexColor">Código HEX</label><input id="hexColor" maxlength="7" placeholder="#00A6B9" autocapitalize="characters"></div><label class="color-native"><span>Personalizada</span><input id="nativeColor" type="color" value="#0797ad"></label></div><div class="color-preview-bar"><span id="selectedColorChip"></span><strong id="selectedColorLabel">#0797AD</strong></div><button class="btn primary full-cta" id="applyColor" type="button">Aplicar cor</button></section></div>
+ <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
