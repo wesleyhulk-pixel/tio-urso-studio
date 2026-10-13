@@ -41,7 +41,7 @@
 .welcome-mascot{position:absolute;width:26%;max-width:190px;max-height:230px;object-fit:cover;object-position:top;right:4%;top:20px;border-radius:24px;mix-blend-mode:normal;box-shadow:0 8px 30px #061a3044}
 .welcome p{max-width:410px}
 .welcome h1{font-size:clamp(28px,4.2vw,45px)}
-.mockup-stage{position:relative;isolation:isolate;min-height:220px;background:radial-gradient(ellipse at 50% 60%,#fafcfd,#e4f0f6 90%)}
+.mockup-stage{position:relative;isolation:isolate;min-height:220px;background:linear-gradient(180deg,#eef5f9 0%,#ebf2f6 64%,#dac7b0 64%,#caa884 78%,#a87952 100%)}
 .mockup-stage canvas{width:100%;max-width:100%;height:auto;aspect-ratio:1100/660}
 .mockup-stage canvas#mock3dCanvas{touch-action:none;cursor:grab}
 .mockup-stage canvas#mock3dCanvas:active{cursor:grabbing}

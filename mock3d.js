@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5 — visualização tridimensional WebGL local.
+/* Tio Urso Studio Alpha 0.5.2 — mockup 3D corrigido, com orientação lateral coerente e alça mais arredondada.
  * Geometria gerada no próprio aparelho, sem dependências externas. */
 (() => {
 'use strict';
@@ -44,20 +44,20 @@ function createTioMock3D(canvas){
    const p=(r,t)=>[r*Math.sin(t),y,r*Math.cos(t)];quad(dst,p(outer,a),p(outer,b),p(inner,b),p(inner,a),matNormal);}
  }
  function cylinder(dst, rBottom,rTop,bottom,top,{inward=false,uv=false}={}){
-  const N=150;for(let j=0;j<N;j++){
+  const N=170;for(let j=0;j<N;j++){
    const a=-Math.PI+j/N*Math.PI*2,b=-Math.PI+(j+1)/N*Math.PI*2;
    const rr=(phi,r,y)=>[Math.sin(phi)*r,y,Math.cos(phi)*r];
    const normal=[Math.sin((a+b)/2),.04,Math.cos((a+b)/2)].map(v=>v*(inward?-1:1));
-   const uvFn=x=>uv?(x+Math.PI*1.25)/(Math.PI*1.5):-1;
+   const uvFn=x=>uv?((x+Math.PI)/(Math.PI*2)):-1;
    quad(dst,rr(a,rBottom,bottom),rr(b,rBottom,bottom),rr(b,rTop,top),rr(a,rTop,top),normal,[[uvFn(a),0],[uvFn(b),0],[uvFn(b),1],[uvFn(a),1]]);
   }
  }
  function tube(dst,radius,height){
-  const rings=56,sides=14;
-  function center(t){const bulge=Math.sin(Math.PI*t);return [radius-.07+.76*Math.pow(bulge,.85),height*.27-height*.54*t,0]}
+  const rings=76,sides=22;
+  function center(t){const bulge=Math.sin(Math.PI*t);return [radius-.05+.69*Math.pow(bulge,.92),height*.25-height*.50*t,0]}
   for(let j=0;j<rings;j++){
    const t=j/rings,t2=(j+1)/rings;
-   const p=center(t),q=center(t2),small=.15;
+   const p=center(t),q=center(t2),small=.165;
    const tA=center(Math.max(0,t-.001)),tB=center(Math.min(1,t+.001));
    const norm=(x,y)=>{const len=Math.hypot(x,y)||1;return [x/len,y/len]};
    let tangent=norm(tB[0]-tA[0],tB[1]-tA[1]),perp=[-tangent[1],tangent[0]];
@@ -98,12 +98,12 @@ function createTioMock3D(canvas){
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();wasLost=true;});
  function render(kind,art,angle){if(wasLost)return;const config=meshCache.get(kind)||makeProduct(kind);meshCache.set(kind,config);
   gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  const alignedYaw=(angle+90)*Math.PI/180;
+  const alignedYaw=(90-angle)*Math.PI/180;
   gl.uniform1f(yy,alignedYaw);gl.uniform1f(aspect,canvas.width/canvas.height);
   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,art);
   // Renderizador WebGL de malha 3D: o corpo e a alça giram juntos.
-  // Offset de 90° para que a frente da caneca fique sem a alça aparente,
-  // deixando a alça atrás no modo 'Frente' e lateral nos modos esquerdo/direito.
+  // A orientação foi ajustada para que: frente = alça atrás,
+  // lado esquerdo = alça à esquerda, lado direito = alça à direita.
   draw(config.body,[1,1,1],true);
   draw(config.inside,[.74,.79,.84],false);
   draw(config.trim,kind==='squeeze'?[.20,.24,.29]:[.96,.975,.99],false);

@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5.1 — interface mobile, home visual, produtos corrigidos e mockup ajustado. */
+/* Tio Urso Studio Alpha 0.5.2 — mockup corrigido com cenário de mesa, alça refinada e rotação coerente. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -193,13 +193,18 @@ function artworkCanvas(w,h,mirror=false){
 // Alpha 0.4: prévia 2D de canecas com curvatura por coluna e vista parcial ajustável.
 let mockAngle=0;
 function stageGradient(g){
- const grad=g.createLinearGradient(0,0,1100,660);
- grad.addColorStop(0,'#eaf2f7');grad.addColorStop(.52,'#f7fafc');grad.addColorStop(1,'#dce9f2');
- g.fillStyle=grad;g.fillRect(0,0,1100,660);
- const wall=g.createLinearGradient(0,460,0,660);wall.addColorStop(0,'rgba(165,191,208,.0)');wall.addColorStop(1,'rgba(172,193,205,.25)');
- g.fillStyle=wall;g.fillRect(0,450,1100,210);
- g.fillStyle='rgba(81,110,128,.14)';g.beginPath();g.ellipse(550,587,313,32,0,0,Math.PI*2);g.fill();
- g.fillStyle='rgba(74,119,147,.045)';g.beginPath();g.ellipse(550,581,260,17,0,0,Math.PI*2);g.fill();
+ const wall=g.createLinearGradient(0,0,0,660);
+ wall.addColorStop(0,'#eff6fa');wall.addColorStop(.58,'#edf4f8');wall.addColorStop(.78,'#e6eef4');wall.addColorStop(1,'#d7e4ec');
+ g.fillStyle=wall;g.fillRect(0,0,1100,660);
+ const table=g.createLinearGradient(0,455,0,660);
+ table.addColorStop(0,'#d6c4ad');table.addColorStop(.18,'#cfb696');table.addColorStop(.55,'#b88f66');table.addColorStop(1,'#9a6f49');
+ g.fillStyle=table;g.fillRect(0,468,1100,192);
+ g.fillStyle='rgba(255,255,255,.22)';
+ for(let i=0;i<7;i++){g.fillRect(0,484+i*22,1100,2);}
+ const shine=g.createLinearGradient(0,438,0,500);shine.addColorStop(0,'rgba(255,255,255,.34)');shine.addColorStop(1,'rgba(255,255,255,0)');
+ g.fillStyle=shine;g.fillRect(0,430,1100,74);
+ g.fillStyle='rgba(78,58,40,.17)';g.beginPath();g.ellipse(550,532,325,26,0,0,Math.PI*2);g.fill();
+ g.fillStyle='rgba(66,53,39,.08)';g.beginPath();g.ellipse(550,532,256,13,0,0,Math.PI*2);g.fill();
 }
 function drawWrappedTexture(g,source,left,right,top,bottom,angle){
  // Image width covers approx. 275° of cup circumference with an unprintable handle gap.
@@ -264,10 +269,10 @@ function renderMockup(){
  const handleX=546+195*Math.sin(radians);
  const frontHandle=Math.cos(radians)<-.25;
  function drawFallbackHandle(){
-  const xr=Math.max(28,50+78*Math.abs(Math.sin(radians))),yc=362;
-  g.save();g.shadowColor='rgba(25,57,83,.19)';g.shadowBlur=13;
-  g.lineWidth=37;g.strokeStyle='#91a7b5';g.beginPath();g.ellipse(handleX,yc,xr,135,0,0,Math.PI*2);g.stroke();g.restore();
-  g.strokeStyle='#fafdff';g.lineWidth=28;g.beginPath();g.ellipse(handleX,yc,xr*.82,117,0,0,Math.PI*2);g.stroke();
+  const xr=Math.max(34,56+70*Math.abs(Math.sin(radians))),yc=362;
+  g.save();g.shadowColor='rgba(25,57,83,.17)';g.shadowBlur=12;
+  g.lineWidth=34;g.lineCap='round';g.strokeStyle='#95adbb';g.beginPath();g.ellipse(handleX,yc,xr,128,0,0,Math.PI*2);g.stroke();g.restore();
+  g.strokeStyle='#fbfdff';g.lineWidth=24;g.lineCap='round';g.beginPath();g.ellipse(handleX,yc,xr*.82,111,0,0,Math.PI*2);g.stroke();
  }
  if(!frontHandle)drawFallbackHandle();
  const left=304,right=789;
