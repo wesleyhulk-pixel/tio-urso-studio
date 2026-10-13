@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.1 — protótipo offline, sem libs ou serviços externos. */
+/* Tio Urso Studio Alpha 0.2 — protótipo offline, sem libs ou serviços externos. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -10,22 +10,26 @@ const PRODUCTS = {
 };
 const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
-let state = {product:'caneca',bg:'#ffffff',items:[],selected:null};
+let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{}};
 const imageCache = new Map();
-let drag = null, toastHandle = null, seq = 0;
+let drag = null, toastHandle = null, seq = 0, previewQueued=false;
+const fontSelector=$('fontFamily');
+const exportChoice=$('exportOrientation');
+const exportPreview=$('exportPreview');
 const money = value => Number(value || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const mmtoPx = (mm,dpi=300) => Math.round(mm/25.4*dpi);
 const product = () => PRODUCTS[state.product];
 const artH = () => Math.round(1000 * product().h/product().w);
 function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastHandle);toastHandle=setTimeout(()=>el.classList.remove('show'),3300);}
 function updateMeasurements(){const p=product();$('dims').textContent=`${p.w} × ${p.h} mm`;$('exportSize').textContent=`${p.w} × ${p.h} mm`;$('exportPixels').textContent=`${mmtoPx(p.w)} × ${mmtoPx(p.h)} px`;}
+function canvasFont(it){const family=String(it.font||'Arial').replace(/[\"\\]/g,'');return `bold ${it.fontSize||65}px \"${family}\"`;}
 function itemDimensions(it){
- if(it.kind==='text'){const size=it.fontSize||65;ctx.save();ctx.font=`bold ${size}px "${it.font||'Arial'}"`;const w=ctx.measureText(it.text||' ').width;ctx.restore();return {w:Math.max(w,20),h:size*1.18};}
+ if(it.kind==='text'){const size=it.fontSize||65;ctx.save();ctx.font=canvasFont(it);const w=ctx.measureText(it.text||' ').width;ctx.restore();return {w:Math.max(w,20),h:size*1.18};}
  const img=imageCache.get(it.id);return {w:it.baseW||330,h:it.baseH||(img?330*img.naturalHeight/img.naturalWidth:200)};
 }
 function drawElement(g,it,selection=false){
  const {w,h}=itemDimensions(it);g.save();g.translate(it.x,it.y);g.rotate((it.rotation||0)*Math.PI/180);g.scale(it.scale||1,it.scale||1);
- if(it.kind==='text'){g.fillStyle=it.color||'#123b62';g.font=`bold ${it.fontSize||65}px "${it.font||'Arial'}"`;g.textBaseline='middle';g.textAlign='center';g.fillText(it.text||' ',0,0);}
+ if(it.kind==='text'){g.fillStyle=it.color||'#123b62';g.font=canvasFont(it);g.textBaseline='middle';g.textAlign='center';g.fillText(it.text||' ',0,0);}
  else{const img=imageCache.get(it.id);if(img?.complete&&img.naturalWidth)g.drawImage(img,-w/2,-h/2,w,h);}
  if(selection){g.strokeStyle='#00a1b6';g.lineWidth=2/(it.scale||1);g.setLineDash([9,6]);g.strokeRect(-w/2-9,-h/2-9,w+18,h+18);g.setLineDash([]);g.fillStyle='#00a1b6';g.fillRect(w/2+1,h/2+1,14,14);}
  g.restore();
@@ -35,12 +39,12 @@ function paintSurface(target,selection=false){
  target.fillStyle=state.bg;target.fillRect(0,0,1000,H);
  for(const it of state.items) drawElement(target,it,selection&&it.id===state.selected);
 }
-function render(){paintSurface(ctx,true);updateControls();}
+function render(){paintSurface(ctx,true);updateControls();queueExportPreview();}
 function selected(){return state.items.find(it=>it.id===state.selected);}
 function updateControls(){
  const it=selected();$('selectionControls').hidden=!it;if(!it)return;
  $('textControls').hidden=it.kind!=='text';$('colorControl').hidden=it.kind!=='text';$('fontFamily').parentElement.hidden=it.kind!=='text';
- if(it.kind==='text'){$('textValue').value=it.text;$('textColor').value=it.color;$('fontFamily').value=it.font||'Arial';}
+ if(it.kind==='text'){$('textValue').value=it.text;$('textColor').value=it.color;$('fontFamily').value=it.font||'Arial';updateFontSample(it.font||'Arial');}
  $('elementScale').value=Math.round((it.scale||1)*100);$('scaleValue').textContent=Math.round((it.scale||1)*100)+'%';
  $('elementRotation').value=it.rotation||0;$('rotationValue').textContent=(it.rotation||0)+'°';
 }
@@ -70,7 +74,39 @@ $('imagePicker').addEventListener('change',async ev=>{await addImage(ev.target.f
 $('removeSelected').addEventListener('click',()=>{if(!selected()){toast('Toque em um elemento para selecioná-lo.');return;}imageCache.delete(state.selected);state.items=state.items.filter(it=>it.id!==state.selected);state.selected=null;render();});
 $('textValue').addEventListener('input',ev=>changeItem(it=>{it.text=ev.target.value;}));
 $('textColor').addEventListener('input',ev=>changeItem(it=>{it.color=ev.target.value;}));
-$('fontFamily').addEventListener('change',ev=>changeItem(it=>{it.font=ev.target.value;}));
+function updateFontSample(family){$('fontSample').style.fontFamily=`"${String(family).replace(/["\\]/g,'')}", sans-serif`;}
+async function requestFontLoad(family){
+ try{if(document.fonts&&family){await document.fonts.load(`bold 64px "${String(family).replace(/["\\]/g,'')}"`);render();}}catch(_){render();}
+}
+function refreshFontOptions(){
+ for(const opt of [...fontSelector.options])if(opt.dataset.custom)opt.remove();
+ for(const [family,info] of Object.entries(state.customFonts||{})){
+  const opt=new Option('★ '+info.label,family);opt.dataset.custom='1';fontSelector.add(opt);
+ }
+}
+async function readAsDataUrl(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Não foi possível ler a fonte.'));reader.readAsDataURL(file);});}
+async function loadCustomFont(family,src){
+ if(!('FontFace' in window))throw new Error('O navegador não suporta importação de fontes.');
+ const fontFace=new FontFace(family,`url("${src}")`);
+ await fontFace.load();document.fonts.add(fontFace);
+}
+$('importFont').addEventListener('click',()=>$('fontPicker').click());
+$('fontPicker').addEventListener('change',async ev=>{
+ const file=ev.target.files[0];ev.target.value='';if(!file)return;
+ try{
+  if(!/\.(ttf|otf)$/i.test(file.name))throw new Error('Escolha uma fonte TTF ou OTF.');
+  if(file.size>2*1024*1024)throw new Error('A fonte deve ter até 2 MB.');
+  const src=await readAsDataUrl(file),family='TUS_'+Date.now().toString(36);
+  await loadCustomFont(family,src);
+  state.customFonts[family]={label:file.name.replace(/\.(ttf|otf)$/i,''),src};
+  refreshFontOptions();changeItem(it=>{it.font=family;});
+  toast('Fonte importada. Salve o projeto para preservá-la.');
+ }catch(err){toast('Falha na fonte: '+err.message);}
+});
+$('fontFamily').addEventListener('change',ev=>{
+ const family=ev.target.value;changeItem(it=>{it.font=family;});
+ updateFontSample(family);requestFontLoad(family);
+});
 $('elementScale').addEventListener('input',ev=>changeItem(it=>{it.scale=+ev.target.value/100;}));
 $('elementRotation').addEventListener('input',ev=>changeItem(it=>{it.rotation=+ev.target.value;}));
 $('layerUp').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<0||i===state.items.length-1)return;[state.items[i],state.items[i+1]]=[state.items[i+1],state.items[i]];render();});
@@ -113,7 +149,7 @@ function renderMockup(){
  g.strokeStyle='rgba(58,90,115,.18)';g.lineWidth=4;g.beginPath();g.moveTo(311,520);g.quadraticCurveTo(548,574,765,520);g.stroke();
 }
 function roundPath(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
-function safeFilename(ext){return 'tio-urso-'+state.product+'-'+new Date().toISOString().slice(0,10)+'.'+ext;}
+function safeFilename(ext,mode=''){return 'tio-urso-'+state.product+'-'+new Date().toISOString().slice(0,10)+(mode?'-'+mode:'')+'.'+ext;}
 function downloadBlob(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),45000);}
 function toBlob(canvas,type='image/png',q=.94){return new Promise((res,rej)=>canvas.toBlob(blob=>blob?res(blob):rej(new Error('Falha ao gerar imagem.')),type,q));}
 // Adiciona chunk PNG pHYs declarando ~300 DPI (11811 px/m) antes do primeiro IDAT.
@@ -128,10 +164,11 @@ async function png300(blob){const raw=new Uint8Array(await blob.arrayBuffer());i
  while(i+12<=raw.length){const len=u32(raw,i),end=i+12+len;if(end>raw.length)break;const type=String.fromCharCode(...raw.subarray(i+4,i+8));if(!inserted&&type==='IDAT'){chunks.push(chunk);inserted=true;}if(type!=='pHYs')chunks.push(raw.subarray(i,end));i=end;}
  return new Blob(chunks,{type:'image/png'});
 }
-async function pngExport(){try{const c=artworkCanvas(mmtoPx(product().w),mmtoPx(product().h),$('mirrorImage').checked);const blob=await png300(await toBlob(c));downloadBlob(blob,safeFilename('png'));toast('PNG gerado nas dimensões do produto.');}catch(e){toast('Falha ao exportar PNG: '+e.message);}}
+async function pngExport(){try{await ensureProjectFonts();const mode=exportChoice.value==='mirrored'?'espelhada':'normal';const c=artworkCanvas(mmtoPx(product().w),mmtoPx(product().h),mode==='espelhada');const blob=await png300(await toBlob(c));downloadBlob(blob,safeFilename('png',mode));toast('PNG '+mode+' gerado nas dimensões do produto.');}catch(e){toast('Falha ao exportar PNG: '+e.message);}}
 // PDF simples: página do tamanho exato da estampa; sem biblioteca/CDN.
 async function pdfExport(){try{
- const p=product(),c=artworkCanvas(mmtoPx(p.w),mmtoPx(p.h),$('mirrorImage').checked);
+ await ensureProjectFonts();const mode=exportChoice.value==='mirrored'?'espelhada':'normal';
+ const p=product(),c=artworkCanvas(mmtoPx(p.w),mmtoPx(p.h),mode==='espelhada');
  const jpeg=new Uint8Array(await (await toBlob(c,'image/jpeg',.96)).arrayBuffer());
  const enc=new TextEncoder(),sections=[];let bytes=0;
  function append(data){sections.push(data);bytes+=data.length;}
@@ -146,7 +183,7 @@ async function pdfExport(){try{
  obj(4,()=>{t(`<< /Length ${commands.length} >>\nstream\n`);append(commands);t('endstream');});
  obj(5,()=>{t(`<< /Type /XObject /Subtype /Image /Width ${c.width} /Height ${c.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);append(jpeg);t('\nendstream');});
  const xref=bytes;t('xref\n0 6\n0000000000 65535 f \n');for(let i=1;i<=5;i++)t(String(offsets[i]).padStart(10,'0')+' 00000 n \n');t(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
- downloadBlob(new Blob(sections,{type:'application/pdf'}),safeFilename('pdf'));toast('PDF criado com página do tamanho real da estampa.');
+ downloadBlob(new Blob(sections,{type:'application/pdf'}),safeFilename('pdf',mode));toast('PDF '+mode+' criado em tamanho real.');
  }catch(e){toast('Falha ao exportar PDF: '+e.message);}}
 $('downloadPng').addEventListener('click',pngExport);$('downloadPdf').addEventListener('click',pdfExport);
 $('exportMockup').addEventListener('click',async()=>{try{renderMockup();downloadBlob(await toBlob(mock),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
@@ -155,9 +192,40 @@ function calculate(){const c=['productCost','printingCost','extraCost'].reduce((
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
 $('saveProject').addEventListener('click',()=>{const backup={version:1,...state,selected:null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
 $('openProject').addEventListener('click',()=>$('projectPicker').click());
-$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null};imageCache.clear();for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;updateMeasurements();render();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
+$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{}};
+ for(const [family,info] of Object.entries(data.customFonts||{})){
+  if(!/^TUS_[a-z0-9]+$/i.test(family)||typeof info?.src!=='string'||info.src.length>4000000)continue;
+  try{await loadCustomFont(family,info.src);state.customFonts[family]={label:String(info.label||'Fonte personalizada').slice(0,90),src:info.src};}catch(_){}
+ }
+ refreshFontOptions();imageCache.clear();for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;updateMeasurements();render();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
 $('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';imageCache.clear();$('backgroundColor').value='#ffffff';render();toast('Nova arte em branco.');});
+// Orientação explícita para a impressão e prévia fiel à exportação.
+function renderExportPreview(){
+ if(!exportPreview)return;
+ const width=620,height=Math.max(1,Math.round(width*product().h/product().w));
+ const p=artworkCanvas(width,height,exportChoice.value==='mirrored');
+ exportPreview.width=width;exportPreview.height=height;
+ const g=exportPreview.getContext('2d');g.drawImage(p,0,0);
+}
+function queueExportPreview(){
+ if(previewQueued)return;previewQueued=true;
+ requestAnimationFrame(()=>{previewQueued=false;renderExportPreview();});
+}
+function updateOrientationUI(){
+ const mirrored=exportChoice.value==='mirrored',box=$('orientationHelp');
+ $('orientationTitle').textContent=mirrored?'Exportação ESPELHADA':'Exportação NORMAL';
+ $('orientationDescription').textContent=mirrored?'O arquivo será invertido horizontalmente para transferência. Use somente quando seu processo de impressão exigir; não espelhe duas vezes.':'O arquivo mantém o texto legível. Ideal para cliente, conferência e fluxos nos quais o espelhamento já é feito pela impressão.';
+ box.classList.toggle('mirrored',mirrored);queueExportPreview();
+}
+exportChoice.addEventListener('change',updateOrientationUI);
+// Fontes online podem demorar a carregar. Aguarda antes de salvar, para evitar troca de aparência no PNG/PDF.
+async function ensureProjectFonts(){
+ if(!document.fonts)return;
+ const families=[...new Set(state.items.filter(it=>it.kind==='text').map(it=>it.font||'Arial'))];
+ await Promise.race([Promise.all(families.map(f=>document.fonts.load(`bold 65px "${String(f).replace(/["\\]/g,'')}"`).catch(()=>[]))),new Promise(resolve=>setTimeout(resolve,6500))]);
+}
+document.fonts?.ready?.then(()=>{render();}).catch(()=>{});
 // Inicialização. Sem salvamento remoto nem coleta de dados.
-updateMeasurements();render();calculate();
-if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+updateMeasurements();render();calculate();updateOrientationUI();
+// O modo PWA completo será ativado quando os ícones, manifesto e SW estiverem publicados.
 })();
