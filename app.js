@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.3 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
+/* Tio Urso Studio Alpha 0.4 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -113,7 +113,7 @@ $('layerUp').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.
 $('layerDown').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<=0)return;[state.items[i],state.items[i-1]]=[state.items[i-1],state.items[i]];render();});
 $('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;$('bgColorSample').style.backgroundColor=state.bg;render();});
 $('product').addEventListener('change',ev=>setProduct(ev.target.value));
-function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup')renderMockup();if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
+function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup'){ $('mockControls').hidden=state.product==='chaveiro';renderMockup();}if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
 $('backToEditor').addEventListener('click',()=>switchView('editor'));
 document.querySelectorAll('[data-goto]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.goto)));
@@ -123,32 +123,88 @@ function artworkCanvas(w,h,mirror=false){
  g.save();if(mirror){g.translate(w,0);g.scale(-1,1);}g.scale(w/1000,h/artH());g.fillStyle=state.bg;g.fillRect(0,0,1000,artH());for(const it of state.items)drawElement(g,it,false);g.restore();return off;
 }
 // Simulação 2D de uma estampa em uma superfície cilíndrica, não geometria 3D real.
+// Alpha 0.4: prévia 2D de canecas com curvatura por coluna e vista parcial ajustável.
+let mockAngle=0;
+function stageGradient(g){
+ const grad=g.createLinearGradient(0,0,1100,660);
+ grad.addColorStop(0,'#eaf2f7');grad.addColorStop(.52,'#f7fafc');grad.addColorStop(1,'#dce9f2');
+ g.fillStyle=grad;g.fillRect(0,0,1100,660);
+ const wall=g.createLinearGradient(0,460,0,660);wall.addColorStop(0,'rgba(165,191,208,.0)');wall.addColorStop(1,'rgba(172,193,205,.25)');
+ g.fillStyle=wall;g.fillRect(0,450,1100,210);
+ g.fillStyle='rgba(81,110,128,.14)';g.beginPath();g.ellipse(550,587,313,32,0,0,Math.PI*2);g.fill();
+ g.fillStyle='rgba(74,119,147,.045)';g.beginPath();g.ellipse(550,581,260,17,0,0,Math.PI*2);g.fill();
+}
+function drawWrappedTexture(g,source,left,right,top,bottom,angle){
+ // Image width covers approx. 275° of cup circumference with an unprintable handle gap.
+ // Clip and warp the source as if wrapped around an illustrated cylinder.
+ const width=right-left,spread=275*Math.PI/180,shift=angle*Math.PI/180;
+ const sxHalf=(source.width-1),cy=(top+bottom)/2;
+ for(let x=Math.floor(left);x<right;x+=1){
+   const u=Math.max(-.996,Math.min(.996, (x-left)/width*2-1));
+   const theta=Math.asin(u);
+   const printable=(theta+shift)/spread+.5;
+   if(printable<0||printable>1)continue;
+   const sx=Math.min(sxHalf,Math.max(0,Math.round(printable*sxHalf)));
+   const curve=(1-Math.sqrt(Math.max(0,1-u*u)));
+   const yt=top+curve*16;
+   const yb=bottom-curve*11;
+   g.drawImage(source,sx,0,1,source.height,x,yt,1.8,yb-yt);
+ }
+}
 function renderMockup(){
- const W=1100,H=660;mctx.clearRect(0,0,W,H);const g=mctx;
- g.fillStyle='#edf3f6';g.fillRect(0,0,W,H);
- g.save();g.fillStyle='#d6e2e9';g.beginPath();g.ellipse(550,574,310,35,0,0,Math.PI*2);g.fill();g.restore();
+ const W=1100,H=660,g=mctx;
+ g.clearRect(0,0,W,H);stageGradient(g);
  const source=artworkCanvas(1000,artH());
  if(state.product==='chaveiro'){
-  g.strokeStyle='#a5b1bd';g.lineWidth=20;g.beginPath();g.arc(550,135,63,0,2*Math.PI);g.stroke();
-  g.fillStyle='#b8c4ca';g.fillRect(537,185,26,50);
-  g.save();roundPath(g,360,214,380,340,28);g.clip();g.drawImage(source,360,214,380,340);g.restore();g.strokeStyle='#d7e1e5';g.lineWidth=12;roundPath(g,360,214,380,340,28);g.stroke();return;
+   g.save();g.shadowColor='rgba(26,45,56,.17)';g.shadowBlur=16;g.shadowOffsetY=9;
+   g.fillStyle='#d3dde4';roundPath(g,352,198,396,355,34);g.fill();g.restore();
+   g.strokeStyle='#adbcc5';g.lineWidth=17;g.beginPath();g.arc(550,141,58,0,2*Math.PI);g.stroke();
+   g.fillStyle='#bccbd3';g.fillRect(539,193,22,27);
+   g.save();roundPath(g,366,213,368,325,26);g.clip();g.drawImage(source,366,213,368,325);g.restore();
+   g.strokeStyle='#e6eff3';g.lineWidth=11;roundPath(g,366,213,368,325,26);g.stroke();
+   g.strokeStyle='rgba(255,255,255,.38)';g.lineWidth=5;roundPath(g,375,222,350,307,21);g.stroke();
+   return;
  }
  if(state.product==='squeeze'){
-  g.fillStyle='#202c38';roundPath(g,425,92,250,80,18);g.fill();g.fillStyle='#82919b';roundPath(g,464,170,172,40,9);g.fill();
-  const grd=g.createLinearGradient(420,0,695,0);grd.addColorStop(0,'#c5d6dd');grd.addColorStop(.22,'white');grd.addColorStop(.78,'#f6fcff');grd.addColorStop(1,'#9aafbd');g.fillStyle=grd;roundPath(g,412,201,276,343,26);g.fill();
-  g.save();roundPath(g,425,222,250,292,16);g.clip();for(let i=0;i<250;i+=2){const t=i/250;const width=2;const srcX=Math.floor((.08+t*.84)*source.width);g.drawImage(source,srcX,0,Math.max(1,Math.ceil(source.width*.84/125)),source.height,425+i,222,width+1,292);}const shade=g.createLinearGradient(425,0,675,0);shade.addColorStop(0,'rgba(0,0,0,.27)');shade.addColorStop(.23,'rgba(0,0,0,0)');shade.addColorStop(.75,'rgba(0,0,0,0)');shade.addColorStop(1,'rgba(0,0,0,.25)');g.fillStyle=shade;g.fillRect(425,222,250,292);g.restore();return;
+   // Squeeze: tampa atrás, corpo arredondado com iluminação lateral.
+   g.save();g.fillStyle='#233846';roundPath(g,428,72,244,93,21);g.fill();g.fillStyle='#415563';roundPath(g,447,143,206,63,13);g.fill();g.restore();
+   const metal=g.createLinearGradient(412,0,688,0);
+   metal.addColorStop(0,'#93acba');metal.addColorStop(.19,'#f8fcff');metal.addColorStop(.55,'#fff');metal.addColorStop(.86,'#e7f1f4');metal.addColorStop(1,'#8ba4b5');
+   g.fillStyle=metal;roundPath(g,411,192,278,350,30);g.fill();
+   g.save();roundPath(g,419,207,262,323,18);g.clip();
+   drawWrappedTexture(g,source,420,681,211,523,mockAngle);
+   const shade=g.createLinearGradient(420,0,680,0);
+   shade.addColorStop(0,'rgba(21,40,55,.33)');shade.addColorStop(.12,'rgba(24,42,51,.12)');shade.addColorStop(.33,'rgba(255,255,255,.13)');shade.addColorStop(.62,'rgba(255,255,255,.04)');shade.addColorStop(.9,'rgba(28,47,57,.09)');shade.addColorStop(1,'rgba(16,44,56,.4)');
+   g.fillStyle=shade;g.fillRect(419,205,264,330);g.restore();
+   g.strokeStyle='rgba(235,250,255,.8)';g.lineWidth=6;g.beginPath();g.moveTo(427,208);g.lineTo(427,530);g.stroke();
+   return;
  }
- // Caneca tradicional e caneca de chopp.
- g.strokeStyle='#aebdc8';g.lineWidth=35;g.beginPath();g.ellipse(743,367,110,132,-.05,-Math.PI/2,Math.PI/2);g.stroke();
- g.strokeStyle='#fdfefe';g.lineWidth=23;g.beginPath();g.ellipse(739,365,96,116,-.05,-Math.PI/2,Math.PI/2);g.stroke();
- g.save();g.beginPath();g.moveTo(295,188);g.bezierCurveTo(430,169,663,167,782,186);g.lineTo(764,519);g.bezierCurveTo(615,564,440,561,310,517);g.closePath();g.clip();
- g.fillStyle='#ffffff';g.fillRect(290,160,500,400);
- // Curvatura aplicada por colunas: visual ilustrativo 2D.
- const destX=315,destY=200,destW=449,destH=327;
- for(let i=0;i<destW;i+=2){const t=i/destW,frac=.09+t*.82;g.drawImage(source,Math.floor(frac*source.width),0,Math.max(1,Math.ceil(source.width*.82/(destW/2))),source.height,destX+i,destY,3,destH);}
- const shade=g.createLinearGradient(295,0,782,0);shade.addColorStop(0,'rgba(24,50,78,.38)');shade.addColorStop(.2,'rgba(0,0,0,.07)');shade.addColorStop(.52,'rgba(255,255,255,.12)');shade.addColorStop(.83,'rgba(0,0,0,.09)');shade.addColorStop(1,'rgba(0,0,0,.4)');g.fillStyle=shade;g.fillRect(295,180,490,370);g.restore();
- g.strokeStyle='#dde5ea';g.lineWidth=12;g.beginPath();g.ellipse(539,191,245,27,0,0,2*Math.PI);g.stroke();
- g.strokeStyle='rgba(58,90,115,.18)';g.lineWidth=4;g.beginPath();g.moveTo(311,520);g.quadraticCurveTo(548,574,765,520);g.stroke();
+ // Caneca (chopp/caneca tradicional): alça atrás do corpo e cilindro levemente afunilado.
+ const isChopp=state.product==='chopp';
+ const top=isChopp?138:173,bottom=isChopp?554:538;
+ g.save();g.shadowColor='rgba(25,57,83,.18)';g.shadowBlur=14;g.shadowOffsetX=5;
+ g.lineWidth=37;g.strokeStyle='#91a7b5';g.beginPath();g.ellipse(744,365,111,135,-.06,-Math.PI/2,Math.PI/2);g.stroke();g.restore();
+ g.strokeStyle='#fafdff';g.lineWidth=29;g.beginPath();g.ellipse(740,362,94,119,-.06,-Math.PI/2,Math.PI/2);g.stroke();
+ const left=304,right=789;
+ const bodyGrad=g.createLinearGradient(left,0,right,0);
+ bodyGrad.addColorStop(0,'#b3c5d1');bodyGrad.addColorStop(.14,'#f7fcff');bodyGrad.addColorStop(.5,'#fff');bodyGrad.addColorStop(.84,'#f4f9fc');bodyGrad.addColorStop(1,'#95adbb');
+ g.beginPath();g.moveTo(left,top+11);g.bezierCurveTo(430,top-12,670,top-15,right,top+12);
+ g.lineTo(right-14,bottom-8);g.bezierCurveTo(672,bottom+28,422,bottom+28,left+14,bottom-8);g.closePath();
+ g.fillStyle=bodyGrad;g.fill();
+ g.save();g.clip();
+ // Estampa dentro de área útil: sem cobrir bordas e sem inverter texto.
+ const printTop=top+33,printBottom=bottom-12;
+ drawWrappedTexture(g,source,left+14,right-14,printTop,printBottom,mockAngle);
+ const shadow=g.createLinearGradient(left,0,right,0);
+ shadow.addColorStop(0,'rgba(14,46,67,.46)');shadow.addColorStop(.08,'rgba(14,46,67,.20)');
+ shadow.addColorStop(.26,'rgba(255,255,255,.05)');shadow.addColorStop(.49,'rgba(255,255,255,.15)');
+ shadow.addColorStop(.72,'rgba(0,0,0,.01)');shadow.addColorStop(.91,'rgba(31,51,63,.17)');shadow.addColorStop(1,'rgba(18,46,64,.47)');
+ g.fillStyle=shadow;g.fillRect(left,top-2,right-left,bottom-top+42);
+ g.restore();
+ // Glossy ceramic rim: opening and edges.
+ g.strokeStyle='#d6e3ea';g.lineWidth=13;g.beginPath();g.ellipse(546,top+12,245,29,0,0,Math.PI*2);g.stroke();
+ g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=6;g.beginPath();g.ellipse(546,top+10,238,24,0,Math.PI*.08,Math.PI*.88);g.stroke();
+ g.strokeStyle='rgba(83,118,138,.15)';g.lineWidth=3;g.beginPath();g.moveTo(left+15,bottom-7);g.quadraticCurveTo(545,bottom+31,right-15,bottom-7);g.stroke();
 }
 function roundPath(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 function safeFilename(ext,mode=''){return 'tio-urso-'+state.product+'-'+new Date().toISOString().slice(0,10)+(mode?'-'+mode:'')+'.'+ext;}
@@ -229,7 +285,7 @@ async function ensureProjectFonts(){
 }
 document.fonts?.ready?.then(()=>{render();}).catch(()=>{});
 
-// Alpha 0.3: galeria de fontes feita para toque, sem depender do seletor nativo Android.
+// Alpha 0.4: galeria de fontes feita para toque, sem depender do seletor nativo Android.
 const fontCategories = {
  'Arial':'Fortes','Georgia':'Elegantes','Verdana':'Fortes','Impact':'Fortes','Trebuchet MS':'Fortes',
  'Courier New':'Fortes','Times New Roman':'Elegantes','Anton':'Fortes','Bebas Neue':'Fortes',
@@ -295,6 +351,19 @@ $('applyColor').addEventListener('click',()=>{
  try{localStorage.setItem('tuStudioRecentColors',JSON.stringify(recentColors));}catch(_){}
  closeSheet();toast('Cor aplicada: '+chosenColor);
 });
+
+
+// Controle de orientação da estampa no mockup. Não altera a arte nem seu arquivo de impressão.
+const mockAngleInput=$('mockAngle');
+function updateMockAngle(angle){
+ mockAngle=Math.max(-120,Math.min(120,Number(angle)||0));
+ mockAngleInput.value=String(mockAngle);
+ $('mockAngleLabel').textContent=mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°';
+ document.querySelectorAll('[data-mock-angle]').forEach(el=>el.classList.toggle('active',Number(el.dataset.mockAngle)===mockAngle));
+ renderMockup();
+}
+mockAngleInput.addEventListener('input',e=>updateMockAngle(e.target.value));
+document.querySelectorAll('[data-mock-angle]').forEach(button=>button.addEventListener('click',()=>updateMockAngle(button.dataset.mockAngle)));
 
 // Inicialização. Sem salvamento remoto nem coleta de dados.
 updateMeasurements();$('bgColorSample').style.backgroundColor=state.bg;render();calculate();updateOrientationUI();

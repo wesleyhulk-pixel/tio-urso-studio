@@ -1,8 +1,10 @@
-# Tio Urso Studio — Alpha 0.3
+# Tio Urso Studio — Alpha 0.4
 
 **Versão de testes**, em HTML, CSS e JavaScript, projetada para funcionar diretamente no navegador do celular.
 
 ## O que mudou
+- Mockup 2D de caneca com curvatura visual melhorada e controle de regiões (frente e lados), mantendo a arte de impressão independente.
+- Identificação de versão 0.4 no cabeçalho; importante verificar para evitar cache de telas antigas.
 - Nova interface adaptável, baseada na arte conceito: Início, Editor, Mockup, Produtos e Orçamento.
 - Galeria visual com **28 fontes** (algumas usam Google Fonts e exigem conexão), busca e categorias; importação de arquivos TTF/OTF próprios.
 - Paleta de **48 cores**, campo hexadecimal, seletor de cores e histórico local de cores recentes.
@@ -11,7 +13,7 @@
 - Editor de imagem e texto por toque, camadas simples, projeto JSON e mockup **2D ilustrativo**, além de calculadora de custos.
 
 ## Publicação via GitHub Pages
-Coloque os quatro arquivos **index.html, app.js, style.css e README.md** na raiz (branch main), substituindo as versões antigas. Aguarde a publicação. Abra a URL normal com `?v=03` no final para reduzir a chance de cache do navegador.
+Coloque os quatro arquivos **index.html, app.js, style.css e README.md** na raiz (branch main), substituindo as versões antigas. Aguarde a publicação. Abra a URL normal com `?v=04` no final para reduzir a chance de cache do navegador.
 
 **Atenção:** envie os arquivos individuais após extrair o ZIP, **não** o ZIP fechado nem a pasta inteira. O código-fonte de um projeto publicado no GitHub Pages é visível ao visitante.
 

@@ -5,3 +5,15 @@
 @media(max-width:800px){.app-layout{display:block;padding:0 0 85px}.tabs{position:fixed;z-index:40;bottom:0;left:0;right:0;top:auto;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border-radius:17px 17px 0 0;border:0;border-top:1px solid #dfebf2;box-shadow:0 -5px 20px #0f3f5915;padding:7px 7px calc(7px + env(safe-area-inset-bottom))}.tab{display:flex;flex-direction:column;gap:2px;border-radius:11px;align-items:center;justify-content:center;padding:5px 2px;font-size:10px}.tab .tab-icon{font-size:25px;width:auto;line-height:1}.shell{max-width:750px;margin:auto;padding:17px 16px 0}}
 @media(max-width:520px){.header-inner{padding:12px 15px;min-height:67px}.brand-symbol{width:42px;height:42px;font-size:25px}.brand-name strong{font-size:18px}.brand-name small{font-size:8px;letter-spacing:.75px}.alpha-pill{font-size:8px;padding:6px}.shell{padding:14px 12px 0}.welcome{padding:25px 20px;min-height:245px;border-radius:20px}.welcome h1{font-size:27px;letter-spacing:-1.15px}.welcome p{max-width:260px;font-size:12px}.welcome-deco{right:7px;top:60px;font-size:80px}.feature{min-height:143px;padding:15px;border-radius:16px}.feature strong{font-size:14px}.feature small{font-size:11px}.feature-icon{width:42px;height:42px}.section-title{margin-top:23px}.product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:17px;border-radius:17px}.compact-card{padding:15px}.control-grid,.custom-tools{gap:9px}.canvas-surround{padding:9px}.action-row.tool-row .btn{min-width:0;padding:12px 7px;font-size:12px}.action-row .btn{flex:1 1 auto}.picker-btn{padding:9px 7px}.font-selected{font-size:16px}.orientation-switch .orient-btn{font-size:12px}.export-details strong{font-size:12px}.sheet{padding:18px 15px calc(24px + env(safe-area-inset-bottom))}.font-option .font-title{font-size:19px}}
 @media(max-width:365px){.brand-name strong{font-size:15px}.alpha-pill{font-size:7px}.welcome-deco{opacity:.12}.font-gallery{grid-template-columns:1fr 1fr}.swatch-grid{grid-template-columns:repeat(7,minmax(0,1fr))}}
+
+/* Alpha 0.4 — ajuste ilustrativo de perspectiva dos mockups */
+.mock-controls{margin:14px 0 4px;background:#f2f9fc;padding:15px;border:1px solid #d9eaf2;border-radius:16px;display:grid;gap:11px}
+.mock-control-header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mock-control-header strong{font-size:13px;color:#13425b}
+.mock-control-header output{font-size:12px;color:#047d96;font-weight:850;white-space:nowrap}
+.mock-buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.mock-buttons button{font-size:11px;border-radius:11px;border:1px solid #c6dce8;background:#fff;color:#305d75;min-height:42px;padding:8px 5px;font-weight:750}
+.mock-buttons button.active{color:white;background:#0d789c;border-color:#0d789c}
+.mock-controls label{font-size:12px;color:#567488;font-weight:700}
+.mock-controls input[type=range]{width:100%;accent-color:#009cac;min-height:25px}
+.mock-controls p{font-size:11px;color:#7a8e9d;line-height:1.45;margin:0}
