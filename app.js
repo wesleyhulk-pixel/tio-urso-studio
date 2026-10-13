@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.4.1 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
+/* Tio Urso Studio Alpha 0.5 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -6,10 +6,16 @@ const PRODUCTS = {
   caneca:{name:'Caneca tradicional',w:210,h:97},
   chopp:{name:'Caneca de chopp',w:205,h:145},
   squeeze:{name:'Squeeze 600 ml',w:240,h:150},
-  chaveiro:{name:'Chaveiro',w:50,h:50}
+  camiseta:{name:'Camiseta (área de estampa)',w:280,h:350},
+  azulejo20:{name:'Azulejo 20 × 20 cm',w:200,h:200},
+  azulejo15:{name:'Azulejo 15 × 15 cm',w:150,h:150},
+  azulejo10:{name:'Azulejo 10 × 10 cm',w:100,h:100}
 };
 const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
+const mock3dCanvas=$('mock3dCanvas');
+const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
+const rotaryProducts=new Set(['caneca','chopp','squeeze']);
 let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{}};
 const imageCache = new Map();
 let drag = null, activeGuides = null, toastHandle = null, seq = 0, previewQueued=false;
@@ -174,7 +180,7 @@ $('layerUp').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.
 $('layerDown').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<=0)return;[state.items[i],state.items[i-1]]=[state.items[i-1],state.items[i]];render();});
 $('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;$('bgColorSample').style.backgroundColor=state.bg;render();});
 $('product').addEventListener('change',ev=>setProduct(ev.target.value));
-function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup'){ $('mockControls').hidden=state.product==='chaveiro';renderMockup();}if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
+function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup'){ $('mockControls').hidden=!rotaryProducts.has(state.product);renderMockup();}if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
 $('backToEditor').addEventListener('click',()=>switchView('editor'));
 document.querySelectorAll('[data-goto]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.goto)));
@@ -213,18 +219,27 @@ function drawWrappedTexture(g,source,left,right,top,bottom,angle){
  }
 }
 function renderMockup(){
+ const three=rotaryProducts.has(state.product)&&mock3d?.supported;
+ mock3dCanvas.hidden=!three;mock.hidden=three;
+ $('mockTypeTag').textContent=three?'3D BETA':'2D';
+ if(three){mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle);return;}
  const W=1100,H=660,g=mctx;
  g.clearRect(0,0,W,H);stageGradient(g);
  const source=artworkCanvas(1000,artH());
- if(state.product==='chaveiro'){
-   g.save();g.shadowColor='rgba(26,45,56,.17)';g.shadowBlur=16;g.shadowOffsetY=9;
-   g.fillStyle='#d3dde4';roundPath(g,352,198,396,355,34);g.fill();g.restore();
-   g.strokeStyle='#adbcc5';g.lineWidth=17;g.beginPath();g.arc(550,141,58,0,2*Math.PI);g.stroke();
-   g.fillStyle='#bccbd3';g.fillRect(539,193,22,27);
-   g.save();roundPath(g,366,213,368,325,26);g.clip();g.drawImage(source,366,213,368,325);g.restore();
-   g.strokeStyle='#e6eff3';g.lineWidth=11;roundPath(g,366,213,368,325,26);g.stroke();
-   g.strokeStyle='rgba(255,255,255,.38)';g.lineWidth=5;roundPath(g,375,222,350,307,21);g.stroke();
-   return;
+ if(state.product==='camiseta'){
+   // Camiseta ilustrativa independente da geometria cilíndrica.
+   g.save();g.shadowBlur=22;g.shadowOffsetY=13;g.shadowColor='rgba(25,61,84,.22)';
+   g.beginPath();g.moveTo(381,118);g.lineTo(466,86);g.quadraticCurveTo(551,129,629,86);g.lineTo(721,117);g.lineTo(851,234);g.lineTo(760,345);g.lineTo(713,300);g.lineTo(718,556);g.lineTo(378,556);g.lineTo(384,300);g.lineTo(340,345);g.lineTo(248,235);g.closePath();g.fillStyle='#fbfcfe';g.fill();g.restore();
+   g.strokeStyle='#cad6e0';g.lineWidth=8;g.stroke();g.strokeStyle='#e0e6eb';g.lineWidth=15;g.beginPath();g.arc(548,102,54,0,Math.PI);g.stroke();
+   g.save();roundPath(g,410,196,278,300,11);g.clip();g.drawImage(source,410,196,278,300);g.restore();
+   g.strokeStyle='rgba(130,158,176,.18)';g.lineWidth=2;roundPath(g,410,196,278,300,11);g.stroke();return;
+ }
+ if(state.product.startsWith('azulejo')){
+   // Peças planas: área integral da estampa, sem adaptação de caneca.
+   g.save();g.shadowColor='rgba(25,52,69,.25)';g.shadowBlur=29;g.shadowOffsetY=19;
+   g.fillStyle='#d7e2e9';roundPath(g,318,94,465,466,12);g.fill();g.restore();
+   g.save();roundPath(g,327,102,445,446,6);g.clip();g.fillStyle='#fff';g.fillRect(327,102,445,446);g.drawImage(source,327,102,445,446);g.restore();
+   g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=10;roundPath(g,327,102,445,446,6);g.stroke();return;
  }
  if(state.product==='squeeze'){
    // Squeeze: tampa atrás, corpo arredondado com iluminação lateral.
@@ -243,9 +258,18 @@ function renderMockup(){
  // Caneca (chopp/caneca tradicional): alça atrás do corpo e cilindro levemente afunilado.
  const isChopp=state.product==='chopp';
  const top=isChopp?138:173,bottom=isChopp?554:538;
- g.save();g.shadowColor='rgba(25,57,83,.18)';g.shadowBlur=14;g.shadowOffsetX=5;
- g.lineWidth=37;g.strokeStyle='#91a7b5';g.beginPath();g.ellipse(744,365,111,135,-.06,-Math.PI/2,Math.PI/2);g.stroke();g.restore();
- g.strokeStyle='#fafdff';g.lineWidth=29;g.beginPath();g.ellipse(740,362,94,119,-.06,-Math.PI/2,Math.PI/2);g.stroke();
+ const radians=mockAngle*Math.PI/180;
+ // Fallback sem WebGL: alça e estampa se movem em conjunto para indicar rotação.
+ // Em aparelhos compatíveis, o modelo WebGL acima usa geometria 3D verdadeira.
+ const handleX=546+195*Math.cos(radians);
+ const frontHandle=Math.sin(radians)<-.42;
+ function drawFallbackHandle(){
+  const xr=Math.max(28,113*Math.abs(Math.cos(radians))),yc=362;
+  g.save();g.shadowColor='rgba(25,57,83,.19)';g.shadowBlur=13;
+  g.lineWidth=37;g.strokeStyle='#91a7b5';g.beginPath();g.ellipse(handleX,yc,xr,135,0,0,Math.PI*2);g.stroke();g.restore();
+  g.strokeStyle='#fafdff';g.lineWidth=28;g.beginPath();g.ellipse(handleX,yc,xr*.82,117,0,0,Math.PI*2);g.stroke();
+ }
+ if(!frontHandle)drawFallbackHandle();
  const left=304,right=789;
  const bodyGrad=g.createLinearGradient(left,0,right,0);
  bodyGrad.addColorStop(0,'#b3c5d1');bodyGrad.addColorStop(.14,'#f7fcff');bodyGrad.addColorStop(.5,'#fff');bodyGrad.addColorStop(.84,'#f4f9fc');bodyGrad.addColorStop(1,'#95adbb');
@@ -266,6 +290,7 @@ function renderMockup(){
  g.strokeStyle='#d6e3ea';g.lineWidth=13;g.beginPath();g.ellipse(546,top+12,245,29,0,0,Math.PI*2);g.stroke();
  g.strokeStyle='rgba(255,255,255,.95)';g.lineWidth=6;g.beginPath();g.ellipse(546,top+10,238,24,0,Math.PI*.08,Math.PI*.88);g.stroke();
  g.strokeStyle='rgba(83,118,138,.15)';g.lineWidth=3;g.beginPath();g.moveTo(left+15,bottom-7);g.quadraticCurveTo(545,bottom+31,right-15,bottom-7);g.stroke();
+ if(frontHandle)drawFallbackHandle();
 }
 function roundPath(g,x,y,w,h,r){r=Math.min(r,w/2,h/2);g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
 function safeFilename(ext,mode=''){return 'tio-urso-'+state.product+'-'+new Date().toISOString().slice(0,10)+(mode?'-'+mode:'')+'.'+ext;}
@@ -305,7 +330,7 @@ async function pdfExport(){try{
  downloadBlob(new Blob(sections,{type:'application/pdf'}),safeFilename('pdf',mode));toast('PDF '+mode+' criado em tamanho real.');
  }catch(e){toast('Falha ao exportar PDF: '+e.message);}}
 $('downloadPng').addEventListener('click',pngExport);$('downloadPdf').addEventListener('click',pdfExport);
-$('exportMockup').addEventListener('click',async()=>{try{renderMockup();downloadBlob(await toBlob(mock),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
+$('exportMockup').addEventListener('click',async()=>{try{renderMockup();let output=mock;if(!mock3dCanvas.hidden){output=document.createElement('canvas');output.width=1100;output.height=660;const g=output.getContext('2d');stageGradient(g);g.drawImage(mock3dCanvas,0,0,1100,660);}downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
 function calculate(){const c=['productCost','printingCost','extraCost'].reduce((a,id)=>a+Math.max(0,Number($(id).value)||0),0);const rate=Math.max(0,Number($('margin').value)||0);const lucro=c*rate/100;$('salePrice').textContent=money(c+lucro);$('priceExplanation').textContent=`Custo ${money(c)} · Lucro ${money(lucro)}`;return{c,lucro,price:c+lucro};}
 ['productCost','printingCost','extraCost','margin'].forEach(id=>$(id).addEventListener('input',calculate));
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
@@ -417,13 +442,17 @@ $('applyColor').addEventListener('click',()=>{
 // Controle de orientação da estampa no mockup. Não altera a arte nem seu arquivo de impressão.
 const mockAngleInput=$('mockAngle');
 function updateMockAngle(angle){
- mockAngle=Math.max(-120,Math.min(120,Number(angle)||0));
+ mockAngle=Math.max(-180,Math.min(180,Number(angle)||0));
  mockAngleInput.value=String(mockAngle);
  $('mockAngleLabel').textContent=mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°';
  document.querySelectorAll('[data-mock-angle]').forEach(el=>el.classList.toggle('active',Number(el.dataset.mockAngle)===mockAngle));
  renderMockup();
 }
 mockAngleInput.addEventListener('input',e=>updateMockAngle(e.target.value));
+let spinDrag=null;
+mock3dCanvas.addEventListener('pointerdown',ev=>{if(mock3dCanvas.hidden)return;spinDrag={x:ev.clientX,angle:mockAngle,id:ev.pointerId};mock3dCanvas.setPointerCapture(ev.pointerId);});
+mock3dCanvas.addEventListener('pointermove',ev=>{if(!spinDrag||spinDrag.id!==ev.pointerId)return;updateMockAngle(spinDrag.angle+(ev.clientX-spinDrag.x)*.7);});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])mock3dCanvas.addEventListener(event,()=>{spinDrag=null;});
 document.querySelectorAll('[data-mock-angle]').forEach(button=>button.addEventListener('click',()=>updateMockAngle(button.dataset.mockAngle)));
 
 // Inicialização. Sem salvamento remoto nem coleta de dados.

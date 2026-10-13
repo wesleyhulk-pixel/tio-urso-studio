@@ -1,49 +1,32 @@
-# Tio Urso Studio — Alpha 0.4.1
+# Tio Urso Studio — Alpha 0.5 (teste)
 
-**Versão de testes**, em HTML, CSS e JavaScript, projetada para funcionar diretamente no navegador do celular.
+## Novidades
 
-## O que mudou
-- Mockup 2D de caneca com curvatura visual melhorada e controle de regiões (frente e lados), mantendo a arte de impressão independente.
-- Identificação de versão 0.4 no cabeçalho; importante verificar para evitar cache de telas antigas.
-- Nova interface adaptável, baseada na arte conceito: Início, Editor, Mockup, Produtos e Orçamento.
-- Galeria visual com **28 fontes** (algumas usam Google Fonts e exigem conexão), busca e categorias; importação de arquivos TTF/OTF próprios.
-- Paleta de **48 cores**, campo hexadecimal, seletor de cores e histórico local de cores recentes.
-- Tela de exportação com botões **Normal / Espelhada**, mostrando a orientação de fato no canvas antes do download.
-- PNG ~300 DPI com dimensões correspondentes ao produto e PDF com página do tamanho nominal da estampa.
-- Editor de imagem e texto por toque, camadas simples, projeto JSON e mockup **2D ilustrativo**, além de calculadora de custos.
+- Tela inicial redesenhada com o mascote da imagem de conceito enviada pelo criador.
+- Produtos: caneca tradicional (21 × 9,7 cm), chopp (20,5 × 14,5 cm), squeeze (24 × 15 cm), camiseta (área de impressão provisória de 28 × 35 cm) e azulejos 20 × 20 cm, 15 × 15 cm, 10 × 10 cm.
+- Na prévia das canecas/chopp/squeeze, modelo 3D WebGL gerado localmente: o objeto, a estampa e a alça giram juntos. Gire com o dedo sobre o produto ou use o controle em graus. Se o navegador não oferecer WebGL, uma prévia alternativa 2D simplificada é utilizada.
+- Camisetas e azulejos possuem modelos 2D específicos, sem reaproveitar o mockup da caneca.
+- Permanecem as fontes, paleta, guias inteligentes, exportação em PNG/PDF e espelhamento com prévia.
 
-## Publicação via GitHub Pages
-Coloque os quatro arquivos **index.html, app.js, style.css e README.md** na raiz (branch main), substituindo as versões antigas. Aguarde a publicação. Abra a URL normal com `?v=04` no final para reduzir a chance de cache do navegador.
+## Instalação no GitHub Pages
 
-**Atenção:** envie os arquivos individuais após extrair o ZIP, **não** o ZIP fechado nem a pasta inteira. O código-fonte de um projeto publicado no GitHub Pages é visível ao visitante.
+1. Antes de atualizar, salve a arte atual como **projeto JSON** para não perder seu trabalho.
+2. Extraia este ZIP. Na página `github.com/wesleyhulk-pixel/tio-urso-studio/upload/main`, envie **todos os seis arquivos**, não o ZIP. São eles: `index.html`, `style.css`, `app.js`, `mock3d.js`, `mascote.png`, `README.md`.
+3. Ao enviar, confirme a substituição dos nomes existentes e faça **Commit changes**.
+4. Depois da publicação, abra `https://wesleyhulk-pixel.github.io/tio-urso-studio/?v=0500` e confirme o indicador **ALPHA 0.5** no topo.
+5. Se aparecer uma Alpha anterior, aguarde o GitHub Pages processar e faça recarregamento completo do navegador. O aplicativo não foi equipado com cache/offline novo nesta versão.
 
-## Teste de regressão sugerido
-1. Na tela Editor, adicione um texto `Tio Urso` e uma imagem.
-2. Abra a galeria de fontes e selecione uma fonte divertida.
-3. Escolha uma cor na paleta ou digite um HEX, ex.: `#19C1C4`.
-4. Toque em "Conferir e exportar arte" e alterne entre Normal e Espelhada: a prévia deve inverter o texto imediatamente.
-5. Exporte em PNG/PDF e confira os arquivos.
-6. Abra Mockup e teste um dos produtos.
-7. Confira a precificação.
+## Testes importantes
 
-## Limitações importantes
-- **Não aplica perfis ICC** e não garante fidelidade de cor; a gestão profissional de cores e impressão por Wi-Fi ficam para versões futuras.
-- **Não é editor 3D**, nem tem sincronização de arquivos entre aparelhos.
-- O mockup 2D é ilustrativo. A aparência e os tamanhos físicos devem ser conferidos na peça real.
-- Ao imprimir, usar escala 100% e conferir espelhamento, margens e dimensões antes de sublimar.
-- Arquivos PNG importados em alta resolução podem ser redimensionados internamente para reduzir uso de memória no celular; não extrapole a qualidade original.
-- Projetos não são guardados automaticamente em servidor; use Salvar projeto (JSON) e guarde os arquivos.
-- Fontes importadas devem ter licença adequada para uso comercial; algumas fontes online precisam de internet.
+1. Abra uma arte de caminhão e selecione **Mockup** para caneca: arraste horizontalmente **sobre a caneca**. Veja se alça e desenho giram juntos. Compare ângulos -90°, 0°, 90° e 180°.
+2. Teste os azulejos e a camiseta; devem usar seus próprios objetos ilustrativos.
+3. Exporte PNG/PDF normal e espelhado, conferindo as dimensões reais e a orientação de letras.
+4. Teste com uma arte conhecida, pois a visualização 3D é um modelo geométrico aproximado, não uma medição real do produto.
 
-## Observação técnica
-Reutiliza a base de documentos de projeto JSON da Alpha 0.2 (`version: 1`). A atualização de HTML/CSS/JS pode ser feita sem criar novo repositório ou refazer o aplicativo.
+## Limitações
 
-## Guias de alinhamento inteligente (Alpha 0.4.1)
-
-- Ative ou desative o botão **Alinhamento inteligente** na tela Editor.
-- Arraste uma imagem ou texto para perto do centro da página: aparecem guias azuis verticais/horizontais e o item encaixa em cada eixo.
-- Ao aproximar as bordas visíveis de um elemento das bordas da estampa, aparecem guias vermelhas e o elemento encaixa na linha do limite.
-- Elementos girados levam a rotação em conta no cálculo das bordas.
-- As guias aparecem somente durante o arraste e **não** saem no PNG, PDF ou mockup.
-- Se a imagem ultrapassar a arte, o app avisa com guia vermelha, sem impedir composições com sangria.
-- Teste com toque real no Android; esta versão é experimental.
+- **Beta** de rotação real em WebGL: nem todos os navegadores suportam ou habilitam aceleração gráfica. A renderização 3D foi verificada quanto à lógica, mas precisa ser confirmada no aparelho Android.
+- As camisetas usam uma **área de impressão ilustrativa** de 28 × 35 cm, que não é tamanho universal. O modelo precisa ser personalizado depois.
+- Os perfis ICC e cores de sublimação não estão implementados; as cores finais exigem testes com impressora, tinta e papel.
+- O catálogo e o render 3D não são fidelidade física comercial; fornecem prévias para validar o conceito.
+- Imagens são carregadas e processadas localmente no navegador, e os projetos são exportados para arquivo JSON. Não há cadastro, pagamento nem sincronização entre dispositivos nesta Alpha.
