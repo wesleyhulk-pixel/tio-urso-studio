@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
+/* Tio Urso Studio Alpha 0.5.1 — interface mobile, home visual, produtos corrigidos e mockup ajustado. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -261,10 +261,10 @@ function renderMockup(){
  const radians=mockAngle*Math.PI/180;
  // Fallback sem WebGL: alça e estampa se movem em conjunto para indicar rotação.
  // Em aparelhos compatíveis, o modelo WebGL acima usa geometria 3D verdadeira.
- const handleX=546+195*Math.cos(radians);
- const frontHandle=Math.sin(radians)<-.42;
+ const handleX=546+195*Math.sin(radians);
+ const frontHandle=Math.cos(radians)<-.25;
  function drawFallbackHandle(){
-  const xr=Math.max(28,113*Math.abs(Math.cos(radians))),yc=362;
+  const xr=Math.max(28,50+78*Math.abs(Math.sin(radians))),yc=362;
   g.save();g.shadowColor='rgba(25,57,83,.19)';g.shadowBlur=13;
   g.lineWidth=37;g.strokeStyle='#91a7b5';g.beginPath();g.ellipse(handleX,yc,xr,135,0,0,Math.PI*2);g.stroke();g.restore();
   g.strokeStyle='#fafdff';g.lineWidth=28;g.beginPath();g.ellipse(handleX,yc,xr*.82,117,0,0,Math.PI*2);g.stroke();
@@ -444,7 +444,7 @@ const mockAngleInput=$('mockAngle');
 function updateMockAngle(angle){
  mockAngle=Math.max(-180,Math.min(180,Number(angle)||0));
  mockAngleInput.value=String(mockAngle);
- $('mockAngleLabel').textContent=mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°';
+ $('mockAngleLabel').textContent=Math.abs(mockAngle)>=150?'Trás • 180°':(mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°');
  document.querySelectorAll('[data-mock-angle]').forEach(el=>el.classList.toggle('active',Number(el.dataset.mockAngle)===mockAngle));
  renderMockup();
 }

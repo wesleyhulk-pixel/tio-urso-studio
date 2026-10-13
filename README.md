@@ -1,3 +1,12 @@
+# Tio Urso Studio Alpha 0.5.1
+
+Correções desta versão:
+
+- ajuste da visualização do mockup para respeitar melhor frente/esquerda/direita e posição da alça;
+- home revisada no estilo do conceito visual aprovado;
+- catálogo de produtos revisado com camiseta e azulejos 20x20, 15x15 e 10x10;
+- pacote completo com 6 arquivos: index.html, style.css, app.js, mock3d.js, README.md e mascote.png.
+
 # Tio Urso Studio — Alpha 0.5 (teste)
 
 ## Novidades

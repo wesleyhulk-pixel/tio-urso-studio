@@ -48,7 +48,7 @@ function createTioMock3D(canvas){
    const a=-Math.PI+j/N*Math.PI*2,b=-Math.PI+(j+1)/N*Math.PI*2;
    const rr=(phi,r,y)=>[Math.sin(phi)*r,y,Math.cos(phi)*r];
    const normal=[Math.sin((a+b)/2),.04,Math.cos((a+b)/2)].map(v=>v*(inward?-1:1));
-   const uvFn=x=>uv?(x+Math.PI*.75)/(Math.PI*1.5):-1;
+   const uvFn=x=>uv?(x+Math.PI*1.25)/(Math.PI*1.5):-1;
    quad(dst,rr(a,rBottom,bottom),rr(b,rBottom,bottom),rr(b,rTop,top),rr(a,rTop,top),normal,[[uvFn(a),0],[uvFn(b),0],[uvFn(b),1],[uvFn(a),1]]);
   }
  }
@@ -98,9 +98,12 @@ function createTioMock3D(canvas){
  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();wasLost=true;});
  function render(kind,art,angle){if(wasLost)return;const config=meshCache.get(kind)||makeProduct(kind);meshCache.set(kind,config);
   gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  gl.uniform1f(yy,angle*Math.PI/180);gl.uniform1f(aspect,canvas.width/canvas.height);
+  const alignedYaw=(angle+90)*Math.PI/180;
+  gl.uniform1f(yy,alignedYaw);gl.uniform1f(aspect,canvas.width/canvas.height);
   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,art);
-  // Renderizador WebGL de malha 3D: geometria e alça giram como um único conjunto.
+  // Renderizador WebGL de malha 3D: o corpo e a alça giram juntos.
+  // Offset de 90° para que a frente da caneca fique sem a alça aparente,
+  // deixando a alça atrás no modo 'Frente' e lateral nos modos esquerdo/direito.
   draw(config.body,[1,1,1],true);
   draw(config.inside,[.74,.79,.84],false);
   draw(config.trim,kind==='squeeze'?[.20,.24,.29]:[.96,.975,.99],false);

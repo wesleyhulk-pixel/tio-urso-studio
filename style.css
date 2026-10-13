@@ -47,3 +47,47 @@
 .mockup-stage canvas#mock3dCanvas:active{cursor:grabbing}
 .mock-control-header output{font-variant-numeric:tabular-nums}
 @media(max-width:520px){.welcome{min-height:275px;padding:25px 18px 27px}.welcome-mascot{width:26%;right:9px;top:30px;border-radius:17px;opacity:.94}.welcome h1{font-size:28px;max-width:285px}.welcome p{max-width:250px}.welcome .eyebrow{font-size:9px;max-width:250px}.welcome .btn-white{margin-top:20px}.product-tile small{font-size:11px}}
+
+/* Alpha 0.5.1 — home visual mais próximo do conceito aprovado e catálogo revisado */
+.home-hero-card{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:14px;align-items:center;padding:28px 24px;border-radius:28px;background:linear-gradient(135deg,#0b2b66 0%,#0a5d8d 58%,#0f7b90 100%);color:#fff;box-shadow:0 20px 40px rgba(5,33,64,.18)}
+.home-hero-copy h1{font-size:clamp(30px,5vw,48px);line-height:.98;letter-spacing:-1.4px;margin:8px 0 14px}
+.home-hero-copy h1 em{font-style:normal;color:#6ff1f3}
+.home-hero-copy p{max-width:430px;color:#e7f7ff;font-size:15px;line-height:1.55;margin:0 0 18px}
+.hero-launch{min-width:230px}
+.home-hero-mascot{width:100%;max-width:145px;justify-self:end;align-self:end;filter:drop-shadow(0 10px 24px rgba(2,18,37,.28));border-radius:22px}
+.studio-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.studio-card{position:relative;text-align:left;border:0;color:#fff;min-height:164px;border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:8px;box-shadow:0 14px 30px rgba(14,54,79,.15)}
+.studio-card strong{font-size:28px;line-height:1.05;letter-spacing:-.8px}
+.studio-card small{font-size:15px;color:rgba(255,255,255,.92)}
+.studio-icon{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:31px;background:rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+.studio-card .feature-arrow{position:absolute;right:18px;top:18px;font-size:24px;color:rgba(255,255,255,.85)}
+.accent-blue{background:linear-gradient(135deg,#2482ff,#31a6ff)}
+.accent-purple{background:linear-gradient(135deg,#7c4df8,#b14df4)}
+.accent-orange{background:linear-gradient(135deg,#f28c16,#ffb117)}
+.accent-green{background:linear-gradient(135deg,#1aae9a,#38d6bf)}
+.visual-products{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.visual-tile{min-height:146px;border-radius:22px;background:#fff;border:1px solid #dde8ef;box-shadow:0 8px 24px rgba(16,54,74,.08);padding:18px 16px;align-items:flex-start}
+.visual-tile .product-emoji{display:grid;place-items:center;width:54px;height:54px;border-radius:18px;background:#eff6fb;font-size:30px;color:#1a5d7f;margin-bottom:16px}
+.visual-tile strong{font-size:20px;color:#153a53;line-height:1.05}
+.visual-tile small{font-size:13px;color:#6c8392;margin-top:6px}
+.catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.catalog-card{border:1px solid #dde7ee;background:#fff;border-radius:24px;padding:18px;min-height:208px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;position:relative;box-shadow:0 10px 28px rgba(10,54,77,.08)}
+.catalog-card .catalog-art{display:grid;place-items:center;width:100%;flex:1;border-radius:18px;background:#eff5f9;font-size:60px;color:#55788e;margin-bottom:14px}
+.catalog-card strong{font-size:16px;color:#102f46;line-height:1.15}
+.catalog-card small{margin-top:7px;font-size:13px;color:#6d8594}
+@media(max-width:520px){
+ .home-hero-card{grid-template-columns:1fr 100px;padding:22px 18px;border-radius:24px}
+ .home-hero-copy h1{font-size:26px}
+ .home-hero-copy p{font-size:13px;max-width:260px}
+ .hero-launch{min-width:0;width:auto}
+ .home-hero-mascot{max-width:100px;border-radius:18px}
+ .studio-grid,.catalog-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+ .studio-card{min-height:128px;padding:16px 14px;border-radius:20px}
+ .studio-card strong{font-size:14px;letter-spacing:0}
+ .studio-card small{font-size:11px}
+ .studio-icon{width:44px;height:44px;font-size:24px;border-radius:14px}
+ .visual-tile{min-height:134px;border-radius:18px;padding:15px 14px}
+ .visual-tile strong{font-size:17px}
+ .catalog-card{min-height:190px;padding:14px;border-radius:20px}
+ .catalog-card .catalog-art{font-size:50px}
+}
