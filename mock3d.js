@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.5 — foco exclusivo no modelo da caneca tradicional.
+/* Tio Urso Studio Alpha 0.6.6 — foco exclusivo no modelo da caneca tradicional.
  * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
 (() => {
 'use strict';
@@ -148,46 +148,34 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   // Refino extra: alça menos "balão", mais alongada e com aro mais delicado,
-   // aproximando melhor da referência fotográfica da caneca tradicional.
-   const N=132,M=22;
-   const zAttach=-radius+0.125;
-   const reach=0.78;
-   const yMid=(top+bottom)*.5;
-   const half=(top-bottom)*.5*0.96;
-   const path=t=>{
-     const y = yMid + (1-2*t)*half;
-     const s = Math.sin(Math.PI*t);
-     // avanço máximo no meio, mais aberto que a versão anterior
-     return [0, y, zAttach - Math.pow(s,0.92)*reach];
+   // Alça redesenhada para se aproximar mais da referência: formato em "C"
+   // mais orgânico, menos abaulado, sem pontas e com encaixe suave no corpo.
+   const segments=104, sides=20;
+   const xAttach=-radius*0.985;
+   const yTop=top;
+   const yBottom=bottom;
+   const yMid=(yTop+yBottom)*0.5;
+   const pull=0.84;
+   const zBase=-0.055;
+   const tubeRadius=0.070;
+   const bezier=(p0,p1,p2,p3,t)=>{
+     const mt=1-t;
+     const a=mt*mt*mt,b=3*mt*mt*t,c=3*mt*t*t,d=t*t*t;
+     return [
+       p0[0]*a+p1[0]*b+p2[0]*c+p3[0]*d,
+       p0[1]*a+p1[1]*b+p2[1]*c+p3[1]*d,
+       p0[2]*a+p1[2]*b+p2[2]*c+p3[2]*d
+     ];
    };
-   function section(t,angle){
-     const p=path(t),eps=0.00035;
-     const before=path(Math.max(0,t-eps));
-     const after=path(Math.min(1,t+eps));
-     const dy=after[1]-before[1],dz=after[2]-before[2];
-     const L=Math.hypot(dy,dz)||1;
-     const ny=-dz/L,nz=dy/L;
-     const nearEnds=Math.pow(Math.abs(2*t-1),4.5);
-     // seção mais fina e menos inflada
-     const rx=.050 + .006*nearEnds;
-     const ry=.063 + .008*nearEnds;
-     const ca=Math.cos(angle),sa=Math.sin(angle);
-     return [p[0]+rx*ca,p[1]+ry*sa*ny,p[2]+ry*sa*nz];
-   }
-   for(let i=0;i<N;i++){
-     const t=i/N,t2=(i+1)/N;
-     for(let j=0;j<M;j++){
-       const a=j*2*Math.PI/M,b=(j+1)*2*Math.PI/M;
-       const v0=section(t,a),v1=section(t,b),v2=section(t2,b),v3=section(t2,a);
-       const center=path((t+t2)*.5);
-       const surfaceMid=[(v0[0]+v1[0]+v2[0]+v3[0])*.25,(v0[1]+v1[1]+v2[1]+v3[1])*.25,(v0[2]+v1[2]+v2[2]+v3[2])*.25];
-       const normal=norm(sub(surfaceMid,center));
-       quad(dst,v0,v1,v2,v3,normal);
-     }
-   }
+   const path=t=>{
+     const p0=[xAttach, yTop, zBase];
+     const p1=[xAttach-pull*0.80, yTop-0.04, zBase-0.015];
+     const p2=[xAttach-pull*0.82, yBottom+0.04, zBase-0.015];
+     const p3=[xAttach, yBottom, zBase];
+     return bezier(p0,p1,p2,p3,t);
+   };
+   sweepTube(dst, path, segments, sides, tubeRadius);
  }
-
 
  function ceramicInteriorFloor(dst,radius,y){
    const N=96;
@@ -234,10 +222,10 @@ function createTioMock3D(canvas){
  }
 
  function makeProduct(kind){
-   const tall = kind==='chopp' ? 2.55 : kind==='squeeze' ? 2.65 : 1.98;
-   const radius = kind==='squeeze' ? 0.82 : kind==='chopp' ? 1.10 : 1.10;
+   const tall = kind==='chopp' ? 2.55 : kind==='squeeze' ? 2.65 : kind==='caneca' ? 2.14 : 1.98;
+   const radius = kind==='squeeze' ? 0.82 : kind==='chopp' ? 1.10 : kind==='caneca' ? 1.03 : 1.10;
    const up=tall/2, down=-tall/2;
-   const bR = kind==='chopp' ? radius*0.84 : kind==='squeeze' ? radius*0.96 : radius*0.985;
+   const bR = kind==='chopp' ? radius*0.84 : kind==='squeeze' ? radius*0.96 : kind==='caneca' ? radius*0.992 : radius*0.985;
 
    const body=mesh(), trim=mesh(), inside=mesh(), insideFloor=mesh(), handle=mesh();
    const uvMode = kind==='squeeze' ? 'full' : 'front';
@@ -250,10 +238,16 @@ function createTioMock3D(canvas){
      ring(trim, radius+0.01, radius-0.06, down+0.04, [0,-1,0]);
    } else {
      cylinder(body, bR, radius, down+0.05, up-0.10, {uvMode});
-     cylinder(inside, radius-0.048, radius-0.052, up-0.41, up-0.097, {inward:true});
-     if(kind==='caneca')ceramicInteriorFloor(insideFloor,radius-0.048,up-0.41);
-     ring(trim, radius+0.004, radius-0.058, up-0.089, [0,1,0]);
-     ring(trim, bR+0.006, bR-0.028, down+0.05, [0,-1,0]);
+     if(kind==='caneca'){
+       cylinder(inside, radius-0.036, radius-0.040, up-0.38, up-0.098, {inward:true});
+       ceramicInteriorFloor(insideFloor,radius-0.036,up-0.38);
+       ring(trim, radius+0.003, radius-0.040, up-0.090, [0,1,0]);
+       ring(trim, bR+0.004, bR-0.020, down+0.05, [0,-1,0]);
+     }else{
+       cylinder(inside, radius-0.048, radius-0.052, up-0.41, up-0.097, {inward:true});
+       ring(trim, radius+0.004, radius-0.058, up-0.089, [0,1,0]);
+       ring(trim, bR+0.006, bR-0.028, down+0.05, [0,-1,0]);
+     }
      if(kind==='chopp') choppHandle(handle, radius, up-0.46, down+0.44);
      else coffeeHandle(handle, radius, up-0.30, down+0.28);
    }

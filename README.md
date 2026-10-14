@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 0.6.5
+# Tio Urso Studio — Alpha 0.6.6
 
 Ajuste incremental focado **somente na caneca tradicional**.
 
