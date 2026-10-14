@@ -1,11 +1,17 @@
-# Tio Urso Studio — Alpha 0.6.4
+# Tio Urso Studio — Alpha 0.6.5
 
-**Escopo:** somente caneca tradicional + cenários.
+Ajuste incremental focado **somente na caneca tradicional**.
 
-- Refino da **alça da caneca tradicional**: menos abaulada, mais fina e com perfil mais próximo da referência.
-- Redução sutil da **espessura aparente da borda superior** e da parede interna da caneca.
-- Mantidas as quatro opções de cenário: **Mesa de madeira, Mesa clara, Fundo neutro e Escolher imagem**.
-- A opção **Escolher imagem** continua trocando somente o **fundo**, preservando a mesa selecionada.
-- Cores de **alça e interior** continuam sincronizadas em uma única seleção.
+## Melhorias desta versão
+- **Alça refinada novamente**: menos abaulada, mais fina e mais aberta, buscando ficar mais próxima da referência.
+- **Arte menos achatada** no mockup da caneca: a janela frontal da textura foi estreitada para preservar melhor a proporção visual da estampa.
+- **Borda superior e parede interna** levemente afinadas, reduzindo a aparência de espessura excessiva.
+- Mantidas as melhorias da versão anterior:
+  - cenários fixos (**Mesa de madeira**, **Mesa clara**, **Fundo neutro**);
+  - opção **Escolher imagem** para trocar só o fundo e manter a mesa;
+  - **cor única sincronizada** para alça + interior.
 
-**Teste sugerido:** conferir frente/esquerda/direita, validar se a alça ficou menos inflada e se a borda superior ficou mais fina, comparando com a referência.
+## Teste sugerido
+1. Comparar a alça com a foto de referência.
+2. Conferir se a estampa parece menos comprimida/achatada na frente da caneca.
+3. Validar frente, esquerda, direita e trás com a mesma arte.

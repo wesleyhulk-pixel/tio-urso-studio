@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.4 — foco exclusivo no modelo da caneca tradicional.
+/* Tio Urso Studio Alpha 0.6.5 — foco exclusivo no modelo da caneca tradicional.
  * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
 (() => {
 'use strict';
@@ -97,7 +97,9 @@ function createTioMock3D(canvas){
      const normal=norm([Math.sin((a+b)/2), .035, Math.cos((a+b)/2)]).map(v=>v*(inward?-1:1));
      const uvFor = (phi) => {
        if(uvMode==='full') return (phi + Math.PI) / (2*Math.PI);
-       if(uvMode==='front') return (phi + Math.PI*0.75) / (Math.PI*1.5);
+       // Janela frontal mais estreita para a arte parecer menos "achatada"
+       // e mais próxima da proporção percebida na referência.
+       if(uvMode==='front') return (phi + Math.PI*0.62) / (Math.PI*1.24);
        return -1;
      };
      quad(dst,
@@ -146,18 +148,18 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   // Alça mais próxima da referência: perfil em "D" mais fino, menos inflado e
-   // com projeção traseira menor. A seção é levemente elíptica para perder o
-   // aspecto de tubo "balão" e o encaixe no corpo fica mais delicado.
-   const N=128,M=24;
-   const zAttach=-radius+0.13;
-   const reach=0.66;
+   // Refino extra: alça menos "balão", mais alongada e com aro mais delicado,
+   // aproximando melhor da referência fotográfica da caneca tradicional.
+   const N=132,M=22;
+   const zAttach=-radius+0.125;
+   const reach=0.78;
    const yMid=(top+bottom)*.5;
-   const half=(top-bottom)*.5*0.92;
+   const half=(top-bottom)*.5*0.96;
    const path=t=>{
-     const a=(1.0-t)*Math.PI/2 + t*(-Math.PI/2); // de cima para baixo
-     const s=Math.cos(a); // 0->1->0
-     return [0, yMid + Math.sin(a)*half, zAttach - s*reach];
+     const y = yMid + (1-2*t)*half;
+     const s = Math.sin(Math.PI*t);
+     // avanço máximo no meio, mais aberto que a versão anterior
+     return [0, y, zAttach - Math.pow(s,0.92)*reach];
    };
    function section(t,angle){
      const p=path(t),eps=0.00035;
@@ -166,9 +168,10 @@ function createTioMock3D(canvas){
      const dy=after[1]-before[1],dz=after[2]-before[2];
      const L=Math.hypot(dy,dz)||1;
      const ny=-dz/L,nz=dy/L;
-     const nearEnds=Math.pow(Math.abs(2*t-1),5); // 1 nas pontas, 0 no meio
-     const rx=.070 + .010*nearEnds; // menos abaulada
-     const ry=.084 + .012*nearEnds;
+     const nearEnds=Math.pow(Math.abs(2*t-1),4.5);
+     // seção mais fina e menos inflada
+     const rx=.050 + .006*nearEnds;
+     const ry=.063 + .008*nearEnds;
      const ca=Math.cos(angle),sa=Math.sin(angle);
      return [p[0]+rx*ca,p[1]+ry*sa*ny,p[2]+ry*sa*nz];
    }
@@ -247,10 +250,10 @@ function createTioMock3D(canvas){
      ring(trim, radius+0.01, radius-0.06, down+0.04, [0,-1,0]);
    } else {
      cylinder(body, bR, radius, down+0.05, up-0.10, {uvMode});
-     cylinder(inside, radius-0.06, radius-0.065, up-0.44, up-0.095, {inward:true});
-     if(kind==='caneca')ceramicInteriorFloor(insideFloor,radius-0.06,up-0.44);
-     ring(trim, radius+0.006, radius-0.072, up-0.087, [0,1,0]);
-     ring(trim, bR+0.008, bR-0.034, down+0.05, [0,-1,0]);
+     cylinder(inside, radius-0.048, radius-0.052, up-0.41, up-0.097, {inward:true});
+     if(kind==='caneca')ceramicInteriorFloor(insideFloor,radius-0.048,up-0.41);
+     ring(trim, radius+0.004, radius-0.058, up-0.089, [0,1,0]);
+     ring(trim, bR+0.006, bR-0.028, down+0.05, [0,-1,0]);
      if(kind==='chopp') choppHandle(handle, radius, up-0.46, down+0.44);
      else coffeeHandle(handle, radius, up-0.30, down+0.28);
    }
