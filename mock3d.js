@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.7.8 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.7.9 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -9,7 +9,7 @@ function createTioMock3D(canvas){
  if(!gl) return {supported:false};
 
  const vs=`attribute vec3 p;attribute vec3 n;attribute vec2 uv;
- uniform float yaw;uniform float aspect;varying vec2 vUv;varying float shade;
+ uniform float yaw;uniform float aspect;varying vec2 vUv;varying float shade;varying float fresnel;
  void main(){
    float c=cos(yaw),s=sin(yaw);
    vec3 pos=vec3(c*p.x+s*p.z,p.y,-s*p.x+c*p.z);
@@ -20,17 +20,25 @@ function createTioMock3D(canvas){
    float f=2.48;
    gl_Position=vec4(pos.x*f/aspect,py*f,(depth*1.003-.201),depth);
    shade=.82+.18*max(dot(nor,normalize(vec3(-.45,.75,1.0))),0.);
+   fresnel=pow(1.0-abs(dot(nor,normalize(vec3(0.0,0.28,1.0)))),2.3);
    vUv=uv;
  }`;
- const fs=`precision mediump float;varying vec2 vUv;varying float shade;
- uniform sampler2D tex;uniform vec3 base;uniform float textured;uniform float repeatU;
+ const fs=`precision mediump float;varying vec2 vUv;varying float shade;varying float fresnel;
+ uniform sampler2D tex;uniform vec3 base;uniform float textured;uniform float repeatU;uniform float materialOpacity;uniform float glassMaterial;
  void main(){
    vec3 col=base;
    if(textured>.5 && (repeatU>.5 || (vUv.x>=0. && vUv.x<=1.)) && vUv.y>=0. && vUv.y<=1.) col=texture2D(tex,vUv).rgb;
    float sideLight=1.0;
    if(textured>.5 && vUv.x>=0. && vUv.x<=1.) sideLight=.992-.06*pow(abs(vUv.x-.5)*2.,2.);
    col*=shade*sideLight;
-   gl_FragColor=vec4(min(col*1.055,vec3(1.)),1.);
+   float a=materialOpacity;
+   if(glassMaterial>.5){
+     float shine=clamp(fresnel,0.,1.);
+     col=mix(vec3(.77,.83,.87),vec3(1.),.50+shine*.44);
+     col*=.95+.08*shade;
+     a=materialOpacity*(.60+.40*shine);
+   }
+   gl_FragColor=vec4(min(col*1.055,vec3(1.)),a);
  }`;
 
  function compile(type, source){
@@ -57,6 +65,8 @@ function createTioMock3D(canvas){
  const color=gl.getUniformLocation(program,'base');
  const textured=gl.getUniformLocation(program,'textured');
  const repeatU=gl.getUniformLocation(program,'repeatU');
+ const materialOpacity=gl.getUniformLocation(program,'materialOpacity');
+ const glassMaterial=gl.getUniformLocation(program,'glassMaterial');
 
  const texture=gl.createTexture();
  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,texture);
@@ -71,6 +81,7 @@ function createTioMock3D(canvas){
  let meshyMug=null;
  let meshyError=null;
  let meshySqueeze=null;
+ let meshyChopp=null;
  let squeezeMaterialReady=false;
  const squeezeMaterial=gl.createTexture();
  // Centraliza pelo eixo do CORPO cerâmico (e não pelo bounding box com a alça).
@@ -197,6 +208,35 @@ function createTioMock3D(canvas){
      meshySqueeze={body:lists[0],extras:lists[1]};
      window.dispatchEvent(new Event('tio-meshy-ready'));
    }catch(err){console.warn('Squeeze Meshy:',err);}
+ }
+ async function loadMeshyChopp(){
+   try{
+     const resp=await fetch('meshy-chopp.bin?v=0790',{cache:'no-store'});
+     if(!resp.ok)throw new Error('Não foi possível carregar a caneca de chopp Meshy');
+     const data=await resp.arrayBuffer(),view=new DataView(data);
+     if(String.fromCharCode(...new Uint8Array(data,0,4))!=='TUCH')throw new Error('Modelo de chopp inválido');
+     let off=4,parts=[];
+     for(let i=0;i<2;i++){
+       const count=view.getUint32(off,true);off+=4;
+       if(count>350000 || off+count*32>data.byteLength)throw new Error('Modelo de chopp incompleto');
+       const verts=new Float32Array(new Float32Array(data,off,count*8));off+=count*32;
+       parts.push(upload(verts));
+     }
+     // A estampa tem superfície própria: o arquivo Meshy define APENAS o vidro.
+     const sticker=[];
+     const h=1.23,r=.911,extent=Math.PI*.82;
+     const N=240;
+     for(let k=0;k<N;k++){
+       const a=-extent+2*extent*(k/N), b=-extent+2*extent*((k+1)/N);
+       const rr=(t,y)=>[Math.sin(t)*r,y,Math.cos(t)*r];
+       const n=norm([Math.sin((a+b)*.5),0,Math.cos((a+b)*.5)]);
+       // Área imprimível ocupa ~90% da altura; sem colar sobre a alça de vidro.
+       quad(sticker,rr(a,-h*0.92),rr(b,-h*.92),rr(b,h*.92),rr(a,h*.92),n,
+         [[k/N,0],[(k+1)/N,0],[(k+1)/N,1],[k/N,1]]);
+     }
+     meshyChopp={body:parts[0],handle:parts[1],art:upload(sticker)};
+     window.dispatchEvent(new Event('tio-meshy-ready'));
+   }catch(err){console.warn('Chopp Meshy:',err);window.dispatchEvent(new Event('tio-meshy-failed'));}
  }
  function loadSqueezeMaterial(){
    const im=new Image();
@@ -405,7 +445,7 @@ function createTioMock3D(canvas){
    return { body:upload(body), trim:upload(trim), inside:upload(inside), insideFloor:upload(insideFloor), handle:upload(handle) };
  }
 
- function draw(obj, rgb, useTexture){
+ function draw(obj, rgb, useTexture, alpha=1, glass=false){
    if(!obj) return;
    gl.bindBuffer(gl.ARRAY_BUFFER,obj.buffer);
    const stride=8*4;
@@ -413,6 +453,8 @@ function createTioMock3D(canvas){
    gl.enableVertexAttribArray(an); gl.vertexAttribPointer(an,3,gl.FLOAT,false,stride,12);
    gl.enableVertexAttribArray(au); gl.vertexAttribPointer(au,2,gl.FLOAT,false,stride,24);
    gl.uniform1f(textured, useTexture?1:0);
+   gl.uniform1f(materialOpacity,alpha);
+   gl.uniform1f(glassMaterial,glass?1:0);
    gl.uniform3f(color, rgb[0], rgb[1], rgb[2]);
    gl.drawArrays(gl.TRIANGLES, 0, obj.count);
  }
@@ -428,8 +470,9 @@ function createTioMock3D(canvas){
    if(wasLost) return false;
    if(kind==='caneca' && !meshyMug)return false;
    if(kind==='squeeze' && !meshySqueeze)return false;
-   const config = kind==='caneca' ? meshyMug : kind==='squeeze' ? meshySqueeze : (meshCache.get(kind) || makeProduct(kind));
-   if(kind!=='caneca'&&kind!=='squeeze') meshCache.set(kind,config);
+   if(kind==='chopp' && !meshyChopp)return false;
+   const config = kind==='caneca' ? meshyMug : kind==='squeeze' ? meshySqueeze : kind==='chopp' ? meshyChopp : (meshCache.get(kind) || makeProduct(kind));
+   if(kind!=='caneca'&&kind!=='squeeze'&&kind!=='chopp') meshCache.set(kind,config);
 
    gl.viewport(0,0,canvas.width,canvas.height);
    gl.clearColor(0,0,0,0);
@@ -437,6 +480,7 @@ function createTioMock3D(canvas){
    gl.uniform1f(yy, (kind==='caneca'?-angle:angle)*Math.PI/180);
    gl.uniform1f(aspect, canvas.width/canvas.height);
    gl.uniform1f(repeatU,kind==='squeeze'?1:0);
+   gl.disable(gl.BLEND);gl.depthMask(true);
    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,texture);
    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
    if(kind==='squeeze'){
@@ -461,6 +505,24 @@ function createTioMock3D(canvas){
      return p[3]>0;
    }
 
+   if(kind==='chopp'){
+     // Renderiza o vidro levemente translúcido e a estampa sem transparência
+     // excessiva; a alça vem da malha Meshy, não de uma curva artificial.
+     gl.enable(gl.BLEND);
+     gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+     gl.depthMask(false);
+     draw(config.body,[.84,.91,.95],false,.22,true);
+     // Sobreposição da estampa imprimível, com intensidade alta para fidelidade.
+     draw(config.art,[1,1,1],true,.94,false);
+     // Alça translúcida com reflexos suaves, preservando o formato do GLB.
+     draw(config.handle,[.91,.96,1],false,.48,true);
+     gl.depthMask(true);gl.disable(gl.BLEND);
+     gl.flush();
+     if(gl.getError()!==gl.NO_ERROR)return false;
+     const pix=new Uint8Array(4);gl.readPixels(canvas.width>>1,canvas.height>>1,1,1,gl.RGBA,gl.UNSIGNED_BYTE,pix);
+     return pix[3]>0;
+   }
+
    const isCoffee=kind==='caneca';
    const finish=isCoffee?finishColor(mugFinishColor):[1,1,1];
    draw(config.body,[1,1,1],true);
@@ -479,6 +541,7 @@ function createTioMock3D(canvas){
 
  loadMeshyMug();
  loadMeshySqueeze();
+ loadMeshyChopp();
  loadSqueezeMaterial();
  return {supported:true,render,getMeshyStatus:()=>meshyMug?'ready':meshyError?'error':'loading'};
 }

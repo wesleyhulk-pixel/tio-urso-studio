@@ -1,22 +1,10 @@
-# Tio Urso Studio — Alpha 0.7.8 — ajuste do corpo do squeeze
+# Tio Urso Studio — Alpha 0.7.9 — caneca de chopp Meshy
 
-## O que foi corrigido
-- Mantido o MESMO arquivo Meshy do squeeze.
-- O corpo sublimável do squeeze foi **alongado para baixo**, ancorado logo abaixo da tampa.
-- A intenção é **cobrir melhor o pé branco inferior** sem mexer no material da tampa.
-- A arte 360° continua usando as mesmas coordenadas horizontais (U), preservando a emenda já aprovada.
-- A tampa, o bico e a borda preta continuam sendo renderizados pelo material original do modelo.
+Primeira integração **experimental** do modelo 3D de caneca de chopp de vidro em arquivo GLB fornecido pelo usuário.
 
-## O que não foi alterado
-- Nenhum arquivo do Meshy foi trocado.
-- A caneca aprovada anteriormente não foi alterada.
-- O editor de arte e a exportação continuam iguais.
-
-## Como atualizar
-1. Extraia o ZIP.
-2. Faça upload dos arquivos extraídos na raiz do repositório/site, substituindo os antigos.
-3. Aguarde o GitHub Pages publicar.
-4. O topo do site deve mostrar **ALPHA 0.7.8**.
-
-## Observação
-Este ajuste ataca especificamente o problema do **pé branco aparecendo no mockup do squeeze**, tentando preservar a **borda preta da tampa**.
+- Corpo e alça baseados no modelo real Meshy; cor branca/prateada levemente translúcida.
+- A estampa é uma camada independente em torno do corpo, evitando deformar a geometria do vidro.
+- Suporte a rotação em mockup 3D, mantendo a cena de mesa e os controles do app.
+- A caneca de café permanece inalterada. O squeeze permanece como na 0.7.8.
+- Arquivos ficam na raiz do ZIP; substitua os arquivos do site na raiz do repositório.
+- Verifique a apresentação no navegador: é uma prévia beta, não um ensaio físico da transparência ou impressão.
