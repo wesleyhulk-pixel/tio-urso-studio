@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5.8 — mockup corrigido com cenário de mesa, alça refinada e rotação coerente. */
+/* Tio Urso Studio Alpha 0.6.0 — foco na caneca tradicional, com cenário por imagem e refino visual. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -15,10 +15,12 @@ const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
 const mockSceneCanvas=$('mockSceneCanvas');
 const sceneSelect=$('mockSceneChoice');
+const sceneImagePicker=$('sceneImagePicker');
 const mock3dCanvas=$('mock3dCanvas');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
 const rotaryProducts=new Set(['caneca','chopp','squeeze']);
-let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff'};
+let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null};
+let customSceneImage=null;
 const imageCache = new Map();
 let drag = null, activeGuides = null, toastHandle = null, seq = 0, previewQueued=false;
 const fontSelector=$('fontFamily');
@@ -102,6 +104,16 @@ async function loadFileAsImage(file){
  return c.toDataURL(file.type==='image/png'?'image/png':'image/jpeg',.88);
 }
 function decodeImage(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Imagem inválida ou incompatível.'));img.src=src;});}
+async function setCustomSceneFromFile(file){
+ if(!file)return false;
+ const src=await loadFileAsImage(file);
+ const img=await decodeImage(src);
+ state.mockSceneImage=src;
+ customSceneImage=img;
+ state.mockSceneChoice='imagem';
+ sceneSelect.value='imagem';
+ return true;
+}
 async function addImage(file){if(!file)return;try{const src=await loadFileAsImage(file),img=await decodeImage(src);const w=Math.min(480,img.naturalWidth),h=w*img.naturalHeight/img.naturalWidth;const it={id:'e'+(++seq),kind:'image',src,baseW:w,baseH:h,x:500,y:artH()/2,scale:1,rotation:0};imageCache.set(it.id,img);state.items.push(it);state.selected=it.id;render();toast('Imagem adicionada! Arraste para mover.');}catch(e){toast(e.message);}}
 function setProduct(key){if(!PRODUCTS[key])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();render();}
 function pointerCoord(ev){const r=art.getBoundingClientRect();return {x:(ev.clientX-r.left)/r.width*1000,y:(ev.clientY-r.top)/r.height*artH()};}
@@ -250,9 +262,24 @@ function drawWrappedTexture(g,source,left,right,top,bottom,angle){
 
 // Cenário atrás do modelo 3D, sem interferir na geometria nem na estampa.
 if(!window.paintTioScene){
- window.paintTioScene = function(canvas, mode){
+ window.paintTioScene = function(canvas, mode, customImg){
   const g=canvas.getContext('2d'), W=canvas.width,H=canvas.height;
   g.clearRect(0,0,W,H);
+  if(mode==='imagem'){
+   if(customImg?.complete&&customImg.naturalWidth){
+    const iw=customImg.naturalWidth, ih=customImg.naturalHeight;
+    const scale=Math.max(W/iw,H/ih), dw=iw*scale, dh=ih*scale;
+    const dx=(W-dw)/2, dy=(H-dh)/2;
+    g.drawImage(customImg,dx,dy,dw,dh);
+    g.fillStyle='rgba(255,255,255,.10)';g.fillRect(0,0,W,H);
+    return;
+   }
+   g.fillStyle='#edf4f8';g.fillRect(0,0,W,H);
+   g.strokeStyle='rgba(33,78,104,.28)';g.lineWidth=3;g.setLineDash([12,9]);g.strokeRect(W*.13,H*.16,W*.74,H*.48);g.setLineDash([]);
+   g.fillStyle='#537186';g.font='600 34px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('Escolha uma imagem para o cenário',W/2,H/2-8);
+   g.font='500 22px Arial';g.fillStyle='#6b8797';g.fillText('Selecione “Escolher imagem” novamente para trocar depois.',W/2,H/2+32);
+   return;
+  }
   if(mode==='limpo'){
    g.fillStyle='#edf4f8';g.fillRect(0,0,W,H);return;
   }
@@ -287,14 +314,20 @@ function renderMockup(){
    }catch(err){
      console.error('Falha no mockup 3D, usando prévia de segurança:',err);
    }
-   if(drawn){window.paintTioScene?.(mockSceneCanvas,sceneSelect.value);return;}
+   if(drawn){window.paintTioScene?.(mockSceneCanvas,state.mockSceneChoice,customSceneImage);return;}
    // O modo 3D não deve esconder o produto se houver uma falha gráfica.
    mock3dCanvas.hidden=true;mockSceneCanvas.hidden=true;mock.hidden=false;
    $('mockTypeTag').textContent='PRÉVIA 2D';
  }
 
  const W=1100,H=660,g=mctx;
- g.clearRect(0,0,W,H);stageGradient(g);
+ g.clearRect(0,0,W,H);
+ if(state.mockSceneChoice==='imagem'&&customSceneImage?.complete&&customSceneImage.naturalWidth){
+   const iw=customSceneImage.naturalWidth, ih=customSceneImage.naturalHeight;
+   const scale=Math.max(W/iw,H/ih), dw=iw*scale, dh=ih*scale;
+   const dx=(W-dw)/2, dy=(H-dh)/2;
+   g.drawImage(customSceneImage,dx,dy,dw,dh);
+ }else stageGradient(g);
  const source=artworkCanvas(1000,artH());
  if(state.product==='camiseta'){
    // Camiseta ilustrativa independente da geometria cilíndrica.
@@ -400,7 +433,19 @@ async function pdfExport(){try{
  downloadBlob(new Blob(sections,{type:'application/pdf'}),safeFilename('pdf',mode));toast('PDF '+mode+' criado em tamanho real.');
  }catch(e){toast('Falha ao exportar PDF: '+e.message);}}
 $('downloadPng').addEventListener('click',pngExport);$('downloadPdf').addEventListener('click',pdfExport);
-sceneSelect.addEventListener('change',renderMockup);
+sceneSelect.addEventListener('change',()=>{
+ state.mockSceneChoice=sceneSelect.value;
+ if(sceneSelect.value==='imagem'){sceneImagePicker.click();}
+ renderMockup();
+});
+sceneImagePicker?.addEventListener('change',async ev=>{
+ const file=ev.target.files?.[0];
+ try{
+   if(file){await setCustomSceneFromFile(file);toast('Imagem de cenário carregada.');}
+   else if(!state.mockSceneImage&&state.mockSceneChoice==='imagem'){state.mockSceneChoice='madeira';sceneSelect.value='madeira';}
+ }catch(error){toast('Falha ao carregar cenário: '+error.message); if(!state.mockSceneImage){state.mockSceneChoice='madeira';sceneSelect.value='madeira';}}
+ finally{ev.target.value='';renderMockup();}
+});
 const finishPicker=$('mugFinishColor');
 const mugFinishChoices=document.querySelectorAll('[data-finish]');
 function setMugFinish(hex,refresh=true){
@@ -421,7 +466,9 @@ function calculate(){const c=['productCost','printingCost','extraCost'].reduce((
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
 $('saveProject').addEventListener('click',()=>{const backup={version:1,...state,selected:null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
 $('openProject').addEventListener('click',()=>$('projectPicker').click());
-$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff'};
+$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null};
+ customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
+ sceneSelect.value=state.mockSceneChoice;
  setMugFinish(state.mugFinishColor,false);
  for(const [family,info] of Object.entries(data.customFonts||{})){
   if(!/^TUS_[a-z0-9]+$/i.test(family)||typeof info?.src!=='string'||info.src.length>4000000)continue;
@@ -528,7 +575,7 @@ $('applyColor').addEventListener('click',()=>{
 // Controle de orientação da estampa no mockup. Não altera a arte nem seu arquivo de impressão.
 const mockAngleInput=$('mockAngle');
 function updateMockAngle(angle){
- mockAngle=Math.max(-180,Math.min(180,Number(angle)||0));
+ mockAngle=Math.round(Math.max(-180,Math.min(180,Number(angle)||0)));
  mockAngleInput.value=String(mockAngle);
  $('mockAngleLabel').textContent=Math.abs(mockAngle)>=150?'Trás • 180°':(mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°');
  document.querySelectorAll('[data-mock-angle]').forEach(el=>el.classList.toggle('active',Number(el.dataset.mockAngle)===mockAngle));
@@ -542,6 +589,6 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])mock3dCanv
 document.querySelectorAll('[data-mock-angle]').forEach(button=>button.addEventListener('click',()=>updateMockAngle(button.dataset.mockAngle)));
 
 // Inicialização. Sem salvamento remoto nem coleta de dados.
-updateMeasurements();$('bgColorSample').style.backgroundColor=state.bg;render();calculate();updateOrientationUI();
+updateMeasurements();$('bgColorSample').style.backgroundColor=state.bg;sceneSelect.value=state.mockSceneChoice;render();calculate();updateOrientationUI();
 // O modo PWA completo será ativado quando os ícones, manifesto e SW estiverem publicados.
 })();

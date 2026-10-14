@@ -1,5 +1,5 @@
-/* Tio Urso Studio Alpha 0.5.9 — foco exclusivo no modelo da caneca tradicional.
- * Geometrias de chopp e squeeze preservadas da 0.5.6. */
+/* Tio Urso Studio Alpha 0.6.0 — foco exclusivo no modelo da caneca tradicional.
+ * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
 (() => {
 'use strict';
 function createTioMock3D(canvas){
@@ -14,8 +14,8 @@ function createTioMock3D(canvas){
    float c=cos(yaw),s=sin(yaw);
    vec3 pos=vec3(c*p.x+s*p.z,p.y,-s*p.x+c*p.z);
    vec3 nor=normalize(vec3(c*n.x+s*n.z,n.y,-s*n.x+c*n.z));
-   float py=pos.y*.977-pos.z*.213;
-   float pz=pos.z*.977+pos.y*.213;
+   float py=pos.y*.958-pos.z*.286;
+   float pz=pos.z*.958+pos.y*.286;
    float depth=5.7-pz;
    float f=2.48;
    gl_Position=vec4(pos.x*f/aspect,py*f,(depth*1.003-.201),depth);
@@ -146,34 +146,38 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   const tubeR=0.105;
-   const zStart=-radius+0.14;
-   const zOutside=-radius-0.70;
+   const tubeR=0.115;
+   const zStart=-radius+0.12;
+   const zOutside=-radius-0.82;
    const yMid=(top+bottom)/2;
    const half=(top-bottom)/2;
    const cubic=(a,b,c,d,t)=>{const q=1-t;return q*q*q*a+3*q*q*t*b+3*q*t*t*c+t*t*t*d;};
    function curve(t){
-     return [0,
-       cubic(top, top-half*0.18, bottom+half*0.18, bottom, t),
+     return [
+       cubic(0,0.02,0.02,0,t),
+       cubic(top, top-half*0.08, bottom+half*0.08, bottom, t),
        cubic(zStart, zOutside, zOutside, zStart, t)
      ];
    }
    function section(t,a){
      const center=curve(t),before=curve(Math.max(0,t-.0004)),after=curve(Math.min(1,t+.0004));
-     const dy=after[1]-before[1],dz=after[2]-before[2],l=Math.hypot(dy,dz)||1;
-     const ny=-dz/l,nz=dy/l,c=Math.cos(a),si=Math.sin(a);
-     return [center[0]+tubeR*si,center[1]+tubeR*c*ny,center[2]+tubeR*c*nz];
+     const tangent=norm(sub(after,before));
+     const ref=[1,0,0];
+     let n=norm([ref[1]*tangent[2]-ref[2]*tangent[1], ref[2]*tangent[0]-ref[0]*tangent[2], ref[0]*tangent[1]-ref[1]*tangent[0]]);
+     if(!isFinite(n[0]))n=[1,0,0];
+     const b=[tangent[1]*n[2]-tangent[2]*n[1], tangent[2]*n[0]-tangent[0]*n[2], tangent[0]*n[1]-tangent[1]*n[0]];
+     const c=Math.cos(a),s=Math.sin(a);
+     return [center[0]+tubeR*(n[0]*c+b[0]*s),center[1]+tubeR*(n[1]*c+b[1]*s),center[2]+tubeR*(n[2]*c+b[2]*s)];
    }
-   const N=108,M=22;
+   const N=112,M=24;
    for(let i=0;i<N;i++){
      const t=i/N,t2=(i+1)/N;
      for(let j=0;j<M;j++){
        const a=j*2*Math.PI/M,b=(j+1)*2*Math.PI/M;
        const v0=section(t,a),v1=section(t,b),v2=section(t2,b),v3=section(t2,a);
-       const p=curve(t),q=curve(t2);const tangent=norm(sub(q,p));
-       const n=norm([0,-tangent[2],tangent[1]]);
-       const normal=(ang)=>[Math.sin(ang),n[1]*Math.cos(ang),n[2]*Math.cos(ang)];
-       quad(dst,v0,v1,v2,v3,normal((a+b)*0.5));
+       const c0=curve((t+t2)*.5);
+       const mid=[(v0[0]+v1[0]+v2[0]+v3[0])*.25-c0[0],(v0[1]+v1[1]+v2[1]+v3[1])*.25-c0[1],(v0[2]+v1[2]+v2[2]+v3[2])*.25-c0[2]];
+       quad(dst,v0,v1,v2,v3,norm(mid));
      }
    }
  }
@@ -222,8 +226,8 @@ function createTioMock3D(canvas){
  }
 
  function makeProduct(kind){
-   const tall = kind==='chopp' ? 2.55 : kind==='squeeze' ? 2.65 : 2.04;
-   const radius = kind==='squeeze' ? 0.82 : kind==='chopp' ? 1.10 : 1.08;
+   const tall = kind==='chopp' ? 2.55 : kind==='squeeze' ? 2.65 : 1.98;
+   const radius = kind==='squeeze' ? 0.82 : kind==='chopp' ? 1.10 : 1.10;
    const up=tall/2, down=-tall/2;
    const bR = kind==='chopp' ? radius*0.84 : kind==='squeeze' ? radius*0.96 : radius*0.985;
 
@@ -243,7 +247,7 @@ function createTioMock3D(canvas){
      ring(trim, radius+0.012, radius-0.108, up-0.085, [0,1,0]);
      ring(trim, bR+0.01, bR-0.045, down+0.05, [0,-1,0]);
      if(kind==='chopp') choppHandle(handle, radius, up-0.46, down+0.44);
-     else coffeeHandle(handle, radius, up-0.48, down+0.44);
+     else coffeeHandle(handle, radius, up-0.44, down+0.40);
    }
 
    return { body:upload(body), trim:upload(trim), inside:upload(inside), insideFloor:upload(insideFloor), handle:upload(handle) };
