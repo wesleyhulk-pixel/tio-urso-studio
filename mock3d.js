@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.8.1 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.8.2 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -175,7 +175,7 @@ function createTioMock3D(canvas){
  // separadas. A malha da caneca de café permanece INTACTA.
  async function loadMeshySqueeze(){
    try{
-     const resp=await fetch('meshy-squeeze.bin?v=0810',{cache:'no-store'});
+     const resp=await fetch('meshy-squeeze.bin?v=0820',{cache:'no-store'});
      if(!resp.ok)throw new Error('Não foi possível carregar o squeeze Meshy');
      const data=await resp.arrayBuffer(), view=new DataView(data);
      const signature=String.fromCharCode(...new Uint8Array(data,0,4));
@@ -187,23 +187,21 @@ function createTioMock3D(canvas){
        if(count>350000||off+count*32>data.byteLength)throw new Error('Geometria incorreta');
        // Cópia independente da malha: preservar o arquivo Meshy e as coordenadas U.
        const item=new Float32Array(new Float32Array(data,off,count*8));
-       if(part===0){
-         // Ajuste do corpo sublimável do squeeze.
-         // Meta: corrigir o rodapé sem "comer" a borda preta da tampa.
-         // Estratégia: ancorar o topo do corpo praticamente no lugar original
-         // e estender a malha mais para baixo, em vez de crescer a partir do centro.
-         let topY=-Infinity;
-         for(let i=0;i<item.length;i+=8) topY=Math.max(topY,item[i+1]);
-         const topLift=0.006;   // fecha levemente a falha junto da tampa
-         const stretchDown=1.105; // alonga o corpo para cobrir melhor o rodapé
-         for(let i=0;i<item.length;i+=8){
-           const dy=topY-item[i+1];
-           item[i+1]=(topY+topLift) - (dy*stretchDown);
-         }
-       }
+       // Não alterar a posição dos vértices do Meshy: os deslocamentos
+       // verticais anteriores criavam novas falhas na tampa e no rodapé.
+       // A geometria original fica preservada nos arquivos binários.
        lists.push(upload(item)); off+=count*32;
      }
-     meshySqueeze={body:lists[0],extras:lists[1]};
+     // O corpo do Meshy apresenta bordas de impressão irregulares e uma
+     // faixa branca na base. Uma manga cilíndrica regular corrige só a área
+     // sublimável (emenda 360°), sem alterar a geometria da tampa.
+     const sleeve=[];
+     cylinder(sleeve,0.469,0.469,-1.369,0.647,{uvMode:'full'});
+     // Colarinho separado cobre a junção irregular entre manga e tampa;
+     // é uma superfície PRETA constante, nunca amostrada da imagem da arte.
+     const collar=[];
+     cylinder(collar,0.474,0.456,0.634,0.915,{uvMode:'full'});
+     meshySqueeze={body:upload(sleeve),extras:lists[1],collar:upload(collar)};
      window.dispatchEvent(new Event('tio-meshy-ready'));
    }catch(err){console.warn('Squeeze Meshy:',err);}
  }
@@ -279,7 +277,7 @@ function createTioMock3D(canvas){
      window.dispatchEvent(new Event('tio-meshy-ready'));
    };
    im.onerror=()=>console.warn('Não foi possível carregar os materiais do squeeze');
-   im.src='squeeze-material.jpg?v=0810';
+   im.src='squeeze-material.jpg?v=0820';
  }
  const mesh = () => [];
  const vec3 = (x,y,z) => [x,y,z];
@@ -525,6 +523,10 @@ function createTioMock3D(canvas){
      draw(config.body,[1,1,1],true);
      gl.bindTexture(gl.TEXTURE_2D,squeezeMaterial);
      draw(config.extras,[.94,.95,.96],squeezeMaterialReady);
+     // Renderizar após os detalhes: o colarinho mantém a faixa escura nítida,
+     // sem "dentes" brancos gerados pela textura/UV original do Meshy.
+     gl.bindTexture(gl.TEXTURE_2D,texture);
+     draw(config.collar,[.12,.125,.13],false);
      gl.flush();
      const err=gl.getError();
      if(err!==gl.NO_ERROR)return false;
