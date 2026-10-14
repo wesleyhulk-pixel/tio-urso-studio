@@ -1,10 +1,16 @@
-# Tio Urso Studio — Alpha 0.7.9 — caneca de chopp Meshy
+# Tio Urso Studio — Alpha 0.8.0 · Caneca de chopp de vidro jateado
 
-Primeira integração **experimental** do modelo 3D de caneca de chopp de vidro em arquivo GLB fornecido pelo usuário.
+Teste incremental focado exclusivamente no mockup da **caneca de chopp (20,5 × 14,5 cm)**.
 
-- Corpo e alça baseados no modelo real Meshy; cor branca/prateada levemente translúcida.
-- A estampa é uma camada independente em torno do corpo, evitando deformar a geometria do vidro.
-- Suporte a rotação em mockup 3D, mantendo a cena de mesa e os controles do app.
-- A caneca de café permanece inalterada. O squeeze permanece como na 0.7.8.
-- Arquivos ficam na raiz do ZIP; substitua os arquivos do site na raiz do repositório.
-- Verifique a apresentação no navegador: é uma prévia beta, não um ensaio físico da transparência ou impressão.
+- Modelo original Meshy com corpo e alça próprios.
+- Reorientação da alça: na frente fica atrás, nas vistas laterais fica à esquerda/direita.
+- Rotação no centro do corpo (não orbita outro ponto).
+- Vidro jateado com acabamento fosco e leve translucidez (não transparente demais).
+- Estampa mapeada diretamente sobre as faces externas reais do vidro, sem cilindro artificial, sem repetir sobre a traseira.
+- Proporções originais da malha preservadas.
+- Caneca de café aprovada e demais produtos sem mudanças intencionais.
+
+O mockup continua experimental. Confira visualmente no seu celular antes de utilizá-lo como apresentação final.
+
+## Atualização do GitHub Pages
+Extraia todos os arquivos do ZIP e envie para a **raiz do repositório** no GitHub, substituindo os arquivos com os mesmos nomes. Aguarde a publicação e confira o selo **ALPHA 0.8.0**.

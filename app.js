@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.7.9 — foco na caneca tradicional, com cenário por imagem e refino visual. */
+/* Tio Urso Studio Alpha 0.8.0 — foco na caneca tradicional, com cenário por imagem e refino visual. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -325,7 +325,7 @@ function renderMockup(){
  if(finishControls)finishControls.hidden=state.product!=='caneca';
  const three=rotaryProducts.has(state.product)&&mock3d?.supported;
  mock3dCanvas.hidden=!three;mock.hidden=three;mockSceneCanvas.hidden=!three;
- $('mockTypeTag').textContent=three?((state.product==='caneca'||state.product==='squeeze')?'3D MESHY BETA':'3D BETA'):'2D';
+ $('mockTypeTag').textContent=three?((state.product==='caneca'||state.product==='squeeze'||state.product==='chopp')?'3D MESHY BETA':'3D BETA'):'2D';
  if(three){
    let drawn=false;
    try{
