@@ -1,144 +1,261 @@
-/* Tio Urso Studio Alpha 0.5.3 — mockup 3D com cobertura total da arte e alça arredondada. */
+/* Tio Urso Studio Alpha 0.5.4 — mockup 3D estável em canvas 2D.
+ * Corrige corte lateral da arte e alça pontiaguda/"asa". */
 (() => {
 'use strict';
+
 function createTioMock3D(canvas){
- let gl;
- try {gl=canvas.getContext('webgl',{alpha:true,preserveDrawingBuffer:true,antialias:true,premultipliedAlpha:false});}catch(_){return{supported:false};}
- if(!gl) return {supported:false};
- const vs=`attribute vec3 p;attribute vec3 n;attribute vec2 uv;
- uniform float yaw;uniform float aspect;varying vec2 vUv;varying float shade;
- void main(){
-   float c=cos(yaw),s=sin(yaw);
-   vec3 pos=vec3(c*p.x+s*p.z,p.y,-s*p.x+c*p.z);
-   vec3 nor=normalize(vec3(c*n.x+s*n.z,n.y,-s*n.x+c*n.z));
-   float py=pos.y*.985-pos.z*.12;
-   float pz=pos.z*.985+pos.y*.12;
-   float depth=6.1-pz;float f=2.18;
-   gl_Position=vec4(pos.x*f/aspect,py*f,(depth*1.003-.201),depth);
-   vec3 light=normalize(vec3(-.38,.8,1.0));
-   shade=.78+.22*max(dot(nor,light),0.0);
-   vUv=uv;
- }`;
- const fs=`precision mediump float;varying vec2 vUv;varying float shade;
- uniform sampler2D tex;uniform vec3 base;uniform float textured;
- void main(){
-   vec3 col=base;
-   if(textured>.5){
-     float gap=0.055;             // pequena folga de alça, não metade da caneca
-     float u=fract(vUv.x);        // 0/1 ficam na retaguarda da peça
-     float artU;
-     if(u<gap*0.5 || u>1.0-gap*0.5){
-       col=base;
-     }else{
-       artU=(u-gap*0.5)/(1.0-gap);
-       col=texture2D(tex, vec2(artU, clamp(vUv.y,0.0,1.0))).rgb;
-     }
-   }
-   float sideLight=.985-.07*pow(abs(fract(vUv.x)-.5)*2.0,2.0);
-   col*=shade*sideLight;
-   gl_FragColor=vec4(min(col*1.04,vec3(1.0)),1.0);
- }`;
- function compile(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
- let program;
- try {program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));}catch(e){return {supported:false,error:String(e)};}
- gl.useProgram(program);
- const ap=gl.getAttribLocation(program,'p'),an=gl.getAttribLocation(program,'n'),au=gl.getAttribLocation(program,'uv');
- const yy=gl.getUniformLocation(program,'yaw'),aspect=gl.getUniformLocation(program,'aspect'),color=gl.getUniformLocation(program,'base'),textured=gl.getUniformLocation(program,'textured');
- const texture=gl.createTexture();gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
- gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
- gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
- gl.uniform1i(gl.getUniformLocation(program,'tex'),0);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.CULL_FACE);
- const meshCache=new Map();
- function vertex(dst,pt,n,u=-1,v=-1){dst.push(pt[0],pt[1],pt[2],n[0],n[1],n[2],u,v);}
- function quad(dst,a,b,c,d,normal,uvs=[[-1,-1],[-1,-1],[-1,-1],[-1,-1]]){
-  vertex(dst,a,normal,...uvs[0]);vertex(dst,b,normal,...uvs[1]);vertex(dst,c,normal,...uvs[2]);
-  vertex(dst,a,normal,...uvs[0]);vertex(dst,c,normal,...uvs[2]);vertex(dst,d,normal,...uvs[3]);
- }
- function ring(dst,outer,inner,y,matNormal){
-  const N=96;for(let i=0;i<N;i++){const a=(i/N)*2*Math.PI,b=((i+1)/N)*2*Math.PI;
-   const p=(r,t)=>[Math.sin(t)*r,y,Math.cos(t)*r];quad(dst,p(outer,a),p(outer,b),p(inner,b),p(inner,a),matNormal);}
- }
- function cylinder(dst, rBottom,rTop,bottom,top,{inward=false,uv=false}={}){
-  const N=220;
-  for(let j=0;j<N;j++){
-   const a=-Math.PI+j/N*Math.PI*2,b=-Math.PI+(j+1)/N*Math.PI*2;
-   const rr=(phi,r,y)=>[Math.sin(phi)*r,y,Math.cos(phi)*r];
-   const mid=(a+b)/2;
-   const normal=[Math.sin(mid),.02,Math.cos(mid)].map(v=>v*(inward?-1:1));
-   const uvFn=x=>uv?((x+Math.PI)/(Math.PI*2)):-1;
-   quad(dst,rr(a,rBottom,bottom),rr(b,rBottom,bottom),rr(b,rTop,top),rr(a,rTop,top),normal,[[uvFn(a),0],[uvFn(b),0],[uvFn(b),1],[uvFn(a),1]]);
+  const ctx = canvas.getContext('2d');
+  if(!ctx) return { supported:false };
+
+  const TAU = Math.PI * 2;
+  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+  const wrap01 = v => ((v % 1) + 1) % 1;
+  const deg = d => d * Math.PI / 180;
+
+  function roundedRect(g,x,y,w,h,r){
+    const rr=Math.min(r,w/2,h/2);
+    g.beginPath();
+    g.moveTo(x+rr,y);
+    g.arcTo(x+w,y,x+w,y+h,rr);
+    g.arcTo(x+w,y+h,x,y+h,rr);
+    g.arcTo(x,y+h,x,y,rr);
+    g.arcTo(x,y,x+w,y,rr);
+    g.closePath();
   }
- }
- function torusEllipse(dst,cx,cy,cz,rx,ry,tubeR){
-  const loops=80,sides=20;
-  for(let i=0;i<loops;i++){
-    const t=i/loops*2*Math.PI,t2=(i+1)/loops*2*Math.PI;
-    const c1=[cx+rx*Math.cos(t),cy+ry*Math.sin(t),cz];
-    const c2=[cx+rx*Math.cos(t2),cy+ry*Math.sin(t2),cz];
-    const radial1=[Math.cos(t),Math.sin(t),0], radial2=[Math.cos(t2),Math.sin(t2),0];
-    const bin=[0,0,1];
-    const point=(c,rad,ang)=>[
-      c[0]+tubeR*(Math.cos(ang)*rad[0]+Math.sin(ang)*bin[0]),
-      c[1]+tubeR*(Math.cos(ang)*rad[1]+Math.sin(ang)*bin[1]),
-      c[2]+tubeR*(Math.cos(ang)*rad[2]+Math.sin(ang)*bin[2])
-    ];
-    const norm=(rad,ang)=>[
-      Math.cos(ang)*rad[0]+Math.sin(ang)*bin[0],
-      Math.cos(ang)*rad[1]+Math.sin(ang)*bin[1],
-      Math.cos(ang)*rad[2]+Math.sin(ang)*bin[2]
-    ];
-    for(let k=0;k<sides;k++){
-      const a=k/sides*2*Math.PI,b=(k+1)/sides*2*Math.PI;
-      quad(dst,
-        point(c1,radial1,a),point(c1,radial1,b),point(c2,radial2,b),point(c2,radial2,a),
-        norm(radial1,(a+b)/2)
-      );
+
+  function makeBodyPath(g,cx,topY,bottomY,topW,bottomW,topRy,bottomRy){
+    const yTop = topY + topRy;
+    const yBottom = bottomY - bottomRy;
+    const leftTop = cx - topW/2, rightTop = cx + topW/2;
+    const leftBottom = cx - bottomW/2, rightBottom = cx + bottomW/2;
+
+    g.beginPath();
+    g.moveTo(leftTop, yTop);
+    g.bezierCurveTo(leftTop-4, yTop + (yBottom-yTop)*0.28, leftBottom-4, yBottom - (yBottom-yTop)*0.28, leftBottom, yBottom);
+    g.ellipse(cx, yBottom, bottomW/2, bottomRy, 0, Math.PI, 0, true);
+    g.bezierCurveTo(rightBottom+4, yBottom - (yBottom-yTop)*0.28, rightTop+4, yTop + (yBottom-yTop)*0.28, rightTop, yTop);
+    g.ellipse(cx, yTop, topW/2, topRy, 0, 0, Math.PI, true);
+    g.closePath();
+  }
+
+  function drawTableScene(g, W, H, groundY){
+    // mesa suave / cenário
+    const backGrad = g.createLinearGradient(0,0,0,H);
+    backGrad.addColorStop(0,'rgba(255,255,255,0.03)');
+    backGrad.addColorStop(1,'rgba(20,40,55,0.04)');
+    g.fillStyle = backGrad;
+    g.fillRect(0,0,W,H);
+
+    g.save();
+    g.fillStyle='rgba(255,255,255,0.28)';
+    roundedRect(g, 120, groundY+18, W-240, 54, 24);
+    g.fill();
+    g.restore();
+
+    const tableGrad = g.createLinearGradient(0,groundY,0,groundY+60);
+    tableGrad.addColorStop(0,'rgba(180,196,207,0.10)');
+    tableGrad.addColorStop(1,'rgba(95,120,136,0.20)');
+    g.fillStyle = tableGrad;
+    g.beginPath();
+    g.ellipse(W/2, groundY+35, 300, 36, 0, 0, TAU);
+    g.fill();
+
+    g.fillStyle='rgba(40,66,86,0.10)';
+    g.beginPath();
+    g.ellipse(W/2, groundY+18, 210, 18, 0, 0, TAU);
+    g.fill();
+  }
+
+  function drawHandle(g, opts, angleDeg, frontLayer){
+    const {cx, cy, bodyH, topW, kind} = opts;
+    const h = deg(angleDeg + 180);
+    const xNorm = -Math.sin(h);      // esquerda negativa, direita positiva
+    const z = Math.cos(h);           // <0 atrás, >0 frente
+    const shouldFront = z >= 0;
+    if(frontLayer !== shouldFront) return;
+
+    const showStrength = frontLayer ? Math.max(0.25, z) : Math.max(0.25, -z);
+    const sideFactor = Math.max(0.15, Math.abs(xNorm));
+    const centerX = cx + xNorm * (topW * 0.47);
+    const centerY = cy + (kind==='chopp' ? 4 : 0);
+    const rx = (kind==='chopp' ? 58 : 50) * (0.35 + sideFactor * 0.65);
+    const ry = (kind==='chopp' ? 96 : 88) * (0.86 + sideFactor * 0.12);
+    const lineW = kind==='chopp' ? 20 : 18;
+
+    g.save();
+    g.lineCap='round';
+    g.lineJoin='round';
+    g.strokeStyle = frontLayer ? `rgba(248,251,255,${0.95*showStrength})` : `rgba(185,197,208,${0.75*showStrength})`;
+    g.lineWidth = lineW;
+    g.beginPath();
+    g.ellipse(centerX, centerY, rx, ry, 0, 0, TAU);
+    g.stroke();
+
+    g.strokeStyle = frontLayer ? `rgba(122,145,165,${0.22*showStrength})` : `rgba(55,75,96,${0.18*showStrength})`;
+    g.lineWidth = Math.max(2, lineW*0.28);
+    g.beginPath();
+    g.ellipse(centerX, centerY, rx, ry, 0, 0, TAU);
+    g.stroke();
+    g.restore();
+  }
+
+  function drawMug(g, art, angleDeg, kind){
+    const W = canvas.width, H = canvas.height;
+    const chopp = kind === 'chopp';
+    const cx = W/2;
+    const cy = H/2 + (chopp ? 20 : 10);
+    const topW = chopp ? 270 : 250;
+    const bottomW = chopp ? 252 : 238;
+    const bodyH = chopp ? 290 : 250;
+    const topRy = chopp ? 18 : 16;
+    const bottomRy = chopp ? 16 : 14;
+    const topY = cy - bodyH/2;
+    const bottomY = cy + bodyH/2;
+    const bodyX = cx - topW/2;
+    const bodyY = topY + topRy;
+    const bodyInnerH = bottomY - bottomRy - bodyY;
+
+    drawTableScene(g, W, H, bottomY + 48);
+
+    // alça atrás do corpo quando necessário
+    drawHandle(g, {cx, cy, bodyH, topW, kind}, angleDeg, false);
+
+    // sombra principal
+    g.save();
+    g.fillStyle='rgba(48,74,92,0.16)';
+    g.beginPath();
+    g.ellipse(cx, bottomY + 32, topW*0.52, 20, 0, 0, TAU);
+    g.fill();
+    g.restore();
+
+    // corpo base
+    g.save();
+    const porcelain = g.createLinearGradient(bodyX,0,bodyX+topW,0);
+    porcelain.addColorStop(0,'#d3dde4');
+    porcelain.addColorStop(0.09,'#fbfdff');
+    porcelain.addColorStop(0.24,'#ffffff');
+    porcelain.addColorStop(0.76,'#ffffff');
+    porcelain.addColorStop(0.91,'#eef4f7');
+    porcelain.addColorStop(1,'#c5d3db');
+    g.fillStyle = porcelain;
+    makeBodyPath(g,cx,topY,bottomY,topW,bottomW,topRy,bottomRy);
+    g.fill();
+    g.restore();
+
+    // arte embrulhada na superfície — cobertura integral, sem "comer metade"
+    const wrap = document.createElement('canvas');
+    wrap.width = Math.max(32, Math.round(topW));
+    wrap.height = Math.max(32, Math.round(bodyInnerH));
+    const wg = wrap.getContext('2d');
+    const srcW = art.width - 1;
+    for(let x=0; x<wrap.width; x++){
+      const u = (x/(wrap.width-1))*2 - 1;
+      const phi = Math.asin(clamp(u,-1,1));
+      const t = wrap01(0.5 + (phi/TAU) + angleDeg/360);
+      const sx = Math.max(0, Math.min(srcW, Math.round(t * srcW)));
+      wg.drawImage(art, sx, 0, 1, art.height, x, 0, 1.2, wrap.height);
     }
+
+    // aplica arte recortada no corpo
+    g.save();
+    makeBodyPath(g,cx,topY,bottomY,topW,bottomW,topRy,bottomRy);
+    g.clip();
+    g.drawImage(wrap, bodyX, bodyY, topW, bodyInnerH);
+
+    const shade = g.createLinearGradient(bodyX,0,bodyX+topW,0);
+    shade.addColorStop(0,'rgba(15,26,38,0.38)');
+    shade.addColorStop(0.10,'rgba(15,26,38,0.12)');
+    shade.addColorStop(0.25,'rgba(255,255,255,0.11)');
+    shade.addColorStop(0.50,'rgba(255,255,255,0.02)');
+    shade.addColorStop(0.80,'rgba(255,255,255,0.10)');
+    shade.addColorStop(0.92,'rgba(18,28,40,0.12)');
+    shade.addColorStop(1,'rgba(15,26,38,0.28)');
+    g.fillStyle = shade;
+    g.fillRect(bodyX-2, topY, topW+4, bodyH);
+
+    // brilho vertical
+    g.fillStyle = 'rgba(255,255,255,0.22)';
+    roundedRect(g, cx-topW*0.18, topY+18, topW*0.06, bodyH-40, 20);
+    g.fill();
+    g.restore();
+
+    // interior / boca
+    g.save();
+    g.fillStyle='rgba(40,48,56,0.92)';
+    g.beginPath();
+    g.ellipse(cx, topY + topRy + 1, topW/2 - 10, topRy - 5, 0, 0, TAU);
+    g.fill();
+    g.fillStyle='rgba(255,255,255,0.28)';
+    g.beginPath();
+    g.ellipse(cx, topY + topRy + 3, topW/2 - 16, topRy - 9, 0, Math.PI, 0, true);
+    g.fill();
+    g.restore();
+
+    // borda externa
+    g.save();
+    g.strokeStyle='rgba(238,245,250,0.95)';
+    g.lineWidth=6;
+    g.beginPath();
+    g.ellipse(cx, topY + topRy, topW/2, topRy, 0, 0, TAU);
+    g.stroke();
+    g.strokeStyle='rgba(160,176,190,0.55)';
+    g.lineWidth=2;
+    g.beginPath();
+    g.ellipse(cx, topY + topRy, topW/2, topRy, 0, 0, TAU);
+    g.stroke();
+
+    g.strokeStyle='rgba(210,220,229,0.9)';
+    g.lineWidth=4;
+    g.beginPath();
+    g.ellipse(cx, bottomY - bottomRy, bottomW/2, bottomRy, 0, 0, Math.PI);
+    g.stroke();
+    g.restore();
+
+    // alça na frente quando necessário
+    drawHandle(g, {cx, cy, bodyH, topW, kind}, angleDeg, true);
   }
- }
- function makeProduct(kind){
-  const tall=kind==='chopp'?2.48:kind==='squeeze'?2.68:2.12;
-  const radius=kind==='squeeze'?.82:kind==='chopp'?1.08:1.14;
-  const up=tall/2,down=-tall/2;
-  const bR=kind==='chopp'?radius*.83:radius*.965;
-  let body=[],trim=[],inside=[],handle=[];
-  cylinder(body,bR,radius,down+.05,up-.10,{uv:true});
-  cylinder(inside,radius-.095,radius-.10,up-.53,up-.095,{inward:true});
-  ring(trim,radius+.012,radius-.115,up-.09,[0,1,0]);
-  ring(trim,bR+.01,bR-.045,down+.05,[0,-1,0]);
-  if(kind!=='squeeze'){
-    // Alça arredondada, com seção circular e curva suave.
-    torusEllipse(handle,0,-0.02,-radius-0.10,0.48,0.72,0.11);
+
+  function drawSqueeze(g, art, angleDeg){
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2 + 10;
+    const bodyW = 200, bodyH = 330, r=28;
+    const x = cx - bodyW/2, y = cy - bodyH/2;
+
+    drawTableScene(g, W, H, y + bodyH + 44);
+
+    g.save();
+    g.fillStyle='#223746'; roundedRect(g, cx-84, y-90, 168, 68, 20); g.fill();
+    g.fillStyle='#5f7485'; roundedRect(g, cx-56, y-32, 112, 36, 10); g.fill();
+
+    const metal = g.createLinearGradient(x,0,x+bodyW,0);
+    metal.addColorStop(0,'#94adbb'); metal.addColorStop(0.16,'#fafdff'); metal.addColorStop(0.50,'#ffffff'); metal.addColorStop(0.84,'#eef5f8'); metal.addColorStop(1,'#8ea7b6');
+    g.fillStyle=metal; roundedRect(g,x,y,bodyW,bodyH,r); g.fill();
+
+    const wrap = document.createElement('canvas');
+    wrap.width = bodyW; wrap.height = bodyH-24;
+    const wg = wrap.getContext('2d'); const srcW = art.width-1;
+    for(let xx=0; xx<wrap.width; xx++){
+      const u=(xx/(wrap.width-1))*2-1; const phi=Math.asin(clamp(u,-1,1));
+      const t=wrap01(0.5 + (phi/TAU) + angleDeg/360); const sx=Math.max(0,Math.min(srcW,Math.round(t*srcW)));
+      wg.drawImage(art,sx,0,1,art.height,xx,0,1.2,wrap.height);
+    }
+    roundedRect(g,x+7,y+10,bodyW-14,bodyH-20,20); g.clip(); g.drawImage(wrap,x,y+12,bodyW,bodyH-24);
+    const shade=g.createLinearGradient(x,0,x+bodyW,0);
+    shade.addColorStop(0,'rgba(15,26,38,.32)'); shade.addColorStop(.18,'rgba(255,255,255,.12)'); shade.addColorStop(.82,'rgba(255,255,255,.08)'); shade.addColorStop(1,'rgba(15,26,38,.28)');
+    g.fillStyle=shade; g.fillRect(x,y,bodyW,bodyH);
+    g.restore();
+
+    g.strokeStyle='rgba(239,246,250,.88)'; g.lineWidth=4; roundedRect(g,x,y,bodyW,bodyH,r); g.stroke();
   }
-  if(kind==='squeeze'){
-    cylinder(trim,.40,.40,up-.09,up+.28);
-    ring(trim,.43,.05,up+.28,[0,1,0]);
-    cylinder(trim,.19,.19,up+.28,up+.40);
+
+  function render(kind, art, angle){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(kind === 'squeeze') drawSqueeze(ctx, art, angle||0);
+    else drawMug(ctx, art, angle||0, kind === 'chopp' ? 'chopp' : 'caneca');
   }
-  function upload(src){if(!src.length)return null;const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(src),gl.STATIC_DRAW);return {buffer:buf,count:src.length/8};}
-  return {body:upload(body),trim:upload(trim),inside:upload(inside),handle:upload(handle)};
- }
- function draw(obj,hex,useTexture){if(!obj)return;gl.bindBuffer(gl.ARRAY_BUFFER,obj.buffer);const stride=8*4;
-  gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,3,gl.FLOAT,false,stride,0);
-  gl.enableVertexAttribArray(an);gl.vertexAttribPointer(an,3,gl.FLOAT,false,stride,12);
-  gl.enableVertexAttribArray(au);gl.vertexAttribPointer(au,2,gl.FLOAT,false,stride,24);
-  gl.uniform1f(textured,useTexture?1:0);gl.uniform3f(color,...hex);gl.drawArrays(gl.TRIANGLES,0,obj.count);
- }
- let wasLost=false;
- canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();wasLost=true;});
- function render(kind,art,angle){if(wasLost)return;const config=meshCache.get(kind)||makeProduct(kind);meshCache.set(kind,config);
-  gl.viewport(0,0,canvas.width,canvas.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  // Frente = alça atrás; esquerda = alça à esquerda; direita = alça à direita.
-  const alignedYaw=(-angle)*Math.PI/180;
-  gl.uniform1f(yy,alignedYaw);gl.uniform1f(aspect,canvas.width/canvas.height);
-  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,art);
-  draw(config.body,[1,1,1],true);
-  draw(config.inside,[.73,.79,.84],false);
-  draw(config.trim,kind==='squeeze'?[.22,.26,.30]:[.97,.98,1.0],false);
-  draw(config.handle,[.97,.98,1.0],false);
-  gl.flush();
- }
- return {supported:true,render};
+
+  return { supported:true, render };
 }
-window.createTioMock3D=createTioMock3D;
+
+window.createTioMock3D = createTioMock3D;
 })();
