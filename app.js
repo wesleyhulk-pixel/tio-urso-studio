@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.2 — foco na caneca tradicional, com cenário por imagem e refino visual. */
+/* Tio Urso Studio Alpha 0.6.3 — foco na caneca tradicional, com cenário por imagem e refino visual. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -14,12 +14,16 @@ const PRODUCTS = {
 const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
 const mockSceneCanvas=$('mockSceneCanvas');
+const sceneControl=$('sceneControl');
 const sceneSelect=$('mockSceneChoice');
+const sceneMenuTrigger=$('sceneMenuTrigger');
+const sceneMenu=$('sceneMenu');
+const sceneTriggerLabel=$('sceneTriggerLabel');
 const sceneImagePicker=$('sceneImagePicker');
 const mock3dCanvas=$('mock3dCanvas');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
 const rotaryProducts=new Set(['caneca','chopp','squeeze']);
-let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null};
+let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira'};
 let customSceneImage=null;
 const imageCache = new Map();
 let drag = null, activeGuides = null, toastHandle = null, seq = 0, previewQueued=false;
@@ -112,6 +116,7 @@ async function setCustomSceneFromFile(file){
  customSceneImage=img;
  state.mockSceneChoice='imagem';
  sceneSelect.value='imagem';
+ updateSceneMenuUI();
  return true;
 }
 function openScenePicker(){
@@ -271,40 +276,38 @@ function drawWrappedTexture(g,source,left,right,top,bottom,angle){
 }
 
 // Cenário atrás do modelo 3D, sem interferir na geometria nem na estampa.
+// Cenário 3D: a fotografia personalizada cobre somente a parede ao fundo.
+// A superfície da mesa é uma camada independente, nunca retirada por "Escolher imagem".
 if(!window.paintTioScene){
- window.paintTioScene = function(canvas, mode, customImg){
+ window.paintTioScene = function(canvas, mode, customImg, tableStyle='madeira'){
   const g=canvas.getContext('2d'), W=canvas.width,H=canvas.height;
+  const lineY=H*.72;
   g.clearRect(0,0,W,H);
-  if(mode==='imagem'){
-   if(customImg?.complete&&customImg.naturalWidth){
-    const iw=customImg.naturalWidth, ih=customImg.naturalHeight;
-    const scale=Math.max(W/iw,H/ih), dw=iw*scale, dh=ih*scale;
-    const dx=(W-dw)/2, dy=(H-dh)/2;
-    g.drawImage(customImg,dx,dy,dw,dh);
-    g.fillStyle='rgba(255,255,255,.10)';g.fillRect(0,0,W,H);
-    return;
-   }
-   g.fillStyle='#edf4f8';g.fillRect(0,0,W,H);
-   g.strokeStyle='rgba(33,78,104,.28)';g.lineWidth=3;g.setLineDash([12,9]);g.strokeRect(W*.13,H*.16,W*.74,H*.48);g.setLineDash([]);
-   g.fillStyle='#537186';g.font='600 34px Arial';g.textAlign='center';g.textBaseline='middle';g.fillText('Escolha uma imagem para o cenário',W/2,H/2-8);
-   g.font='500 22px Arial';g.fillStyle='#6b8797';g.fillText('Selecione “Escolher imagem” novamente para trocar depois.',W/2,H/2+32);
-   return;
-  }
-  if(mode==='limpo'){
+  const custom=mode==='imagem'&&customImg?.complete&&customImg.naturalWidth>0;
+  if(custom){
+   const iw=customImg.naturalWidth,ih=customImg.naturalHeight;
+   // Crop tipo "cover" SOMENTE na área da parede, sem substituir a mesa.
+   const factor=Math.max(W/iw,lineY/ih),w=iw*factor,h=ih*factor;
+   g.drawImage(customImg,(W-w)/2,(lineY-h)/2,w,h);
+   g.fillStyle='rgba(255,255,255,.08)';g.fillRect(0,0,W,lineY);
+  }else if(mode==='limpo'){
    g.fillStyle='#edf4f8';g.fillRect(0,0,W,H);return;
+  }else{
+   const light=mode==='clara'||(mode==='imagem'&&tableStyle==='clara');
+   const wall=g.createLinearGradient(0,0,0,lineY);
+   wall.addColorStop(0,light?'#f5f7f9':'#eef5ef');wall.addColorStop(1,light?'#e2edf1':'#d9e7dc');
+   g.fillStyle=wall;g.fillRect(0,0,W,lineY);
   }
-  const light=mode==='clara';
-  const wall=g.createLinearGradient(0,0,0,H*.68);
-  wall.addColorStop(0,light?'#f5f7f9':'#eef5ef');wall.addColorStop(1,light?'#e2edf1':'#d9e7dc');
-  g.fillStyle=wall;g.fillRect(0,0,W,H);
-  const table=g.createLinearGradient(0,H*.72,0,H);
+  // "Escolher imagem" conserva a última mesa escolhida (madeira ou clara).
+  const light=mode==='clara'||(mode==='imagem'&&tableStyle==='clara');
+  const table=g.createLinearGradient(0,lineY,0,H);
   table.addColorStop(0,light?'#f6f2ed':'#a9744c');
   table.addColorStop(1,light?'#e9ded0':'#71462e');
-  g.fillStyle=table;g.fillRect(0,H*.72,W,H*.28);
+  g.fillStyle=table;g.fillRect(0,lineY,W,H-lineY);
   g.fillStyle=light?'rgba(182,157,141,.19)':'rgba(64,38,24,.25)';
-  g.fillRect(0,H*.72,W,3);
+  g.fillRect(0,lineY,W,3);
   for(let k=0;k<10;k++){
-   const y=H*.73+k*21;
+   const y=lineY+10+k*21;
    g.fillStyle=light?'rgba(171,153,141,.09)':'rgba(54,28,16,.13)';
    g.fillRect(0,y,W,1.4);
   }
@@ -324,7 +327,7 @@ function renderMockup(){
    }catch(err){
      console.error('Falha no mockup 3D, usando prévia de segurança:',err);
    }
-   if(drawn){window.paintTioScene?.(mockSceneCanvas,state.mockSceneChoice,customSceneImage);return;}
+   if(drawn){window.paintTioScene?.(mockSceneCanvas,state.mockSceneChoice,customSceneImage,state.mockTableStyle);return;}
    // O modo 3D não deve esconder o produto se houver uma falha gráfica.
    mock3dCanvas.hidden=true;mockSceneCanvas.hidden=true;mock.hidden=false;
    $('mockTypeTag').textContent='PRÉVIA 2D';
@@ -332,12 +335,10 @@ function renderMockup(){
 
  const W=1100,H=660,g=mctx;
  g.clearRect(0,0,W,H);
- if(state.mockSceneChoice==='imagem'&&customSceneImage?.complete&&customSceneImage.naturalWidth){
-   const iw=customSceneImage.naturalWidth, ih=customSceneImage.naturalHeight;
-   const scale=Math.max(W/iw,H/ih), dw=iw*scale, dh=ih*scale;
-   const dx=(W-dw)/2, dy=(H-dh)/2;
-   g.drawImage(customSceneImage,dx,dy,dw,dh);
- }else stageGradient(g);
+ // A prévia 2D usa a mesma parede + mesa da prévia WebGL.
+ // A escolha de foto não elimina a mesa em aparelhos sem WebGL.
+ if(window.paintTioScene)window.paintTioScene(mock,state.mockSceneChoice,customSceneImage,state.mockTableStyle);
+ else stageGradient(g);
  const source=artworkCanvas(1000,artH());
  if(state.product==='camiseta'){
    // Camiseta ilustrativa independente da geometria cilíndrica.
@@ -443,27 +444,43 @@ async function pdfExport(){try{
  downloadBlob(new Blob(sections,{type:'application/pdf'}),safeFilename('pdf',mode));toast('PDF '+mode+' criado em tamanho real.');
  }catch(e){toast('Falha ao exportar PDF: '+e.message);}}
 $('downloadPng').addEventListener('click',pngExport);$('downloadPdf').addEventListener('click',pdfExport);
-sceneSelect.addEventListener('change',()=>{
- state.mockSceneChoice=sceneSelect.value;
- if(sceneSelect.value==='imagem'){
-   openScenePicker();
- }
- renderMockup();
+const SCENE_NAMES={madeira:'Mesa de madeira',clara:'Mesa clara',limpo:'Fundo neutro',imagem:'Escolher imagem'};
+function updateSceneMenuUI(){
+ const mode=state.mockSceneChoice||'madeira';
+ sceneSelect.value=mode;
+ sceneTriggerLabel.textContent=SCENE_NAMES[mode]||SCENE_NAMES.madeira;
+ sceneMenu.querySelectorAll('[data-scene-mode]').forEach(b=>b.classList.toggle('active',b.dataset.sceneMode===mode));
+}
+function closeSceneMenu(){
+ sceneMenu.hidden=true;
+ sceneMenuTrigger.setAttribute('aria-expanded','false');
+}
+sceneMenuTrigger.addEventListener('click',()=>{
+ sceneMenu.hidden=!sceneMenu.hidden;
+ sceneMenuTrigger.setAttribute('aria-expanded',String(!sceneMenu.hidden));
 });
-['click','touchstart'].forEach(evt=>sceneSelect.addEventListener(evt,(ev)=>{
- if(sceneSelect.value==='imagem'){
-   ev.preventDefault();
-   openScenePicker();
- }
-},{passive:false}));
-sceneImagePicker?.addEventListener('change',async ev=>{
+sceneMenu.querySelectorAll('[data-scene-mode]').forEach(b=>b.addEventListener('click',()=>{
+ const mode=b.dataset.sceneMode;
+ state.mockSceneChoice=mode;
+ if(mode==='madeira'||mode==='clara')state.mockTableStyle=mode;
+ updateSceneMenuUI();closeSceneMenu();renderMockup();
+}));
+// O label "Escolher imagem" abre o seletor de arquivos NATIVO no próprio toque.
+// Evitamos o <select> nativo e chamadas atrasadas, que falhavam no Android.
+sceneImagePicker.addEventListener('change',async ev=>{
  const file=ev.target.files?.[0];
  try{
-   if(file){await setCustomSceneFromFile(file);toast('Imagem de cenário carregada.');}
-   else if(!state.mockSceneImage&&state.mockSceneChoice==='imagem'){state.mockSceneChoice='madeira';sceneSelect.value='madeira';}
- }catch(error){toast('Falha ao carregar cenário: '+error.message); if(!state.mockSceneImage){state.mockSceneChoice='madeira';sceneSelect.value='madeira';}}
- finally{ev.target.value='';renderMockup();}
+   if(file){await setCustomSceneFromFile(file);toast('Imagem de fundo carregada! A mesa foi preservada.');}
+ }catch(error){toast('Falha ao carregar o fundo: '+error.message);}
+ finally{ev.target.value='';closeSceneMenu();updateSceneMenuUI();renderMockup();}
 });
+document.addEventListener('click',event=>{
+ if(!sceneControl.contains(event.target))closeSceneMenu();
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&!sceneMenu.hidden){closeSceneMenu();sceneMenuTrigger.focus();}
+});
+updateSceneMenuUI();
 const finishPicker=$('mugFinishColor');
 const mugFinishChoices=document.querySelectorAll('[data-finish]');
 function setMugFinish(hex,refresh=true){
@@ -484,9 +501,9 @@ function calculate(){const c=['productCost','printingCost','extraCost'].reduce((
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
 $('saveProject').addEventListener('click',()=>{const backup={version:1,...state,selected:null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
 $('openProject').addEventListener('click',()=>$('projectPicker').click());
-$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null};
+$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira'};
  customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
- sceneSelect.value=state.mockSceneChoice;
+ updateSceneMenuUI();
  setMugFinish(state.mugFinishColor,false);
  for(const [family,info] of Object.entries(data.customFonts||{})){
   if(!/^TUS_[a-z0-9]+$/i.test(family)||typeof info?.src!=='string'||info.src.length>4000000)continue;
@@ -607,6 +624,6 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])mock3dCanv
 document.querySelectorAll('[data-mock-angle]').forEach(button=>button.addEventListener('click',()=>updateMockAngle(button.dataset.mockAngle)));
 
 // Inicialização. Sem salvamento remoto nem coleta de dados.
-updateMeasurements();$('bgColorSample').style.backgroundColor=state.bg;sceneSelect.value=state.mockSceneChoice;render();calculate();updateOrientationUI();
+updateMeasurements();$('bgColorSample').style.backgroundColor=state.bg;updateSceneMenuUI();render();calculate();updateOrientationUI();
 // O modo PWA completo será ativado quando os ícones, manifesto e SW estiverem publicados.
 })();

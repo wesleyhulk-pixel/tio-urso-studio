@@ -1,17 +1,12 @@
-# Tio Urso Studio Alpha 0.6.2
+# Tio Urso Studio — Alpha 0.6.3
 
-Ajuste incremental focado somente na caneca tradicional.
+**Escopo:** somente caneca tradicional + cenários.
 
-## Correções desta versão
-- removido o botão extra **Abrir galeria**
-- ao escolher **Escolher imagem** no seletor de cenário, o app tenta abrir diretamente a galeria do celular
-- se a opção **Escolher imagem** já estiver selecionada, tocar novamente no seletor também tenta abrir a galeria
-- alça da caneca tradicional afinada e redesenhada para ficar menos artificial e mais próxima da referência
+- Alça de porcelana com geometria tubular refeita: seção transversal perpendicular à curva e terminações suavizadas na fixação.
+- Menu próprio de cenários com as quatro opções sempre presentes: Mesa de madeira, Mesa clara, Fundo neutro e Escolher imagem.
+- A opção Escolher imagem usa o seletor nativo do celular, acionado diretamente pela seleção, sem botão adicional.
+- Foto personalizada substitui **apenas o fundo**, preservando a última mesa selecionada (madeira ou clara).
+- Ao escolher Fundo neutro, conserva-se o modo de fundo limpo sem mesa.
+- O editor, a exportação e os modelos de squeeze/chopp permanecem sem alterações.
 
-## Arquivos
-- index.html
-- style.css
-- app.js
-- mock3d.js
-- README.md
-- mascote.png
+**Teste:** confirmar frente, esquerda e direita; testar a abertura da galeria e a permanência da mesa após escolher foto.

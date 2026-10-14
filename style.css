@@ -130,3 +130,20 @@
 .finish-custom input{width:37px;height:37px;padding:2px;border:1px solid #d0dce3;border-radius:9px;background:white}
 
 @media(max-width:700px){.scene-control{align-items:flex-start;flex-direction:column}.scene-picker-wrap{max-width:100%;width:100%;flex-wrap:wrap}.scene-picker-wrap select{flex:1 1 100%}}
+
+/* Alpha 0.6.3: menu próprio compatível com a galeria do Android */
+.scene-control{position:relative;z-index:6;overflow:visible;align-items:center}
+.scene-control-title{font-size:13px;font-weight:800;color:#25506b;flex-shrink:0}
+.scene-picker-wrap{position:relative;max-width:64%;width:100%;display:block;flex:1;min-width:0}
+.scene-menu-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:12px 14px;background:#fff;color:#31536a;border:1px solid #d5e4ec;border-radius:11px;text-align:left;font-size:14px;min-height:47px;cursor:pointer}
+.scene-menu-trigger:focus-visible{outline:3px solid #27a6bd;outline-offset:2px}
+.scene-chevron{font-size:19px;line-height:1}
+.scene-menu{position:absolute;right:0;top:calc(100% + 6px);background:white;border:1px solid #cfe0e9;box-shadow:0 12px 32px rgba(8,35,55,.16);border-radius:14px;min-width:100%;width:max-content;max-width:min(86vw,330px);z-index:999;overflow:hidden}
+.scene-menu[hidden]{display:none!important}
+.scene-option{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 15px;border:0;border-bottom:1px solid #e6eef3;background:white;color:#2e526b;text-align:left;font-size:15px;line-height:1.25;cursor:pointer;font-weight:600}
+.scene-option:last-child{border-bottom:none}
+.scene-option:active,.scene-option:hover{background:#eaf8fb}
+.scene-option.active:after{content:'✓';color:#029bb4;font-weight:800;margin-left:18px}
+.scene-file-option{color:#027f99}
+.scene-input-file{position:absolute;left:-10000px;width:1px;height:1px;opacity:0;pointer-events:none}
+@media(max-width:700px){.scene-control{flex-direction:row;align-items:center;gap:12px}.scene-control-title{max-width:43%}.scene-picker-wrap{max-width:57%;width:auto}.scene-menu{max-width:85vw}}

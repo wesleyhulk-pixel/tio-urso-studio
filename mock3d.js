@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.2 — foco exclusivo no modelo da caneca tradicional.
+/* Tio Urso Studio Alpha 0.6.3 — foco exclusivo no modelo da caneca tradicional.
  * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
 (() => {
 'use strict';
@@ -146,16 +146,43 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   const tubeR=0.076;
-   const zAttach=-radius+0.032;
-   const depth=0.64;
-   const yMid=(top+bottom)/2;
-   const half=(top-bottom)*0.54;
-   sweepTube(dst, t => {
-     const a=-Math.PI/2 + t*Math.PI;
-     const bulge=Math.sin(t*Math.PI)*0.035;
-     return vec3(0, yMid + Math.sin(a)*half, zAttach - Math.cos(a)*(depth+bulge));
-   }, 108, 18, tubeR);
+   // Perfil curvo em "D" visto de lado. Tubo de seção circular NORMAL à curva,
+   // ao contrário da malha anterior, que degenerava nas extremidades e criava pontas.
+   // Os encaixes começam dentro da cerâmica e têm leve alargamento suave.
+   const N=120,M=24;
+   const zAttach=-radius+0.115;
+   const projection=0.88;
+   const yMid=(top+bottom)*.5;
+   const half=(top-bottom)*.5;
+   const path=t=>{
+     const a=t*Math.PI;
+     return [0,yMid+Math.cos(a)*half,zAttach-Math.sin(a)*projection];
+   };
+   function section(t,angle){
+     const p=path(t),eps=0.0002;
+     const before=path(Math.max(0,t-eps));
+     const after=path(Math.min(1,t+eps));
+     const dy=after[1]-before[1],dz=after[2]-before[2];
+     const L=Math.hypot(dy,dz)||1;
+     // Dois eixos ortogonais ao sentido da curva: X e perpendicular no plano YZ.
+     const ny=-dz/L,nz=dy/L;
+     // A extremidade engrossa, tornando o encontro com o corpo mais orgânico.
+     const nearEnds=Math.pow(Math.abs(Math.cos(t*Math.PI)),8);
+     const rad=.112+.033*nearEnds;
+     const ca=Math.cos(angle),sa=Math.sin(angle);
+     return [p[0]+rad*ca,p[1]+rad*sa*ny,p[2]+rad*sa*nz];
+   }
+   for(let i=0;i<N;i++){
+     const t=i/N,t2=(i+1)/N;
+     for(let j=0;j<M;j++){
+       const a=j*2*Math.PI/M,b=(j+1)*2*Math.PI/M;
+       const v0=section(t,a),v1=section(t,b),v2=section(t2,b),v3=section(t2,a);
+       const center=path((t+t2)*.5);
+       const surfaceMid=[(v0[0]+v1[0]+v2[0]+v3[0])*.25,(v0[1]+v1[1]+v2[1]+v3[1])*.25,(v0[2]+v1[2]+v2[2]+v3[2])*.25];
+       const normal=norm(sub(surfaceMid,center));
+       quad(dst,v0,v1,v2,v3,normal);
+     }
+   }
  }
 
 
