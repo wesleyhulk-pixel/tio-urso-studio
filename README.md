@@ -1,14 +1,18 @@
-# Tio Urso Studio Alpha 0.5.8 — Correção de tela vazia
+# Tio Urso Studio Alpha 0.5.9
 
-Corrige erro na construção da geometria da alça da caneca tradicional introduzido na Alpha 0.5.7.
+Foco desta versão: caneca tradicional.
 
-## Mudanças
-- Corrigido o argumento de coordenadas passado à malha da alça, que causava erro de JavaScript e fazia a caneca sumir.
-- Verificação da renderização 3D e prévia 2D automática em caso de falha no WebGL, impedindo a tela vazia.
-- Restaurada a apresentação do cenário selecionado atrás do modelo 3D.
-- Mantidos os controles de cor conjunta da alça/interior e o editor da versão 0.5.7.
-- Outros produtos não tiveram mudanças de geometria.
+## Ajustes aplicados
+- correção real da cor da alça e do interior da caneca tradicional no mockup 3D
+- a cor escolhida na paleta agora atualiza o render 3D com contraste visível
+- refinamento do formato da caneca de café para ficar mais próximo da referência
+- refinamento da alça da caneca tradicional, com aparência mais arredondada e menos pesada
+- manutenção do fallback seguro para prévia 2D caso o 3D falhe
 
-Arquivos para enviar à raiz do repositório: `index.html`, `style.css`, `app.js`, `mock3d.js`, `README.md`, `mascote.png`.
-
-Salve o projeto antes de substituir os arquivos. Após enviar, abra o site com `?v=0580` para evitar cache antigo.
+## Arquivos
+- index.html
+- style.css
+- app.js
+- mock3d.js
+- README.md
+- mascote.png
