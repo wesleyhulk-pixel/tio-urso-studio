@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.0 — foco na caneca tradicional, com cenário por imagem e refino visual. */
+/* Tio Urso Studio Alpha 0.6.1 — foco na caneca tradicional, com cenário por imagem e refino visual. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -16,6 +16,7 @@ const mock = $('mockCanvas'), mctx = mock.getContext('2d');
 const mockSceneCanvas=$('mockSceneCanvas');
 const sceneSelect=$('mockSceneChoice');
 const sceneImagePicker=$('sceneImagePicker');
+const sceneImageButton=$('sceneImageButton');
 const mock3dCanvas=$('mock3dCanvas');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
 const rotaryProducts=new Set(['caneca','chopp','squeeze']);
@@ -113,6 +114,13 @@ async function setCustomSceneFromFile(file){
  state.mockSceneChoice='imagem';
  sceneSelect.value='imagem';
  return true;
+}
+function openScenePicker(){
+ if(!sceneImagePicker)return;
+ if(typeof sceneImagePicker.showPicker==='function'){
+   try{sceneImagePicker.showPicker();return;}catch(_error){}
+ }
+ sceneImagePicker.click();
 }
 async function addImage(file){if(!file)return;try{const src=await loadFileAsImage(file),img=await decodeImage(src);const w=Math.min(480,img.naturalWidth),h=w*img.naturalHeight/img.naturalWidth;const it={id:'e'+(++seq),kind:'image',src,baseW:w,baseH:h,x:500,y:artH()/2,scale:1,rotation:0};imageCache.set(it.id,img);state.items.push(it);state.selected=it.id;render();toast('Imagem adicionada! Arraste para mover.');}catch(e){toast(e.message);}}
 function setProduct(key){if(!PRODUCTS[key])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();render();}
@@ -435,8 +443,15 @@ async function pdfExport(){try{
 $('downloadPng').addEventListener('click',pngExport);$('downloadPdf').addEventListener('click',pdfExport);
 sceneSelect.addEventListener('change',()=>{
  state.mockSceneChoice=sceneSelect.value;
- if(sceneSelect.value==='imagem'){sceneImagePicker.click();}
+ if(sceneSelect.value==='imagem'){
+   setTimeout(openScenePicker,20);
+ }
  renderMockup();
+});
+sceneImageButton?.addEventListener('click',()=>{
+ state.mockSceneChoice='imagem';
+ sceneSelect.value='imagem';
+ openScenePicker();
 });
 sceneImagePicker?.addEventListener('change',async ev=>{
  const file=ev.target.files?.[0];

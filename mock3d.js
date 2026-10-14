@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.0 — foco exclusivo no modelo da caneca tradicional.
+/* Tio Urso Studio Alpha 0.6.1 — foco exclusivo no modelo da caneca tradicional.
  * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
 (() => {
 'use strict';
@@ -146,41 +146,17 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   const tubeR=0.115;
-   const zStart=-radius+0.12;
-   const zOutside=-radius-0.82;
+   const tubeR=0.092;
+   const zAttach=-radius+0.045;
+   const depth=0.78;
    const yMid=(top+bottom)/2;
-   const half=(top-bottom)/2;
-   const cubic=(a,b,c,d,t)=>{const q=1-t;return q*q*q*a+3*q*q*t*b+3*q*t*t*c+t*t*t*d;};
-   function curve(t){
-     return [
-       cubic(0,0.02,0.02,0,t),
-       cubic(top, top-half*0.08, bottom+half*0.08, bottom, t),
-       cubic(zStart, zOutside, zOutside, zStart, t)
-     ];
-   }
-   function section(t,a){
-     const center=curve(t),before=curve(Math.max(0,t-.0004)),after=curve(Math.min(1,t+.0004));
-     const tangent=norm(sub(after,before));
-     const ref=[1,0,0];
-     let n=norm([ref[1]*tangent[2]-ref[2]*tangent[1], ref[2]*tangent[0]-ref[0]*tangent[2], ref[0]*tangent[1]-ref[1]*tangent[0]]);
-     if(!isFinite(n[0]))n=[1,0,0];
-     const b=[tangent[1]*n[2]-tangent[2]*n[1], tangent[2]*n[0]-tangent[0]*n[2], tangent[0]*n[1]-tangent[1]*n[0]];
-     const c=Math.cos(a),s=Math.sin(a);
-     return [center[0]+tubeR*(n[0]*c+b[0]*s),center[1]+tubeR*(n[1]*c+b[1]*s),center[2]+tubeR*(n[2]*c+b[2]*s)];
-   }
-   const N=112,M=24;
-   for(let i=0;i<N;i++){
-     const t=i/N,t2=(i+1)/N;
-     for(let j=0;j<M;j++){
-       const a=j*2*Math.PI/M,b=(j+1)*2*Math.PI/M;
-       const v0=section(t,a),v1=section(t,b),v2=section(t2,b),v3=section(t2,a);
-       const c0=curve((t+t2)*.5);
-       const mid=[(v0[0]+v1[0]+v2[0]+v3[0])*.25-c0[0],(v0[1]+v1[1]+v2[1]+v3[1])*.25-c0[1],(v0[2]+v1[2]+v2[2]+v3[2])*.25-c0[2]];
-       quad(dst,v0,v1,v2,v3,norm(mid));
-     }
-   }
+   const half=(top-bottom)*0.48;
+   sweepTube(dst, t => {
+     const a=-Math.PI/2 + t*Math.PI;
+     return vec3(0, yMid + Math.sin(a)*half, zAttach - Math.cos(a)*depth);
+   }, 96, 20, tubeR);
  }
+
  function ceramicInteriorFloor(dst,radius,y){
    const N=96;
    for(let i=0;i<N;i++){
@@ -247,7 +223,7 @@ function createTioMock3D(canvas){
      ring(trim, radius+0.012, radius-0.108, up-0.085, [0,1,0]);
      ring(trim, bR+0.01, bR-0.045, down+0.05, [0,-1,0]);
      if(kind==='chopp') choppHandle(handle, radius, up-0.46, down+0.44);
-     else coffeeHandle(handle, radius, up-0.44, down+0.40);
+     else coffeeHandle(handle, radius, up-0.36, down+0.34);
    }
 
    return { body:upload(body), trim:upload(trim), inside:upload(inside), insideFloor:upload(insideFloor), handle:upload(handle) };

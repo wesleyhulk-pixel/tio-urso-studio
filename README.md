@@ -1,14 +1,12 @@
-# Tio Urso Studio Alpha 0.6.0
+# Tio Urso Studio Alpha 0.6.1
 
-Foco desta versão: caneca tradicional.
+Ajustes focados na caneca tradicional.
 
-## Ajustes aplicados
-- caneca levemente mais inclinada no mockup 3D para mostrar melhor o interior
-- refinamento do formato e da alça da caneca tradicional, aproximando da referência
-- nova 4ª opção no seletor de cenário: **Escolher imagem**
-- suporte a cenário personalizado por imagem no mockup
-- rotação do mockup arredondada para evitar graus quebrados com muitas casas decimais
-- manutenção da troca de cor da alça e do interior
+## Correções
+- alça da caneca tradicional redesenhada com forma mais orgânica e próxima da referência
+- botão explícito **Abrir galeria** no seletor de cenário
+- ao escolher a opção **Escolher imagem**, o app tenta abrir a galeria automaticamente
+- manutenção da cor sincronizada entre alça e interior
 
 ## Arquivos
 - index.html
