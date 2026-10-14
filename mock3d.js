@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.7.4 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.7.5 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -162,7 +162,7 @@ function createTioMock3D(canvas){
  // separadas. A malha da caneca de café permanece INTACTA.
  async function loadMeshySqueeze(){
    try{
-     const resp=await fetch('meshy-squeeze.bin?v=0740',{cache:'no-store'});
+     const resp=await fetch('meshy-squeeze.bin?v=0750',{cache:'no-store'});
      if(!resp.ok)throw new Error('Não foi possível carregar o squeeze Meshy');
      const data=await resp.arrayBuffer(), view=new DataView(data);
      const signature=String.fromCharCode(...new Uint8Array(data,0,4));
@@ -180,13 +180,14 @@ function createTioMock3D(canvas){
          // redistribuindo o restante sobre a MESMA altura física do corpo.
          // UV U permanece idêntico, portanto a emenda horizontal continua 360°.
          // A tampa (part 1) e a caneca tradicional não são modificadas.
-         const bottomCrop=0.07;
-         for(let i=0;i<item.length;i+=8){
-           // Desce levemente a faixa impressa para cobrir a base branca.
-           // Mantém a emenda horizontal intacta e sem sobreposição.
-           item[i+1]-=0.105;
-           const v=item[i+7];
-           item[i+7]=bottomCrop+(1-bottomCrop)*v;
+         const bottomCrop=0.11;
+         for(let i=7;i<item.length;i+=8){
+           // Corrige apenas a faixa impressa do squeeze.
+           // Não move a geometria física, preservando a borda preta superior.
+           // Recorta um pouco mais da borda branca inferior da arte para que
+           // a estampa desça visualmente até a base sem invadir a tampa.
+           const v=item[i];
+           item[i]=bottomCrop+(1-bottomCrop)*v;
          }
        }
        lists.push(upload(item)); off+=count*32;
@@ -209,7 +210,7 @@ function createTioMock3D(canvas){
      window.dispatchEvent(new Event('tio-meshy-ready'));
    };
    im.onerror=()=>console.warn('Não foi possível carregar os materiais do squeeze');
-   im.src='squeeze-material.jpg?v=0740';
+   im.src='squeeze-material.jpg?v=0750';
  }
  const mesh = () => [];
  const vec3 = (x,y,z) => [x,y,z];
