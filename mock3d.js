@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.1 — foco exclusivo no modelo da caneca tradicional.
+/* Tio Urso Studio Alpha 0.6.2 — foco exclusivo no modelo da caneca tradicional.
  * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
 (() => {
 'use strict';
@@ -146,16 +146,18 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   const tubeR=0.092;
-   const zAttach=-radius+0.045;
-   const depth=0.78;
+   const tubeR=0.076;
+   const zAttach=-radius+0.032;
+   const depth=0.64;
    const yMid=(top+bottom)/2;
-   const half=(top-bottom)*0.48;
+   const half=(top-bottom)*0.54;
    sweepTube(dst, t => {
      const a=-Math.PI/2 + t*Math.PI;
-     return vec3(0, yMid + Math.sin(a)*half, zAttach - Math.cos(a)*depth);
-   }, 96, 20, tubeR);
+     const bulge=Math.sin(t*Math.PI)*0.035;
+     return vec3(0, yMid + Math.sin(a)*half, zAttach - Math.cos(a)*(depth+bulge));
+   }, 108, 18, tubeR);
  }
+
 
  function ceramicInteriorFloor(dst,radius,y){
    const N=96;
@@ -223,7 +225,7 @@ function createTioMock3D(canvas){
      ring(trim, radius+0.012, radius-0.108, up-0.085, [0,1,0]);
      ring(trim, bR+0.01, bR-0.045, down+0.05, [0,-1,0]);
      if(kind==='chopp') choppHandle(handle, radius, up-0.46, down+0.44);
-     else coffeeHandle(handle, radius, up-0.36, down+0.34);
+     else coffeeHandle(handle, radius, up-0.30, down+0.28);
    }
 
    return { body:upload(body), trim:upload(trim), inside:upload(inside), insideFloor:upload(insideFloor), handle:upload(handle) };

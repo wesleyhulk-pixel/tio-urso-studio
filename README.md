@@ -1,12 +1,12 @@
-# Tio Urso Studio Alpha 0.6.1
+# Tio Urso Studio Alpha 0.6.2
 
-Ajustes focados na caneca tradicional.
+Ajuste incremental focado somente na caneca tradicional.
 
-## Correções
-- alça da caneca tradicional redesenhada com forma mais orgânica e próxima da referência
-- botão explícito **Abrir galeria** no seletor de cenário
-- ao escolher a opção **Escolher imagem**, o app tenta abrir a galeria automaticamente
-- manutenção da cor sincronizada entre alça e interior
+## Correções desta versão
+- removido o botão extra **Abrir galeria**
+- ao escolher **Escolher imagem** no seletor de cenário, o app tenta abrir diretamente a galeria do celular
+- se a opção **Escolher imagem** já estiver selecionada, tocar novamente no seletor também tenta abrir a galeria
+- alça da caneca tradicional afinada e redesenhada para ficar menos artificial e mais próxima da referência
 
 ## Arquivos
 - index.html

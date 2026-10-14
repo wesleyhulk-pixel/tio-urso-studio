@@ -103,7 +103,7 @@
 .scene-control label{font-size:13px;font-weight:800;color:#25506b}
 .scene-control select{font-size:13px;min-height:40px;border:1px solid #d5e4ec;border-radius:10px;background:white;color:#31536a;padding:7px;width:100%}
 .scene-picker-wrap{display:flex;align-items:center;gap:9px;justify-content:flex-end;min-width:0;flex:1;max-width:66%}
-.scene-upload-btn{min-height:40px;padding:0 14px;border:1px solid #cbe4ea;border-radius:10px;background:#fff;color:#0a7891;font-size:12px;font-weight:800;white-space:nowrap}
+.scene-picker-wrap select{width:100%}
 .text-effects{background:#eef7fb;border:1px solid #d6eaf3;padding:13px 12px;margin:10px 0;border-radius:13px}
 .text-effects h3{font-size:15px;color:#154663;margin:0 0 11px}
 .text-effects label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:750;color:#416278}
@@ -129,4 +129,4 @@
 .finish-custom{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:#476577}
 .finish-custom input{width:37px;height:37px;padding:2px;border:1px solid #d0dce3;border-radius:9px;background:white}
 
-@media(max-width:700px){.scene-control{align-items:flex-start;flex-direction:column}.scene-picker-wrap{max-width:100%;width:100%;flex-wrap:wrap}.scene-picker-wrap select{flex:1 1 100%}.scene-upload-btn{width:100%}}
+@media(max-width:700px){.scene-control{align-items:flex-start;flex-direction:column}.scene-picker-wrap{max-width:100%;width:100%;flex-wrap:wrap}.scene-picker-wrap select{flex:1 1 100%}}
