@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.7.1 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.7.2 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -23,10 +23,10 @@ function createTioMock3D(canvas){
    vUv=uv;
  }`;
  const fs=`precision mediump float;varying vec2 vUv;varying float shade;
- uniform sampler2D tex;uniform vec3 base;uniform float textured;
+ uniform sampler2D tex;uniform vec3 base;uniform float textured;uniform float repeatU;
  void main(){
    vec3 col=base;
-   if(textured>.5 && vUv.x>=0. && vUv.x<=1. && vUv.y>=0. && vUv.y<=1.) col=texture2D(tex,vUv).rgb;
+   if(textured>.5 && (repeatU>.5 || (vUv.x>=0. && vUv.x<=1.)) && vUv.y>=0. && vUv.y<=1.) col=texture2D(tex,vUv).rgb;
    float sideLight=1.0;
    if(textured>.5 && vUv.x>=0. && vUv.x<=1.) sideLight=.992-.06*pow(abs(vUv.x-.5)*2.,2.);
    col*=shade*sideLight;
@@ -56,6 +56,7 @@ function createTioMock3D(canvas){
  const aspect=gl.getUniformLocation(program,'aspect');
  const color=gl.getUniformLocation(program,'base');
  const textured=gl.getUniformLocation(program,'textured');
+ const repeatU=gl.getUniformLocation(program,'repeatU');
 
  const texture=gl.createTexture();
  gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,texture);
@@ -69,6 +70,9 @@ function createTioMock3D(canvas){
  const meshCache=new Map();
  let meshyMug=null;
  let meshyError=null;
+ let meshySqueeze=null;
+ let squeezeMaterialReady=false;
+ const squeezeMaterial=gl.createTexture();
  // Centraliza pelo eixo do CORPO cerâmico (e não pelo bounding box com a alça).
  // Assim o modelo gira como uma caneca sobre seu eixo vertical, sem orbitar.
  function normalizeMeshyGeometry(parts){
@@ -153,6 +157,44 @@ function createTioMock3D(canvas){
    }
  }
 
+
+ // Novo modelo GLB convertido do Meshy: superfície da estampa e peças originais
+ // separadas. A malha da caneca de café permanece INTACTA.
+ async function loadMeshySqueeze(){
+   try{
+     const resp=await fetch('meshy-squeeze.bin?v=0720',{cache:'no-store'});
+     if(!resp.ok)throw new Error('Não foi possível carregar o squeeze Meshy');
+     const data=await resp.arrayBuffer(), view=new DataView(data);
+     const signature=String.fromCharCode(...new Uint8Array(data,0,4));
+     if(signature!=='TUSQ')throw new Error('Squeeze Meshy incompatível');
+     let off=4, lists=[];
+     for(let part=0;part<2;part++){
+       if(off+4>data.byteLength)throw new Error('Arquivo incompleto');
+       const count=view.getUint32(off,true);off+=4;
+       if(count>350000||off+count*32>data.byteLength)throw new Error('Geometria incorreta');
+       const item=new Float32Array(data,off,count*8);
+       lists.push(upload(item)); off+=count*32;
+     }
+     meshySqueeze={body:lists[0],extras:lists[1]};
+     window.dispatchEvent(new Event('tio-meshy-ready'));
+   }catch(err){console.warn('Squeeze Meshy:',err);}
+ }
+ function loadSqueezeMaterial(){
+   const im=new Image();
+   im.onload=()=>{
+     gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,squeezeMaterial);
+     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,im);
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+     squeezeMaterialReady=true;
+     window.dispatchEvent(new Event('tio-meshy-ready'));
+   };
+   im.onerror=()=>console.warn('Não foi possível carregar os materiais do squeeze');
+   im.src='squeeze-material.jpg?v=0720';
+ }
  const mesh = () => [];
  const vec3 = (x,y,z) => [x,y,z];
  const sub = (a,b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
@@ -366,17 +408,39 @@ function createTioMock3D(canvas){
  function render(kind, art, angle, mugFinishColor='#ffffff'){
    if(wasLost) return false;
    if(kind==='caneca' && !meshyMug)return false;
-   const config = kind==='caneca' ? meshyMug : (meshCache.get(kind) || makeProduct(kind));
-   if(kind!=='caneca') meshCache.set(kind,config);
+   if(kind==='squeeze' && !meshySqueeze)return false;
+   const config = kind==='caneca' ? meshyMug : kind==='squeeze' ? meshySqueeze : (meshCache.get(kind) || makeProduct(kind));
+   if(kind!=='caneca'&&kind!=='squeeze') meshCache.set(kind,config);
 
    gl.viewport(0,0,canvas.width,canvas.height);
    gl.clearColor(0,0,0,0);
    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
    gl.uniform1f(yy, (kind==='caneca'?-angle:angle)*Math.PI/180);
    gl.uniform1f(aspect, canvas.width/canvas.height);
+   gl.uniform1f(repeatU,kind==='squeeze'?1:0);
    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,texture);
    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,art);
+   if(kind==='squeeze'){
+     // Textura POT para GL_REPEAT na emenda 360°, sem faixa branca ou costura.
+     if(!render.squeezeCanvas){render.squeezeCanvas=document.createElement('canvas');render.squeezeCanvas.width=1024;render.squeezeCanvas.height=1024;}
+     const sc=render.squeezeCanvas,ctx=sc.getContext('2d');
+     ctx.clearRect(0,0,1024,1024); ctx.drawImage(art,0,0,1024,1024);
+     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,sc);
+   }else{
+     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,art);
+   }
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,kind==='squeeze'?gl.REPEAT:gl.CLAMP_TO_EDGE);
+   if(kind==='squeeze'){
+     draw(config.body,[1,1,1],true);
+     gl.bindTexture(gl.TEXTURE_2D,squeezeMaterial);
+     draw(config.extras,[.94,.95,.96],squeezeMaterialReady);
+     gl.flush();
+     const err=gl.getError();
+     if(err!==gl.NO_ERROR)return false;
+     const p=new Uint8Array(4);
+     gl.readPixels(Math.floor(canvas.width/2),Math.floor(canvas.height/2),1,1,gl.RGBA,gl.UNSIGNED_BYTE,p);
+     return p[3]>0;
+   }
 
    const isCoffee=kind==='caneca';
    const finish=isCoffee?finishColor(mugFinishColor):[1,1,1];
@@ -395,6 +459,8 @@ function createTioMock3D(canvas){
  }
 
  loadMeshyMug();
+ loadMeshySqueeze();
+ loadSqueezeMaterial();
  return {supported:true,render,getMeshyStatus:()=>meshyMug?'ready':meshyError?'error':'loading'};
 }
 window.createTioMock3D=createTioMock3D;
