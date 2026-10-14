@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.8.2 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.8.3 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -207,7 +207,7 @@ function createTioMock3D(canvas){
  }
  async function loadMeshyChopp(){
    try{
-     const resp=await fetch('meshy-chopp.bin?v=0800',{cache:'no-store'});
+     const resp=await fetch('meshy-chopp.bin?v=0803',{cache:'no-store'});
      if(!resp.ok)throw new Error('Não foi possível carregar a caneca de chopp Meshy');
      const data=await resp.arrayBuffer(),view=new DataView(data);
      if(String.fromCharCode(...new Uint8Array(data,0,4))!=='TUCH')throw new Error('Modelo de chopp inválido');
@@ -216,15 +216,21 @@ function createTioMock3D(canvas){
        const count=view.getUint32(off,true);off+=4;
        if(count>350000 || off+count*32>data.byteLength)throw new Error('Modelo de chopp incompleto');
        const verts=new Float32Array(new Float32Array(data,off,count*8));off+=count*32;
-       // GLB do Meshy: a alça está em +X. Reorientação para o eixo traseiro -Z:
-       // frente = alça atrás; vistas laterais = alça à esquerda/direita.
+       // GLB do Meshy: a alça está em +X. Reorientação para o eixo traseiro -Z.
+       // Também estreitamos o corpo para aproximar da referência da caneca de chopp,
+       // que é visualmente mais fina e menos “barriguda”.
+       const xzScale=0.84;
+       const yScale=1.00;
        for(let k=0;k<verts.length;k+=8){
          const x=verts[k]-.0083, z=verts[k+2]+.0047;
-         verts[k]=z;
-         verts[k+2]=-x;
-         const nx=verts[k+3], nz=verts[k+5];
-         verts[k+3]=nz;
-         verts[k+5]=-nx;
+         verts[k]=z*xzScale;
+         verts[k+1]*=yScale;
+         verts[k+2]=-x*xzScale;
+         const nx=verts[k+3], ny=verts[k+4], nz=verts[k+5];
+         const nn=Math.hypot(nz*xzScale,ny,-nx*xzScale)||1;
+         verts[k+3]=(nz*xzScale)/nn;
+         verts[k+4]=ny/nn;
+         verts[k+5]=(-nx*xzScale)/nn;
        }
        if(i===0)bodyVertices=verts;
        parts.push(upload(verts));
@@ -232,11 +238,11 @@ function createTioMock3D(canvas){
 
      // A arte segue A SUPERFÍCIE EXTERNA REAL, sem outro cilindro solto.
      // Apenas faces voltadas para fora recebem a estampa (sem duplicar atrás).
-     // O mapeamento projetado respeita a altura e uma janela de 80% da
-     // circunferência, deixando livre a faixa traseira onde fica a alça.
+     // O mapeamento projetado respeita a altura e uma janela angular mais contida,
+     // evitando esticar a arte e preservando uma faixa traseira limpa sob a alça.
      const sticker=[];
-     const halfArc=Math.PI*.80;
-     const printBottom=-1.185, printTop=1.185;
+     const halfArc=Math.PI*.70;
+     const printBottom=-1.19, printTop=1.19;
      for(let k=0;k<bodyVertices.length;k+=24){
        let exterior=true;
        const angles=[];
@@ -255,7 +261,7 @@ function createTioMock3D(canvas){
          const r=Math.hypot(x,z)||1;
          const u=(angles[j]+halfArc)/(2*halfArc);
          const v=(y-printBottom)/(printTop-printBottom);
-         vertex(sticker,[x+x/r*.008,y,z+z/r*.008],
+         vertex(sticker,[x+x/r*.006,y,z+z/r*.006],
            [bodyVertices[t+3],bodyVertices[t+4],bodyVertices[t+5]],u,v);
        }
      }
@@ -541,11 +547,11 @@ function createTioMock3D(canvas){
      gl.enable(gl.BLEND);
      gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
      gl.depthMask(true);
-     draw(config.body,[.93,.96,.98],false,.86,true);
+     draw(config.body,[.92,.95,.97],false,.95,true);
      // A alça é parte do GLB, girando solidária com a caneca no próprio eixo.
-     draw(config.handle,[.94,.96,.98],false,.88,true);
+     draw(config.handle,[.93,.95,.97],false,.96,true);
      // A estampa é impressa sobre o exterior verdadeiro, não sobre um tubo extra.
-     draw(config.art,[1,1,1],true,.995,false,true);
+     draw(config.art,[1,1,1],true,.992,false,true);
      gl.disable(gl.BLEND);
      gl.flush();
      if(gl.getError()!==gl.NO_ERROR)return false;

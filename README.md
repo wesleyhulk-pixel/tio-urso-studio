@@ -1,13 +1,10 @@
-# Tio Urso Studio — Alpha 0.8.2
+# Tio Urso Studio — Alpha 0.8.3
 
-## Alteração isolada no squeeze
-- Corrigida a impressão no rodapé por meio de manga cilíndrica contínua até a base, sem esticar a malha original do Meshy.
-- Adicionado um colarinho escuro independente na transição para a tampa, impedindo a borda serrilhada/branca no encontro.
-- Mantida a emenda horizontal 360° e o posicionamento de frente/lados/trás.
-- Caneca de café e caneca de chopp (aprovadas) não foram modificadas.
+Ajuste focado na **caneca de chopp jateada** mantendo as correções já consolidadas do squeeze.
 
-## Atenção
-A prévia 3D ainda é experimental e deve ser conferida visualmente no celular. Esta versão não altera o arquivo de arte de impressão.
+## Melhorias desta versão
 
-## Publicação no GitHub Pages
-Extraia o ZIP e envie os arquivos da raiz para a raiz do repositório, substituindo os de mesmo nome. Espere a publicação do Pages e confira o selo **ALPHA 0.8.2**.
+- **Corpo da caneca de chopp mais estreito**, aproximando a silhueta da referência.
+- **Arte menos esticada** no mockup 3D, com janela angular reduzida para preservar melhor a proporção visual.
+- **Vidro jateado menos transparente**, com leitura mais fosca/semiopaca.
+- **Cache busting atualizado** para facilitar a publicação da nova versão.
