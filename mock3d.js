@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.7.6 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.7.7 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -162,7 +162,7 @@ function createTioMock3D(canvas){
  // separadas. A malha da caneca de café permanece INTACTA.
  async function loadMeshySqueeze(){
    try{
-     const resp=await fetch('meshy-squeeze.bin?v=0760',{cache:'no-store'});
+     const resp=await fetch('meshy-squeeze.bin?v=0770',{cache:'no-store'});
      if(!resp.ok)throw new Error('Não foi possível carregar o squeeze Meshy');
      const data=await resp.arrayBuffer(), view=new DataView(data);
      const signature=String.fromCharCode(...new Uint8Array(data,0,4));
@@ -175,20 +175,17 @@ function createTioMock3D(canvas){
        // Cópia independente da malha: preservar o arquivo Meshy e as coordenadas U.
        const item=new Float32Array(new Float32Array(data,off,count*8));
        if(part===0){
-         // UV V cresce da base para a tampa. A arte original tinha uma faixa
-         // branca na base. Recortamos somente ~7% da borda inferior da arte,
-         // redistribuindo o restante sobre a MESMA altura física do corpo.
-         // UV U permanece idêntico, portanto a emenda horizontal continua 360°.
-         // A tampa (part 1) e a caneca tradicional não são modificadas.
-         const bottomCrop=0.11;
+         // Ajuste SOMENTE no corpo sublimável do squeeze.
+         // A ideia aqui é alongar o corpo um pouco PARA BAIXO, ancorando-o logo
+         // abaixo da tampa. Assim a arte cobre melhor o pé branco inferior sem
+         // mexer no material cinza/preto da tampa e sem apagar a borda preta.
+         let topY=-Infinity;
+         for(let i=0;i<item.length;i+=8) topY=Math.max(topY,item[i+1]);
+         const topInset=0.020;
+         const scaleDown=1.085;
          for(let i=0;i<item.length;i+=8){
-           // Microajuste somente no corpo sublimável do squeeze.
-           // 1) Mantém a correção do UV para reduzir a sobra branca da base.
-           // 2) Desce MUITO levemente a malha do corpo para cobrir melhor o pé,
-           //    sem comprometer a borda preta superior da tampa.
-           item[i+1]-=0.035;
-           const v=item[i+7];
-           item[i+7]=bottomCrop+(1-bottomCrop)*v;
+           const dy=topY-item[i+1];
+           item[i+1]=(topY-topInset)-(dy*scaleDown);
          }
        }
        lists.push(upload(item)); off+=count*32;
@@ -211,7 +208,7 @@ function createTioMock3D(canvas){
      window.dispatchEvent(new Event('tio-meshy-ready'));
    };
    im.onerror=()=>console.warn('Não foi possível carregar os materiais do squeeze');
-   im.src='squeeze-material.jpg?v=0760';
+   im.src='squeeze-material.jpg?v=0770';
  }
  const mesh = () => [];
  const vec3 = (x,y,z) => [x,y,z];
