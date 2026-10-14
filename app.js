@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5.2 — mockup corrigido com cenário de mesa, alça refinada e rotação coerente. */
+/* Tio Urso Studio Alpha 0.5.5 — mockup corrigido com cenário de mesa, alça refinada e rotação coerente. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -13,6 +13,8 @@ const PRODUCTS = {
 };
 const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
+const mockSceneCanvas=$('mockSceneCanvas');
+const sceneSelect=$('mockSceneChoice');
 const mock3dCanvas=$('mock3dCanvas');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
 const rotaryProducts=new Set(['caneca','chopp','squeeze']);
@@ -35,7 +37,16 @@ function itemDimensions(it){
 }
 function drawElement(g,it,selection=false){
  const {w,h}=itemDimensions(it);g.save();g.translate(it.x,it.y);g.rotate((it.rotation||0)*Math.PI/180);g.scale(it.scale||1,it.scale||1);
- if(it.kind==='text'){g.fillStyle=it.color||'#123b62';g.font=canvasFont(it);g.textBaseline='middle';g.textAlign='center';g.fillText(it.text||' ',0,0);}
+ if(it.kind==='text'){
+  const size=it.fontSize||65;
+  g.font=canvasFont(it);g.textBaseline='middle';g.textAlign='center';
+  if(it.twoTone){const fill=g.createLinearGradient(0,-size*.6,0,size*.6);fill.addColorStop(0,it.color||'#123b62');fill.addColorStop(1,it.color2||'#00d3e7');g.fillStyle=fill;}
+  else g.fillStyle=it.color||'#123b62';
+  g.lineJoin='round';
+  if((it.outlineSize||0)>0){g.strokeStyle=it.outlineColor||'#ffffff';g.lineWidth=(it.outlineSize||0)*2;g.strokeText(it.text||' ',0,0);}
+  if((it.shadowBlur||0)>0){g.shadowColor=it.shadowColor||'#293f4b';g.shadowBlur=it.shadowBlur||0;g.shadowOffsetX=4;g.shadowOffsetY=4;}
+  g.fillText(it.text||' ',0,0);
+}
  else{const img=imageCache.get(it.id);if(img?.complete&&img.naturalWidth)g.drawImage(img,-w/2,-h/2,w,h);}
  if(selection){g.strokeStyle='#00a1b6';g.lineWidth=2/(it.scale||1);g.setLineDash([9,6]);g.strokeRect(-w/2-9,-h/2-9,w+18,h+18);g.setLineDash([]);g.fillStyle='#00a1b6';g.fillRect(w/2+1,h/2+1,14,14);}
  g.restore();
@@ -66,8 +77,15 @@ function render(){paintSurface(ctx,true);drawSmartGuides();updateControls();queu
 function selected(){return state.items.find(it=>it.id===state.selected);}
 function updateControls(){
  const it=selected();$('selectionControls').hidden=!it;if(!it)return;
- $('textControls').hidden=it.kind!=='text';$('colorControl').hidden=it.kind!=='text';$('fontFamily').parentElement.hidden=it.kind!=='text';
+ $('textControls').hidden=it.kind!=='text';$('textEffects').hidden=it.kind!=='text';$('colorControl').hidden=it.kind!=='text';$('fontFamily').parentElement.hidden=it.kind!=='text';
  if(it.kind==='text'){$('textValue').value=it.text;$('textColor').value=it.color;$('fontFamily').value=it.font||'Arial';updateFontSample(it.font||'Arial');$('textColorSample').style.backgroundColor=it.color||'#123b62';$('fontSelectedName').textContent=state.customFonts[it.font]?.label||it.font||'Arial';$('fontSelectedName').style.fontFamily=`"${String(it.font||'Arial').replace(/["\\]/g,'')}",sans-serif`;}
+ if(it.kind==='text'){
+  $('twoToneToggle').checked=!!it.twoTone;$('textColor2').value=it.color2||'#00d3e7';
+  $('outlineColor').value=it.outlineColor||'#ffffff';$('outlineSize').value=it.outlineSize||0;
+  $('outlineSizeValue').textContent=it.outlineSize||0;
+  $('textShadow').value=it.shadowBlur||0;$('textShadowValue').textContent=it.shadowBlur||0;
+  $('shadowColor').value=it.shadowColor||'#293f4b';
+ }
  $('elementScale').value=Math.round((it.scale||1)*100);$('scaleValue').textContent=Math.round((it.scale||1)*100)+'%';
  $('elementRotation').value=it.rotation||0;$('rotationValue').textContent=(it.rotation||0)+'°';
 }
@@ -174,6 +192,12 @@ $('fontFamily').addEventListener('change',ev=>{
  const family=ev.target.value;changeItem(it=>{it.font=family;});
  updateFontSample(family);requestFontLoad(family);
 });
+$('twoToneToggle').addEventListener('change',ev=>changeItem(it=>{it.twoTone=ev.target.checked;}));
+$('textColor2').addEventListener('input',ev=>changeItem(it=>{it.color2=ev.target.value;it.twoTone=true;}));
+$('outlineColor').addEventListener('input',ev=>changeItem(it=>{it.outlineColor=ev.target.value;}));
+$('outlineSize').addEventListener('input',ev=>changeItem(it=>{it.outlineSize=+ev.target.value;}));
+$('textShadow').addEventListener('input',ev=>changeItem(it=>{it.shadowBlur=+ev.target.value;}));
+$('shadowColor').addEventListener('input',ev=>changeItem(it=>{it.shadowColor=ev.target.value;}));
 $('elementScale').addEventListener('input',ev=>changeItem(it=>{it.scale=+ev.target.value/100;}));
 $('elementRotation').addEventListener('input',ev=>changeItem(it=>{it.rotation=+ev.target.value;}));
 $('layerUp').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<0||i===state.items.length-1)return;[state.items[i],state.items[i+1]]=[state.items[i+1],state.items[i]];render();});
@@ -225,9 +249,9 @@ function drawWrappedTexture(g,source,left,right,top,bottom,angle){
 }
 function renderMockup(){
  const three=rotaryProducts.has(state.product)&&mock3d?.supported;
- mock3dCanvas.hidden=!three;mock.hidden=three;
+ mock3dCanvas.hidden=!three;mock.hidden=three;mockSceneCanvas.hidden=!three;
  $('mockTypeTag').textContent=three?'3D BETA':'2D';
- if(three){mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle);return;}
+ if(three){window.paintTioScene?.(mockSceneCanvas,sceneSelect.value);mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle);return;}
  const W=1100,H=660,g=mctx;
  g.clearRect(0,0,W,H);stageGradient(g);
  const source=artworkCanvas(1000,artH());
@@ -335,7 +359,8 @@ async function pdfExport(){try{
  downloadBlob(new Blob(sections,{type:'application/pdf'}),safeFilename('pdf',mode));toast('PDF '+mode+' criado em tamanho real.');
  }catch(e){toast('Falha ao exportar PDF: '+e.message);}}
 $('downloadPng').addEventListener('click',pngExport);$('downloadPdf').addEventListener('click',pdfExport);
-$('exportMockup').addEventListener('click',async()=>{try{renderMockup();let output=mock;if(!mock3dCanvas.hidden){output=document.createElement('canvas');output.width=1100;output.height=660;const g=output.getContext('2d');stageGradient(g);g.drawImage(mock3dCanvas,0,0,1100,660);}downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
+sceneSelect.addEventListener('change',renderMockup);
+$('exportMockup').addEventListener('click',async()=>{try{renderMockup();let output=mock;if(!mock3dCanvas.hidden){output=document.createElement('canvas');output.width=1100;output.height=660;const g=output.getContext('2d');g.drawImage(mockSceneCanvas,0,0,1100,660);g.drawImage(mock3dCanvas,0,0,1100,660);}downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
 function calculate(){const c=['productCost','printingCost','extraCost'].reduce((a,id)=>a+Math.max(0,Number($(id).value)||0),0);const rate=Math.max(0,Number($('margin').value)||0);const lucro=c*rate/100;$('salePrice').textContent=money(c+lucro);$('priceExplanation').textContent=`Custo ${money(c)} · Lucro ${money(lucro)}`;return{c,lucro,price:c+lucro};}
 ['productCost','printingCost','extraCost','margin'].forEach(id=>$(id).addEventListener('input',calculate));
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});

@@ -91,3 +91,24 @@
  .catalog-card{min-height:190px;padding:14px;border-radius:20px}
  .catalog-card .catalog-art{font-size:50px}
 }
+
+/* Alpha 0.5.5 — cenário atrás do WebGL; corpo e alça continuam renderizados em 3D. */
+.mockup-stage{position:relative;aspect-ratio:1100/660;overflow:hidden;background:#e8f1f5}
+.mockup-stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:fill;}
+#mockSceneCanvas{z-index:0;pointer-events:none}
+#mockCanvas,#mock3dCanvas{z-index:1}
+.mockup-stage canvas[hidden]{display:none!important}
+.scene-control{margin:14px 0 5px;display:flex;align-items:center;justify-content:space-between;gap:15px;background:#f4f9fb;border:1px solid #d9e8f0;border-radius:15px;padding:13px 14px}
+.scene-control label{font-size:13px;font-weight:800;color:#25506b}
+.scene-control select{font-size:13px;min-height:40px;max-width:56%;border:1px solid #d5e4ec;border-radius:10px;background:white;color:#31536a;padding:7px}
+.text-effects{background:#eef7fb;border:1px solid #d6eaf3;padding:13px 12px;margin:10px 0;border-radius:13px}
+.text-effects h3{font-size:15px;color:#154663;margin:0 0 11px}
+.text-effects label{display:flex;flex-direction:column;gap:7px;font-size:12px;font-weight:750;color:#416278}
+.text-effects label.effect-check{flex-direction:row;align-items:center;margin-bottom:12px}
+.text-effects input[type=color]{min-width:57px;width:65px;height:39px;background:white;border:1px solid #dae5eb;border-radius:9px;padding:3px}
+.text-effects input[type=range]{width:100%;accent-color:#00a0b5}
+.effect-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.text-effects>label:last-child{margin-top:12px}
+
+.mock-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:520px){.mock-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}}
