@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.8.4 — foco na caneca tradicional, com cenário por imagem e refino visual. */
+/* Tio Urso Studio Alpha 0.9.0 — camiseta parte 1 com posições de impressão e mockup dedicado. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -6,10 +6,17 @@ const PRODUCTS = {
   caneca:{name:'Caneca tradicional',w:210,h:97},
   chopp:{name:'Caneca de chopp',w:205,h:145},
   squeeze:{name:'Squeeze 600 ml',w:240,h:150},
-  camiseta:{name:'Camiseta (área de estampa)',w:280,h:350},
+  camiseta:{name:'Camiseta',w:210,h:297},
   azulejo20:{name:'Azulejo 20 × 20 cm',w:200,h:200},
   azulejo15:{name:'Azulejo 15 × 15 cm',w:150,h:150},
   azulejo10:{name:'Azulejo 10 × 10 cm',w:100,h:100}
+};
+const SHIRT_AREAS = {
+  frente:{name:'Camiseta · Frente',w:210,h:297,label:'Frente · A4'},
+  costas:{name:'Camiseta · Costas',w:210,h:297,label:'Costas · A4'},
+  peito:{name:'Camiseta · Peito',w:120,h:120,label:'Peito · 12 × 12 cm'},
+  manga_d:{name:'Camiseta · Braço direito',w:90,h:90,label:'Braço direito · 9 × 9 cm'},
+  manga_e:{name:'Camiseta · Braço esquerdo',w:90,h:90,label:'Braço esquerdo · 9 × 9 cm'}
 };
 const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
@@ -29,7 +36,7 @@ window.addEventListener('tio-meshy-failed',()=>{
  console.warn('O modelo Meshy não carregou. Mantendo a prévia ilustrativa.');
 });
 const rotaryProducts=new Set(['caneca','chopp','squeeze']);
-let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira'};
+let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira',shirtZone:'frente',shirtColor:'#ffffff',shirtTrimColor:'#d9dee4'};
 let customSceneImage=null;
 const imageCache = new Map();
 let drag = null, activeGuides = null, toastHandle = null, seq = 0, previewQueued=false;
@@ -38,10 +45,21 @@ const exportChoice=$('exportOrientation');
 const exportPreview=$('exportPreview');
 const money = value => Number(value || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const mmtoPx = (mm,dpi=300) => Math.round(mm/25.4*dpi);
-const product = () => PRODUCTS[state.product];
+const shirtArea = () => SHIRT_AREAS[state.shirtZone] || SHIRT_AREAS.frente;
+const product = () => state.product==='camiseta' ? shirtArea() : PRODUCTS[state.product];
 const artH = () => Math.round(1000 * product().h/product().w);
 function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastHandle);toastHandle=setTimeout(()=>el.classList.remove('show'),3300);}
 function updateMeasurements(){const p=product();$('dims').textContent=`${p.w} × ${p.h} mm`;$('exportSize').textContent=`${p.w} × ${p.h} mm`;$('exportPixels').textContent=`${mmtoPx(p.w)} × ${mmtoPx(p.h)} px`;}
+function updateProductSpecificUI(){
+ const shirtCard=$('shirtOptionsCard');
+ const isShirt=state.product==='camiseta';
+ if(shirtCard)shirtCard.hidden=!isShirt;
+ if(isShirt){
+  $('shirtZone').value=state.shirtZone;
+  $('shirtColor').value=state.shirtColor;
+  $('shirtTrimColor').value=state.shirtTrimColor;
+ }
+}
 function canvasFont(it){const family=String(it.font||'Arial').replace(/[\"\\]/g,'');return `bold ${it.fontSize||65}px \"${family}\"`;}
 function itemDimensions(it){
  if(it.kind==='text'){const size=it.fontSize||65;ctx.save();ctx.font=canvasFont(it);const w=ctx.measureText(it.text||' ').width;ctx.restore();return {w:Math.max(w,20),h:size*1.18};}
@@ -85,7 +103,7 @@ function drawSmartGuides(){
  if(activeGuides.x)drawGuideLine(activeGuides.x.type,activeGuides.x.line,true);
  if(activeGuides.y)drawGuideLine(activeGuides.y.type,activeGuides.y.line,false);
 }
-function render(){paintSurface(ctx,true);drawSmartGuides();updateControls();queueExportPreview();}
+function render(){paintSurface(ctx,true);drawSmartGuides();updateControls();updateProductSpecificUI();queueExportPreview();}
 function selected(){return state.items.find(it=>it.id===state.selected);}
 function updateControls(){
  const it=selected();$('selectionControls').hidden=!it;if(!it)return;
@@ -136,7 +154,8 @@ function openScenePicker(){
  sceneImagePicker.click();
 }
 async function addImage(file){if(!file)return;try{const src=await loadFileAsImage(file),img=await decodeImage(src);const w=Math.min(480,img.naturalWidth),h=w*img.naturalHeight/img.naturalWidth;const it={id:'e'+(++seq),kind:'image',src,baseW:w,baseH:h,x:500,y:artH()/2,scale:1,rotation:0};imageCache.set(it.id,img);state.items.push(it);state.selected=it.id;render();toast('Imagem adicionada! Arraste para mover.');}catch(e){toast(e.message);}}
-function setProduct(key){if(!PRODUCTS[key])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();render();}
+function setProduct(key){if(!PRODUCTS[key])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
+function setShirtZone(zone){if(!SHIRT_AREAS[zone])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.shirtZone=zone;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
 function pointerCoord(ev){const r=art.getBoundingClientRect();return {x:(ev.clientX-r.left)/r.width*1000,y:(ev.clientY-r.top)/r.height*artH()};}
 function itemAt(pt){for(let i=state.items.length-1;i>=0;i--){const it=state.items[i],{w,h}=itemDimensions(it),r=-(it.rotation||0)*Math.PI/180,dx=pt.x-it.x,dy=pt.y-it.y,s=it.scale||1;const lx=(dx*Math.cos(r)-dy*Math.sin(r))/s,ly=(dx*Math.sin(r)+dy*Math.cos(r))/s;if(Math.abs(lx)<=w/2+13&&Math.abs(ly)<=h/2+13)return it;}return null;}
 // Referências do Canva: centro da página e as quatro bordas da arte.
@@ -237,6 +256,9 @@ $('layerUp').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.
 $('layerDown').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<=0)return;[state.items[i],state.items[i-1]]=[state.items[i-1],state.items[i]];render();});
 $('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;$('bgColorSample').style.backgroundColor=state.bg;render();});
 $('product').addEventListener('change',ev=>setProduct(ev.target.value));
+$('shirtZone')?.addEventListener('change',ev=>setShirtZone(ev.target.value));
+$('shirtColor')?.addEventListener('input',ev=>{state.shirtColor=ev.target.value;renderMockup();});
+$('shirtTrimColor')?.addEventListener('input',ev=>{state.shirtTrimColor=ev.target.value;renderMockup();});
 function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup'){ $('mockControls').hidden=!rotaryProducts.has(state.product);renderMockup();}if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
 $('backToEditor').addEventListener('click',()=>switchView('editor'));
@@ -320,6 +342,69 @@ if(!window.paintTioScene){
  };
 }
 
+
+function shadeColor(hex,amount){
+ const value=String(hex||'#ffffff').replace('#','');
+ if(!/^[0-9a-fA-F]{6}$/.test(value))return hex;
+ const clamp=v=>Math.max(0,Math.min(255,v));
+ const num=parseInt(value,16);
+ const r=clamp((num>>16)+amount),g=clamp(((num>>8)&255)+amount),b=clamp((num&255)+amount);
+ return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function drawShirtSilhouette(g,backView=false){
+ const shirt=state.shirtColor||'#ffffff';
+ const trim=state.shirtTrimColor||'#d9dee4';
+ const shadow='rgba(22,52,76,.18)';
+ const bodyGrad=g.createLinearGradient(0,130,0,570);
+ bodyGrad.addColorStop(0,shadeColor(shirt,8));
+ bodyGrad.addColorStop(.45,shirt);
+ bodyGrad.addColorStop(1,shadeColor(shirt,-18));
+ g.save();
+ g.shadowColor=shadow;g.shadowBlur=22;g.shadowOffsetY=15;
+ g.beginPath();
+ g.moveTo(432,138);
+ g.lineTo(492,111);
+ g.quadraticCurveTo(551,141,610,111);
+ g.lineTo(670,138);
+ g.lineTo(758,220);
+ g.lineTo(721,319);
+ g.lineTo(663,289);
+ g.lineTo(663,551);
+ g.quadraticCurveTo(552,575,439,551);
+ g.lineTo(439,289);
+ g.lineTo(381,319);
+ g.lineTo(344,220);
+ g.closePath();
+ g.fillStyle=bodyGrad;g.fill();g.restore();
+ g.save();
+ g.lineWidth=8;g.strokeStyle=trim;
+ g.beginPath();g.moveTo(432,138);g.lineTo(492,111);g.quadraticCurveTo(551,141,610,111);g.lineTo(670,138);g.lineTo(758,220);g.lineTo(721,319);g.lineTo(663,289);g.lineTo(663,551);g.quadraticCurveTo(552,575,439,551);g.lineTo(439,289);g.lineTo(381,319);g.lineTo(344,220);g.closePath();g.stroke();
+ g.lineWidth=10;g.strokeStyle=shadeColor(trim,8);
+ g.beginPath();g.moveTo(344,220);g.lineTo(381,319);g.moveTo(758,220);g.lineTo(721,319);g.stroke();
+ g.lineWidth=12;g.strokeStyle=trim;
+ if(backView){g.beginPath();g.arc(551,131,44,Math.PI*.08,Math.PI*.92,true);g.stroke();}
+ else{g.beginPath();g.arc(551,131,52,Math.PI*.12,Math.PI*.88,true);g.stroke();}
+ g.lineWidth=6;g.strokeStyle='rgba(0,0,0,.07)';
+ g.beginPath();g.moveTo(551,182);g.lineTo(551,540);g.stroke();
+ g.restore();
+}
+function drawShirtArtwork(g,source,zone){
+ const areas={
+  frente:{x:446,y:205,w:210,h:297,r:16,back:false},
+  costas:{x:446,y:198,w:210,h:297,r:16,back:true},
+  peito:{x:550,y:228,w:120,h:120,r:14,back:false},
+  manga_d:{x:312,y:216,w:90,h:90,r:12,back:false},
+  manga_e:{x:700,y:216,w:90,h:90,r:12,back:false}
+ };
+ const cfg=areas[zone]||areas.frente;
+ drawShirtSilhouette(g,cfg.back);
+ g.save();
+ roundPath(g,cfg.x,cfg.y,cfg.w,cfg.h,cfg.r);g.clip();
+ g.drawImage(source,cfg.x,cfg.y,cfg.w,cfg.h);
+ g.restore();
+ g.save();g.lineWidth=2.2;g.strokeStyle='rgba(70,109,132,.18)';roundPath(g,cfg.x,cfg.y,cfg.w,cfg.h,cfg.r);g.stroke();g.restore();
+}
+
 function renderMockup(){
  const finishControls=$('mugFinishControl');
  if(finishControls)finishControls.hidden=state.product!=='caneca';
@@ -347,12 +432,8 @@ function renderMockup(){
  else stageGradient(g);
  const source=artworkCanvas(1000,artH());
  if(state.product==='camiseta'){
-   // Camiseta ilustrativa independente da geometria cilíndrica.
-   g.save();g.shadowBlur=22;g.shadowOffsetY=13;g.shadowColor='rgba(25,61,84,.22)';
-   g.beginPath();g.moveTo(381,118);g.lineTo(466,86);g.quadraticCurveTo(551,129,629,86);g.lineTo(721,117);g.lineTo(851,234);g.lineTo(760,345);g.lineTo(713,300);g.lineTo(718,556);g.lineTo(378,556);g.lineTo(384,300);g.lineTo(340,345);g.lineTo(248,235);g.closePath();g.fillStyle='#fbfcfe';g.fill();g.restore();
-   g.strokeStyle='#cad6e0';g.lineWidth=8;g.stroke();g.strokeStyle='#e0e6eb';g.lineWidth=15;g.beginPath();g.arc(548,102,54,0,Math.PI);g.stroke();
-   g.save();roundPath(g,410,196,278,300,11);g.clip();g.drawImage(source,410,196,278,300);g.restore();
-   g.strokeStyle='rgba(130,158,176,.18)';g.lineWidth=2;roundPath(g,410,196,278,300,11);g.stroke();return;
+   drawShirtArtwork(g,source,state.shirtZone);
+   return;
  }
  if(state.product.startsWith('azulejo')){
    // Peças planas: área integral da estampa, sem adaptação de caneca.
@@ -507,7 +588,7 @@ function calculate(){const c=['productCost','printingCost','extraCost'].reduce((
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
 $('saveProject').addEventListener('click',()=>{const backup={version:1,...state,selected:null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
 $('openProject').addEventListener('click',()=>$('projectPicker').click());
-$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira'};
+$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4'};
  customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
  updateSceneMenuUI();
  setMugFinish(state.mugFinishColor,false);
@@ -516,7 +597,7 @@ $('projectPicker').addEventListener('change',async ev=>{const file=ev.target.fil
   try{await loadCustomFont(family,info.src);state.customFonts[family]={label:String(info.label||'Fonte personalizada').slice(0,90),src:info.src};}catch(_){}
  }
  refreshFontOptions();imageCache.clear();for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;updateMeasurements();render();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
-$('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';imageCache.clear();$('backgroundColor').value='#ffffff';$('bgColorSample').style.backgroundColor='#ffffff';render();toast('Nova arte em branco.');});
+$('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';imageCache.clear();$('backgroundColor').value='#ffffff';$('bgColorSample').style.backgroundColor='#ffffff';updateMeasurements();render();toast('Nova arte em branco.');});
 // Orientação explícita para a impressão e prévia fiel à exportação.
 function renderExportPreview(){
  if(!exportPreview)return;
@@ -630,6 +711,6 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])mock3dCanv
 document.querySelectorAll('[data-mock-angle]').forEach(button=>button.addEventListener('click',()=>updateMockAngle(button.dataset.mockAngle)));
 
 // Inicialização. Sem salvamento remoto nem coleta de dados.
-updateMeasurements();$('bgColorSample').style.backgroundColor=state.bg;updateSceneMenuUI();render();calculate();updateOrientationUI();
+updateMeasurements();updateProductSpecificUI();$('bgColorSample').style.backgroundColor=state.bg;updateSceneMenuUI();render();calculate();updateOrientationUI();
 // O modo PWA completo será ativado quando os ícones, manifesto e SW estiverem publicados.
 })();

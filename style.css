@@ -147,3 +147,10 @@
 .scene-file-option{color:#027f99}
 .scene-input-file{position:absolute;left:-10000px;width:1px;height:1px;opacity:0;pointer-events:none}
 @media(max-width:700px){.scene-control{flex-direction:row;align-items:center;gap:12px}.scene-control-title{max-width:43%}.scene-picker-wrap{max-width:57%;width:auto}.scene-menu{max-width:85vw}}
+
+
+/* Alpha 0.9.0 — camiseta parte 1 */
+.shirt-config-card .card-head{margin-bottom:8px}
+.shirt-grid{align-items:end}
+.shirt-grid .field input[type=color]{width:100%;min-height:48px;border:1px solid #d9e5eb;border-radius:13px;background:#f9fbfd;padding:6px 8px}
+.shirt-note{margin-top:12px}
