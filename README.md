@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 0.7.5 — correção vertical do squeeze
+# Tio Urso Studio — Alpha 0.7.6 — correção vertical do squeeze
 
 ## Mudança pontual
 - A impressão 3D do **squeeze 600 ml** utiliza 7% a menos da borda inferior do arquivo de textura, redistribuindo a área restante no corpo do squeeze. Isso busca reduzir a faixa branca vista na base do mockup, sem criar uma faixa vazia na parte superior.
@@ -10,7 +10,7 @@
 1. Extraia o ZIP para a pasta Downloads.
 2. Selecione os **9 arquivos** extraídos, não a pasta e não o ZIP.
 3. No repositório `tio-urso-studio`, use **Add file → Upload files** na branch `main` e confirme a substituição dos arquivos com o mesmo nome.
-4. Aguarde o GitHub Pages publicar. No topo da página deve aparecer **ALPHA 0.7.5**. Se não aparecer, abra a página em guia anônima ou use `?v=074` no endereço.
+4. Aguarde o GitHub Pages publicar. No topo da página deve aparecer **ALPHA 0.7.6**. Se não aparecer, abra a página em guia anônima ou use `?v=074` no endereço.
 5. Teste as quatro posições do squeeze, a faixa inferior, a tampa e a emenda. O resultado deve ser validado no Android antes do uso em produção.
 
 ## Observação
