@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 0.5.5
+# Tio Urso Studio — Alpha 0.5.6
 
 Atualização experimental para o editor de personalizados no navegador Android e desktop.
 
@@ -18,7 +18,7 @@ Atualização experimental para o editor de personalizados no navegador Android 
 2. Envie os seis arquivos individualmente para a raiz do repositório, substituindo os anteriores: `index.html`, `style.css`, `app.js`, `mock3d.js`, `mascote.png` e `README.md`.
 3. Confirme `Commit changes`.
 4. Aguarde a publicação do GitHub Pages e atualize a página do app.
-5. O cabeçalho precisa mostrar **ALPHA 0.5.5**.
+5. O cabeçalho precisa mostrar **ALPHA 0.5.6**.
 
 ## Limitações e recomendações
 - A prévia 3D depende de WebGL no navegador. Caso WebGL esteja indisponível, o aplicativo apresenta uma visualização ilustrativa 2D.

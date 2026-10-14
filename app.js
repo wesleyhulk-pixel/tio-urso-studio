@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5.5 — mockup corrigido com cenário de mesa, alça refinada e rotação coerente. */
+/* Tio Urso Studio Alpha 0.5 — interface mobile, prévia de espelhamento, fontes e paleta visuais. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -13,8 +13,6 @@ const PRODUCTS = {
 };
 const art = $('artCanvas'), ctx = art.getContext('2d');
 const mock = $('mockCanvas'), mctx = mock.getContext('2d');
-const mockSceneCanvas=$('mockSceneCanvas');
-const sceneSelect=$('mockSceneChoice');
 const mock3dCanvas=$('mock3dCanvas');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
 const rotaryProducts=new Set(['caneca','chopp','squeeze']);
@@ -37,16 +35,7 @@ function itemDimensions(it){
 }
 function drawElement(g,it,selection=false){
  const {w,h}=itemDimensions(it);g.save();g.translate(it.x,it.y);g.rotate((it.rotation||0)*Math.PI/180);g.scale(it.scale||1,it.scale||1);
- if(it.kind==='text'){
-  const size=it.fontSize||65;
-  g.font=canvasFont(it);g.textBaseline='middle';g.textAlign='center';
-  if(it.twoTone){const fill=g.createLinearGradient(0,-size*.6,0,size*.6);fill.addColorStop(0,it.color||'#123b62');fill.addColorStop(1,it.color2||'#00d3e7');g.fillStyle=fill;}
-  else g.fillStyle=it.color||'#123b62';
-  g.lineJoin='round';
-  if((it.outlineSize||0)>0){g.strokeStyle=it.outlineColor||'#ffffff';g.lineWidth=(it.outlineSize||0)*2;g.strokeText(it.text||' ',0,0);}
-  if((it.shadowBlur||0)>0){g.shadowColor=it.shadowColor||'#293f4b';g.shadowBlur=it.shadowBlur||0;g.shadowOffsetX=4;g.shadowOffsetY=4;}
-  g.fillText(it.text||' ',0,0);
-}
+ if(it.kind==='text'){g.fillStyle=it.color||'#123b62';g.font=canvasFont(it);g.textBaseline='middle';g.textAlign='center';g.fillText(it.text||' ',0,0);}
  else{const img=imageCache.get(it.id);if(img?.complete&&img.naturalWidth)g.drawImage(img,-w/2,-h/2,w,h);}
  if(selection){g.strokeStyle='#00a1b6';g.lineWidth=2/(it.scale||1);g.setLineDash([9,6]);g.strokeRect(-w/2-9,-h/2-9,w+18,h+18);g.setLineDash([]);g.fillStyle='#00a1b6';g.fillRect(w/2+1,h/2+1,14,14);}
  g.restore();
@@ -77,15 +66,8 @@ function render(){paintSurface(ctx,true);drawSmartGuides();updateControls();queu
 function selected(){return state.items.find(it=>it.id===state.selected);}
 function updateControls(){
  const it=selected();$('selectionControls').hidden=!it;if(!it)return;
- $('textControls').hidden=it.kind!=='text';$('textEffects').hidden=it.kind!=='text';$('colorControl').hidden=it.kind!=='text';$('fontFamily').parentElement.hidden=it.kind!=='text';
+ $('textControls').hidden=it.kind!=='text';$('colorControl').hidden=it.kind!=='text';$('fontFamily').parentElement.hidden=it.kind!=='text';
  if(it.kind==='text'){$('textValue').value=it.text;$('textColor').value=it.color;$('fontFamily').value=it.font||'Arial';updateFontSample(it.font||'Arial');$('textColorSample').style.backgroundColor=it.color||'#123b62';$('fontSelectedName').textContent=state.customFonts[it.font]?.label||it.font||'Arial';$('fontSelectedName').style.fontFamily=`"${String(it.font||'Arial').replace(/["\\]/g,'')}",sans-serif`;}
- if(it.kind==='text'){
-  $('twoToneToggle').checked=!!it.twoTone;$('textColor2').value=it.color2||'#00d3e7';
-  $('outlineColor').value=it.outlineColor||'#ffffff';$('outlineSize').value=it.outlineSize||0;
-  $('outlineSizeValue').textContent=it.outlineSize||0;
-  $('textShadow').value=it.shadowBlur||0;$('textShadowValue').textContent=it.shadowBlur||0;
-  $('shadowColor').value=it.shadowColor||'#293f4b';
- }
  $('elementScale').value=Math.round((it.scale||1)*100);$('scaleValue').textContent=Math.round((it.scale||1)*100)+'%';
  $('elementRotation').value=it.rotation||0;$('rotationValue').textContent=(it.rotation||0)+'°';
 }
@@ -192,12 +174,6 @@ $('fontFamily').addEventListener('change',ev=>{
  const family=ev.target.value;changeItem(it=>{it.font=family;});
  updateFontSample(family);requestFontLoad(family);
 });
-$('twoToneToggle').addEventListener('change',ev=>changeItem(it=>{it.twoTone=ev.target.checked;}));
-$('textColor2').addEventListener('input',ev=>changeItem(it=>{it.color2=ev.target.value;it.twoTone=true;}));
-$('outlineColor').addEventListener('input',ev=>changeItem(it=>{it.outlineColor=ev.target.value;}));
-$('outlineSize').addEventListener('input',ev=>changeItem(it=>{it.outlineSize=+ev.target.value;}));
-$('textShadow').addEventListener('input',ev=>changeItem(it=>{it.shadowBlur=+ev.target.value;}));
-$('shadowColor').addEventListener('input',ev=>changeItem(it=>{it.shadowColor=ev.target.value;}));
 $('elementScale').addEventListener('input',ev=>changeItem(it=>{it.scale=+ev.target.value/100;}));
 $('elementRotation').addEventListener('input',ev=>changeItem(it=>{it.rotation=+ev.target.value;}));
 $('layerUp').addEventListener('click',()=>{const i=state.items.findIndex(it=>it.id===state.selected);if(i<0||i===state.items.length-1)return;[state.items[i],state.items[i+1]]=[state.items[i+1],state.items[i]];render();});
@@ -217,18 +193,13 @@ function artworkCanvas(w,h,mirror=false){
 // Alpha 0.4: prévia 2D de canecas com curvatura por coluna e vista parcial ajustável.
 let mockAngle=0;
 function stageGradient(g){
- const wall=g.createLinearGradient(0,0,0,660);
- wall.addColorStop(0,'#eff6fa');wall.addColorStop(.58,'#edf4f8');wall.addColorStop(.78,'#e6eef4');wall.addColorStop(1,'#d7e4ec');
- g.fillStyle=wall;g.fillRect(0,0,1100,660);
- const table=g.createLinearGradient(0,455,0,660);
- table.addColorStop(0,'#d6c4ad');table.addColorStop(.18,'#cfb696');table.addColorStop(.55,'#b88f66');table.addColorStop(1,'#9a6f49');
- g.fillStyle=table;g.fillRect(0,468,1100,192);
- g.fillStyle='rgba(255,255,255,.22)';
- for(let i=0;i<7;i++){g.fillRect(0,484+i*22,1100,2);}
- const shine=g.createLinearGradient(0,438,0,500);shine.addColorStop(0,'rgba(255,255,255,.34)');shine.addColorStop(1,'rgba(255,255,255,0)');
- g.fillStyle=shine;g.fillRect(0,430,1100,74);
- g.fillStyle='rgba(78,58,40,.17)';g.beginPath();g.ellipse(550,532,325,26,0,0,Math.PI*2);g.fill();
- g.fillStyle='rgba(66,53,39,.08)';g.beginPath();g.ellipse(550,532,256,13,0,0,Math.PI*2);g.fill();
+ const grad=g.createLinearGradient(0,0,1100,660);
+ grad.addColorStop(0,'#eaf2f7');grad.addColorStop(.52,'#f7fafc');grad.addColorStop(1,'#dce9f2');
+ g.fillStyle=grad;g.fillRect(0,0,1100,660);
+ const wall=g.createLinearGradient(0,460,0,660);wall.addColorStop(0,'rgba(165,191,208,.0)');wall.addColorStop(1,'rgba(172,193,205,.25)');
+ g.fillStyle=wall;g.fillRect(0,450,1100,210);
+ g.fillStyle='rgba(81,110,128,.14)';g.beginPath();g.ellipse(550,587,313,32,0,0,Math.PI*2);g.fill();
+ g.fillStyle='rgba(74,119,147,.045)';g.beginPath();g.ellipse(550,581,260,17,0,0,Math.PI*2);g.fill();
 }
 function drawWrappedTexture(g,source,left,right,top,bottom,angle){
  // Image width covers approx. 275° of cup circumference with an unprintable handle gap.
@@ -249,9 +220,9 @@ function drawWrappedTexture(g,source,left,right,top,bottom,angle){
 }
 function renderMockup(){
  const three=rotaryProducts.has(state.product)&&mock3d?.supported;
- mock3dCanvas.hidden=!three;mock.hidden=three;mockSceneCanvas.hidden=!three;
+ mock3dCanvas.hidden=!three;mock.hidden=three;
  $('mockTypeTag').textContent=three?'3D BETA':'2D';
- if(three){window.paintTioScene?.(mockSceneCanvas,sceneSelect.value);mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle);return;}
+ if(three){mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle);return;}
  const W=1100,H=660,g=mctx;
  g.clearRect(0,0,W,H);stageGradient(g);
  const source=artworkCanvas(1000,artH());
@@ -290,13 +261,13 @@ function renderMockup(){
  const radians=mockAngle*Math.PI/180;
  // Fallback sem WebGL: alça e estampa se movem em conjunto para indicar rotação.
  // Em aparelhos compatíveis, o modelo WebGL acima usa geometria 3D verdadeira.
- const handleX=546+195*Math.sin(radians);
- const frontHandle=Math.cos(radians)<-.25;
+ const handleX=546+195*Math.cos(radians);
+ const frontHandle=Math.sin(radians)<-.42;
  function drawFallbackHandle(){
-  const xr=Math.max(34,56+70*Math.abs(Math.sin(radians))),yc=362;
-  g.save();g.shadowColor='rgba(25,57,83,.17)';g.shadowBlur=12;
-  g.lineWidth=34;g.lineCap='round';g.strokeStyle='#95adbb';g.beginPath();g.ellipse(handleX,yc,xr,128,0,0,Math.PI*2);g.stroke();g.restore();
-  g.strokeStyle='#fbfdff';g.lineWidth=24;g.lineCap='round';g.beginPath();g.ellipse(handleX,yc,xr*.82,111,0,0,Math.PI*2);g.stroke();
+  const xr=Math.max(28,113*Math.abs(Math.cos(radians))),yc=362;
+  g.save();g.shadowColor='rgba(25,57,83,.19)';g.shadowBlur=13;
+  g.lineWidth=37;g.strokeStyle='#91a7b5';g.beginPath();g.ellipse(handleX,yc,xr,135,0,0,Math.PI*2);g.stroke();g.restore();
+  g.strokeStyle='#fafdff';g.lineWidth=28;g.beginPath();g.ellipse(handleX,yc,xr*.82,117,0,0,Math.PI*2);g.stroke();
  }
  if(!frontHandle)drawFallbackHandle();
  const left=304,right=789;
@@ -359,8 +330,7 @@ async function pdfExport(){try{
  downloadBlob(new Blob(sections,{type:'application/pdf'}),safeFilename('pdf',mode));toast('PDF '+mode+' criado em tamanho real.');
  }catch(e){toast('Falha ao exportar PDF: '+e.message);}}
 $('downloadPng').addEventListener('click',pngExport);$('downloadPdf').addEventListener('click',pdfExport);
-sceneSelect.addEventListener('change',renderMockup);
-$('exportMockup').addEventListener('click',async()=>{try{renderMockup();let output=mock;if(!mock3dCanvas.hidden){output=document.createElement('canvas');output.width=1100;output.height=660;const g=output.getContext('2d');g.drawImage(mockSceneCanvas,0,0,1100,660);g.drawImage(mock3dCanvas,0,0,1100,660);}downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
+$('exportMockup').addEventListener('click',async()=>{try{renderMockup();let output=mock;if(!mock3dCanvas.hidden){output=document.createElement('canvas');output.width=1100;output.height=660;const g=output.getContext('2d');stageGradient(g);g.drawImage(mock3dCanvas,0,0,1100,660);}downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
 function calculate(){const c=['productCost','printingCost','extraCost'].reduce((a,id)=>a+Math.max(0,Number($(id).value)||0),0);const rate=Math.max(0,Number($('margin').value)||0);const lucro=c*rate/100;$('salePrice').textContent=money(c+lucro);$('priceExplanation').textContent=`Custo ${money(c)} · Lucro ${money(lucro)}`;return{c,lucro,price:c+lucro};}
 ['productCost','printingCost','extraCost','margin'].forEach(id=>$(id).addEventListener('input',calculate));
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
@@ -474,7 +444,7 @@ const mockAngleInput=$('mockAngle');
 function updateMockAngle(angle){
  mockAngle=Math.max(-180,Math.min(180,Number(angle)||0));
  mockAngleInput.value=String(mockAngle);
- $('mockAngleLabel').textContent=Math.abs(mockAngle)>=150?'Trás • 180°':(mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°');
+ $('mockAngleLabel').textContent=mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°';
  document.querySelectorAll('[data-mock-angle]').forEach(el=>el.classList.toggle('active',Number(el.dataset.mockAngle)===mockAngle));
  renderMockup();
 }
