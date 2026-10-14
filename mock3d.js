@@ -1,5 +1,5 @@
-/* Tio Urso Studio Alpha 0.6.6 — foco exclusivo no modelo da caneca tradicional.
- * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
+/* Tio Urso Studio Alpha 0.6.7 — correção da geometria da caneca tradicional.
+ * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
 function createTioMock3D(canvas){
@@ -28,7 +28,7 @@ function createTioMock3D(canvas){
    vec3 col=base;
    if(textured>.5 && vUv.x>=0. && vUv.x<=1. && vUv.y>=0. && vUv.y<=1.) col=texture2D(tex,vUv).rgb;
    float sideLight=1.0;
-   if(textured>.5 && vUv.x>=0. && vUv.x<=1.) sideLight=.985-.10*pow(abs(vUv.x-.5)*2.,2.);
+   if(textured>.5 && vUv.x>=0. && vUv.x<=1.) sideLight=.992-.06*pow(abs(vUv.x-.5)*2.,2.);
    col*=shade*sideLight;
    gl_FragColor=vec4(min(col*1.055,vec3(1.)),1.);
  }`;
@@ -148,31 +148,23 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   // Alça redesenhada para se aproximar mais da referência: formato em "C"
-   // mais orgânico, menos abaulado, sem pontas e com encaixe suave no corpo.
-   const segments=104, sides=20;
-   const xAttach=-radius*0.985;
+   // Alça mais próxima da referência: curva elíptica, sem ponta e com abaulamento moderado.
+   const segments=112, sides=20;
+   const xAttach=-radius*1.005;
    const yTop=top;
    const yBottom=bottom;
    const yMid=(yTop+yBottom)*0.5;
-   const pull=0.84;
-   const zBase=-0.055;
-   const tubeRadius=0.070;
-   const bezier=(p0,p1,p2,p3,t)=>{
-     const mt=1-t;
-     const a=mt*mt*mt,b=3*mt*mt*t,c=3*mt*t*t,d=t*t*t;
-     return [
-       p0[0]*a+p1[0]*b+p2[0]*c+p3[0]*d,
-       p0[1]*a+p1[1]*b+p2[1]*c+p3[1]*d,
-       p0[2]*a+p1[2]*b+p2[2]*c+p3[2]*d
-     ];
-   };
+   const half=(yTop-yBottom)*0.5;
+   const width=0.53;
+   const zBase=-0.035;
+   const tubeRadius=0.064;
    const path=t=>{
-     const p0=[xAttach, yTop, zBase];
-     const p1=[xAttach-pull*0.80, yTop-0.04, zBase-0.015];
-     const p2=[xAttach-pull*0.82, yBottom+0.04, zBase-0.015];
-     const p3=[xAttach, yBottom, zBase];
-     return bezier(p0,p1,p2,p3,t);
+     const theta=-Math.PI/2 + t*Math.PI;
+     return [
+       xAttach - width*Math.cos(theta),
+       yMid + half*Math.sin(theta),
+       zBase
+     ];
    };
    sweepTube(dst, path, segments, sides, tubeRadius);
  }
@@ -222,13 +214,13 @@ function createTioMock3D(canvas){
  }
 
  function makeProduct(kind){
-   const tall = kind==='chopp' ? 2.55 : kind==='squeeze' ? 2.65 : kind==='caneca' ? 2.14 : 1.98;
-   const radius = kind==='squeeze' ? 0.82 : kind==='chopp' ? 1.10 : kind==='caneca' ? 1.03 : 1.10;
+   const tall = kind==='chopp' ? 2.55 : kind==='squeeze' ? 2.65 : kind==='caneca' ? 2.32 : 1.98;
+   const radius = kind==='squeeze' ? 0.82 : kind==='chopp' ? 1.10 : kind==='caneca' ? 0.95 : 1.10;
    const up=tall/2, down=-tall/2;
-   const bR = kind==='chopp' ? radius*0.84 : kind==='squeeze' ? radius*0.96 : kind==='caneca' ? radius*0.992 : radius*0.985;
+   const bR = kind==='chopp' ? radius*0.84 : kind==='squeeze' ? radius*0.96 : kind==='caneca' ? radius*0.988 : radius*0.985;
 
    const body=mesh(), trim=mesh(), inside=mesh(), insideFloor=mesh(), handle=mesh();
-   const uvMode = kind==='squeeze' ? 'full' : 'front';
+   const uvMode = (kind==='squeeze' || kind==='caneca' || kind==='chopp') ? 'full' : 'front';
 
    if(kind==='squeeze'){
      cylinder(body, radius*0.96, radius, down+0.04, up-0.16, {uvMode:'full'});
@@ -239,17 +231,17 @@ function createTioMock3D(canvas){
    } else {
      cylinder(body, bR, radius, down+0.05, up-0.10, {uvMode});
      if(kind==='caneca'){
-       cylinder(inside, radius-0.036, radius-0.040, up-0.38, up-0.098, {inward:true});
-       ceramicInteriorFloor(insideFloor,radius-0.036,up-0.38);
-       ring(trim, radius+0.003, radius-0.040, up-0.090, [0,1,0]);
-       ring(trim, bR+0.004, bR-0.020, down+0.05, [0,-1,0]);
+       cylinder(inside, radius-0.024, radius-0.028, up-0.34, up-0.094, {inward:true});
+       ceramicInteriorFloor(insideFloor,radius-0.024,up-0.34);
+       ring(trim, radius+0.002, radius-0.024, up-0.090, [0,1,0]);
+       ring(trim, bR+0.003, bR-0.016, down+0.05, [0,-1,0]);
      }else{
        cylinder(inside, radius-0.048, radius-0.052, up-0.41, up-0.097, {inward:true});
        ring(trim, radius+0.004, radius-0.058, up-0.089, [0,1,0]);
        ring(trim, bR+0.006, bR-0.028, down+0.05, [0,-1,0]);
      }
      if(kind==='chopp') choppHandle(handle, radius, up-0.46, down+0.44);
-     else coffeeHandle(handle, radius, up-0.30, down+0.28);
+     else coffeeHandle(handle, radius, up-0.25, down+0.22);
    }
 
    return { body:upload(body), trim:upload(trim), inside:upload(inside), insideFloor:upload(insideFloor), handle:upload(handle) };
