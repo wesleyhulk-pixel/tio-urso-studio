@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.3 — foco exclusivo no modelo da caneca tradicional.
+/* Tio Urso Studio Alpha 0.6.4 — foco exclusivo no modelo da caneca tradicional.
  * Geometrias de chopp e squeeze preservadas; refinando a caneca tradicional. */
 (() => {
 'use strict';
@@ -146,31 +146,31 @@ function createTioMock3D(canvas){
  // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
  // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
  function coffeeHandle(dst, radius, top, bottom){
-   // Perfil curvo em "D" visto de lado. Tubo de seção circular NORMAL à curva,
-   // ao contrário da malha anterior, que degenerava nas extremidades e criava pontas.
-   // Os encaixes começam dentro da cerâmica e têm leve alargamento suave.
-   const N=120,M=24;
-   const zAttach=-radius+0.115;
-   const projection=0.88;
+   // Alça mais próxima da referência: perfil em "D" mais fino, menos inflado e
+   // com projeção traseira menor. A seção é levemente elíptica para perder o
+   // aspecto de tubo "balão" e o encaixe no corpo fica mais delicado.
+   const N=128,M=24;
+   const zAttach=-radius+0.13;
+   const reach=0.66;
    const yMid=(top+bottom)*.5;
-   const half=(top-bottom)*.5;
+   const half=(top-bottom)*.5*0.92;
    const path=t=>{
-     const a=t*Math.PI;
-     return [0,yMid+Math.cos(a)*half,zAttach-Math.sin(a)*projection];
+     const a=(1.0-t)*Math.PI/2 + t*(-Math.PI/2); // de cima para baixo
+     const s=Math.cos(a); // 0->1->0
+     return [0, yMid + Math.sin(a)*half, zAttach - s*reach];
    };
    function section(t,angle){
-     const p=path(t),eps=0.0002;
+     const p=path(t),eps=0.00035;
      const before=path(Math.max(0,t-eps));
      const after=path(Math.min(1,t+eps));
      const dy=after[1]-before[1],dz=after[2]-before[2];
      const L=Math.hypot(dy,dz)||1;
-     // Dois eixos ortogonais ao sentido da curva: X e perpendicular no plano YZ.
      const ny=-dz/L,nz=dy/L;
-     // A extremidade engrossa, tornando o encontro com o corpo mais orgânico.
-     const nearEnds=Math.pow(Math.abs(Math.cos(t*Math.PI)),8);
-     const rad=.112+.033*nearEnds;
+     const nearEnds=Math.pow(Math.abs(2*t-1),5); // 1 nas pontas, 0 no meio
+     const rx=.070 + .010*nearEnds; // menos abaulada
+     const ry=.084 + .012*nearEnds;
      const ca=Math.cos(angle),sa=Math.sin(angle);
-     return [p[0]+rad*ca,p[1]+rad*sa*ny,p[2]+rad*sa*nz];
+     return [p[0]+rx*ca,p[1]+ry*sa*ny,p[2]+ry*sa*nz];
    }
    for(let i=0;i<N;i++){
      const t=i/N,t2=(i+1)/N;
@@ -247,10 +247,10 @@ function createTioMock3D(canvas){
      ring(trim, radius+0.01, radius-0.06, down+0.04, [0,-1,0]);
    } else {
      cylinder(body, bR, radius, down+0.05, up-0.10, {uvMode});
-     cylinder(inside, radius-0.09, radius-0.095, up-0.50, up-0.09, {inward:true});
-     if(kind==='caneca')ceramicInteriorFloor(insideFloor,radius-0.09,up-0.50);
-     ring(trim, radius+0.012, radius-0.108, up-0.085, [0,1,0]);
-     ring(trim, bR+0.01, bR-0.045, down+0.05, [0,-1,0]);
+     cylinder(inside, radius-0.06, radius-0.065, up-0.44, up-0.095, {inward:true});
+     if(kind==='caneca')ceramicInteriorFloor(insideFloor,radius-0.06,up-0.44);
+     ring(trim, radius+0.006, radius-0.072, up-0.087, [0,1,0]);
+     ring(trim, bR+0.008, bR-0.034, down+0.05, [0,-1,0]);
      if(kind==='chopp') choppHandle(handle, radius, up-0.46, down+0.44);
      else coffeeHandle(handle, radius, up-0.30, down+0.28);
    }

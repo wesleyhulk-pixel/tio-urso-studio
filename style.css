@@ -131,7 +131,7 @@
 
 @media(max-width:700px){.scene-control{align-items:flex-start;flex-direction:column}.scene-picker-wrap{max-width:100%;width:100%;flex-wrap:wrap}.scene-picker-wrap select{flex:1 1 100%}}
 
-/* Alpha 0.6.3: menu próprio compatível com a galeria do Android */
+/* Alpha 0.6.4: menu próprio compatível com a galeria do Android */
 .scene-control{position:relative;z-index:6;overflow:visible;align-items:center}
 .scene-control-title{font-size:13px;font-weight:800;color:#25506b;flex-shrink:0}
 .scene-picker-wrap{position:relative;max-width:64%;width:100%;display:block;flex:1;min-width:0}
