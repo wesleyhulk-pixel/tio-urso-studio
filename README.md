@@ -1,28 +1,18 @@
-# Tio Urso Studio — Alpha 0.5.6
+# Tio Urso Studio — Alpha 0.5.7
 
-Atualização experimental para o editor de personalizados no navegador Android e desktop.
+Fase 1: **somente caneca tradicional (café)**.
 
-## Novidades
-- Mockup 3D em WebGL por produto: caneca tradicional, caneca de chopp e squeeze.
-- Caneca tradicional com alça cerâmica curva em D, fixada atrás do corpo; durante a rotação a alça acompanha o objeto.
-- Caneca de chopp com corpo mais alto e afunilado, acabamento semelhante a vidro e alça mais espessa.
-- Squeeze vertical com tampa e bico esportivo.
-- Mapeamento da estampa ao redor do cilindro, com pequeno espaço de segurança atrás da alça.
-- Cenários: mesa de madeira, mesa clara e fundo neutro. O cenário permanece estático durante a rotação.
-- Botão de vista traseira, além de frente, esquerda e direita.
-- Texto com opção de duas cores em degradê, contorno com espessura e sombra.
-- Mantém biblioteca de produtos, fontes, paleta, editor, guias de alinhamento e exportação normal/espelhada.
+- Alça cerâmica com curva mais suave e encaixe na traseira da caneca.
+- Mesmo corpo, arte e posicionamento das versões anteriores — preservados.
+- Seletor de **uma cor** para alça e interior, padrão branco.
+- Cor incluída ao salvar/abrir o projeto JSON.
+- Cenários de mesa de madeira, mesa clara e fundo neutro mantidos.
+- Nenhuma intervenção proposital nos mockups de squeeze, chopp, camiseta ou azulejo.
+- Mockup 3D usa WebGL; funcionamento e acabamento final dependem de validação no celular.
 
 ## Instalação no GitHub Pages
-1. Extraia o ZIP.
-2. Envie os seis arquivos individualmente para a raiz do repositório, substituindo os anteriores: `index.html`, `style.css`, `app.js`, `mock3d.js`, `mascote.png` e `README.md`.
-3. Confirme `Commit changes`.
-4. Aguarde a publicação do GitHub Pages e atualize a página do app.
-5. O cabeçalho precisa mostrar **ALPHA 0.5.6**.
+Extraia este ZIP e envie os seis arquivos diretamente na raiz do repositório GitHub (não envie a pasta compactada). Substitua os existentes.
 
-## Limitações e recomendações
-- A prévia 3D depende de WebGL no navegador. Caso WebGL esteja indisponível, o aplicativo apresenta uma visualização ilustrativa 2D.
-- A aparência do chopp imita vidro, mas ainda não é uma simulação física de refração/transparência.
-- As dimensões 3D são aproximadas; valide o posicionamento e as cores na peça real antes da sublimação.
-- Perfis ICC e calibração de impressora ainda não fazem parte desta versão.
-- Fontes online exigem internet na primeira carga.
+Os seis arquivos são: `index.html`, `style.css`, `app.js`, `mock3d.js`, `mascote.png`, `README.md`.
+
+O projeto ainda é experimental. Antes de produzir, confira o alinhamento em uma impressão de teste.

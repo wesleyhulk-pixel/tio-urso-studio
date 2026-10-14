@@ -112,3 +112,16 @@
 
 .mock-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:520px){.mock-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Alpha 0.5.7: acabamento conjunto de alça e interior da caneca tradicional */
+.mug-finish-control{margin:14px 0 5px;background:#f4f9fb;border:1px solid #d9e8f0;border-radius:15px;padding:15px;display:flex;flex-direction:column;gap:12px}
+.mug-finish-control[hidden]{display:none!important}
+.mug-finish-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mug-finish-header strong{font-size:13px;color:#204960;display:block}
+.mug-finish-header small{font-size:11px;color:#708b9b;display:block;margin-top:4px}
+#mugFinishSample{display:block;background:#fff;width:34px;height:34px;flex:none;border:2px solid #c6d4dc;border-radius:50%}
+.mug-finish-options{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.finish-swatch{width:36px;height:36px;border-radius:50%;border:2px solid #d0dce3;background:var(--swatch);cursor:pointer;box-shadow:inset 0 0 0 2px #fff}
+.finish-swatch.active{outline:3px solid #009cad;outline-offset:2px}
+.finish-custom{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:#476577}
+.finish-custom input{width:37px;height:37px;padding:2px;border:1px solid #d0dce3;border-radius:9px;background:white}
