@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.8.3 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.8.4 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -207,7 +207,7 @@ function createTioMock3D(canvas){
  }
  async function loadMeshyChopp(){
    try{
-     const resp=await fetch('meshy-chopp.bin?v=0803',{cache:'no-store'});
+     const resp=await fetch('meshy-chopp.bin?v=0840',{cache:'no-store'});
      if(!resp.ok)throw new Error('Não foi possível carregar a caneca de chopp Meshy');
      const data=await resp.arrayBuffer(),view=new DataView(data);
      if(String.fromCharCode(...new Uint8Array(data,0,4))!=='TUCH')throw new Error('Modelo de chopp inválido');
@@ -227,10 +227,10 @@ function createTioMock3D(canvas){
          verts[k+1]*=yScale;
          verts[k+2]=-x*xzScale;
          const nx=verts[k+3], ny=verts[k+4], nz=verts[k+5];
-         const nn=Math.hypot(nz*xzScale,ny,-nx*xzScale)||1;
-         verts[k+3]=(nz*xzScale)/nn;
+         const nn=Math.hypot(nz/xzScale,ny,-nx/xzScale)||1;
+         verts[k+3]=(nz/xzScale)/nn;
          verts[k+4]=ny/nn;
-         verts[k+5]=(-nx*xzScale)/nn;
+         verts[k+5]=(-nx/xzScale)/nn;
        }
        if(i===0)bodyVertices=verts;
        parts.push(upload(verts));
@@ -251,7 +251,9 @@ function createTioMock3D(canvas){
          const x=bodyVertices[t], y=bodyVertices[t+1], z=bodyVertices[t+2];
          const r=Math.hypot(x,z);
          const nr=(x*bodyVertices[t+3]+z*bodyVertices[t+5])/(r||1);
-         if(r<.84 || nr<.72 || y<-1.29 || y>1.29) exterior=false;
+         // Sticker must use the ACTUAL post-scaled body radius.
+         // r<.84 discarded much of the newly narrowed mug and made the artwork vanish.
+         if(r<.655 || nr<.72 || y<-1.29 || y>1.29) exterior=false;
          angles.push(Math.atan2(x,z));
        }
        if(!exterior || Math.max(...angles)-Math.min(...angles)>Math.PI)continue;

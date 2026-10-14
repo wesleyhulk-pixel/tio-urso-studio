@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.8.2 — foco na caneca tradicional, com cenário por imagem e refino visual. */
+/* Tio Urso Studio Alpha 0.8.4 — foco na caneca tradicional, com cenário por imagem e refino visual. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
