@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.7.0 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.7.1 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -69,24 +69,88 @@ function createTioMock3D(canvas){
  const meshCache=new Map();
  let meshyMug=null;
  let meshyError=null;
+ // Centraliza pelo eixo do CORPO cerâmico (e não pelo bounding box com a alça).
+ // Assim o modelo gira como uma caneca sobre seu eixo vertical, sem orbitar.
+ function normalizeMeshyGeometry(parts){
+   const body=parts[0];
+   const bmin=[Infinity,Infinity,Infinity], bmax=[-Infinity,-Infinity,-Infinity];
+   for(let i=0;i<body.length;i+=8){
+     for(let k=0;k<3;k++){
+       const v=body[i+k];
+       bmin[k]=Math.min(bmin[k],v); bmax[k]=Math.max(bmax[k],v);
+     }
+   }
+   const centerX=(bmin[0]+bmax[0])*0.5;
+   const centerY=(bmin[1]+bmax[1])*0.5;
+   const centerZ=(bmin[2]+bmax[2])*0.5;
+   const height=bmax[1]-bmin[1];
+   const printBottom=bmin[1]+height*.035;
+   const printHeight=height*.93;
+   // 80% da circunferência; área branca atrás da caneca e sob a alça.
+   // Diferente do antigo UV automático, não repete nem estica a arte na emenda.
+   const halfArc=Math.PI*.80;
+   return parts.map((source,partIndex)=>{
+     const copy=new Float32Array(source);
+     for(let i=0;i<copy.length;i+=8){
+       const x=source[i]-centerX;
+       const y=source[i+1]-centerY;
+       const z=source[i+2]-centerZ;
+       copy[i]=x;copy[i+1]=y;copy[i+2]=z;
+       if(partIndex===0){
+         const theta=Math.atan2(x,z);
+         copy[i+6]=(theta+halfArc)/(2*halfArc);
+         copy[i+7]=(source[i+1]-printBottom)/printHeight;
+       }
+     }
+     if(partIndex===0){
+       // Triângulos que atravessam a junção angular traseira não podem
+       // interpolar 0..1 pelo meio da estampa, o que causava arte duplicada.
+       for(let i=0;i<copy.length;i+=24){
+         let lo=Infinity,hi=-Infinity;
+         const angles=[];
+         for(let j=0;j<3;j++){
+           const off=i+j*8;
+           const theta=Math.atan2(copy[off],copy[off+2]);
+           angles.push(theta);
+           lo=Math.min(lo,theta);hi=Math.max(hi,theta);
+         }
+         if(hi-lo>Math.PI){
+           // Mesmo ramo angular perto de +/-180 graus, na área NÃO impressa.
+           // Leva todas as coordenadas UV além de 1: corpo branco na emenda.
+           for(let j=0;j<3;j++){
+             const off=i+j*8;
+             const fixed=angles[j]<0?angles[j]+2*Math.PI:angles[j];
+             copy[off+6]=(fixed+halfArc)/(2*halfArc);
+           }
+         }
+       }
+     }
+     return copy;
+   });
+ }
  async function loadMeshyMug(){
    try{
-     const resp=await fetch('meshy-caneca.bin?v=0700',{cache:'no-store'});
+     const resp=await fetch('meshy-caneca.bin?v=0710',{cache:'no-store'});
      if(!resp.ok)throw new Error('Falha ao carregar o modelo Meshy: HTTP '+resp.status);
      const buffer=await resp.arrayBuffer();
      const reader=new DataView(buffer);
      const signature=String.fromCharCode(...new Uint8Array(buffer,0,4));
      if(signature!=='TUM7')throw new Error('Geometria Meshy incompatível');
-     let offset=4;const parts=[];
+     let offset=4; const raw=[];
      for(let i=0;i<4;i++){
        const count=reader.getUint32(offset,true);offset+=4;
-       if(count>500000 || offset+count*32>buffer.byteLength)throw new Error('Modelo Meshy incompleto');
-       const array=new Float32Array(buffer,offset,count*8);offset+=count*32;
-       parts.push(upload(array));
+       if(count>500000||offset+count*32>buffer.byteLength)throw new Error('Modelo Meshy incompleto');
+       // Copia para evitar limitações de alinhamento e editar a malha separadamente.
+       const part=new Float32Array(buffer,offset,count*8);
+       raw.push(new Float32Array(part));offset+=count*32;
      }
+     const parts=normalizeMeshyGeometry(raw).map(upload);
      meshyMug={body:parts[0],inside:parts[1],handle:parts[2],trim:parts[3],insideFloor:null};
      window.dispatchEvent(new Event('tio-meshy-ready'));
-   }catch(error){meshyError=error;console.warn('Meshy:',error);window.dispatchEvent(new Event('tio-meshy-failed'));}
+   }catch(error){
+     meshyError=error; console.warn('Meshy:',error);
+     window.dispatchEvent(new Event('tio-meshy-failed'));
+   }
  }
 
  const mesh = () => [];
