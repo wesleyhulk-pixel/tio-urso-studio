@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 0.7.7 — ajuste do corpo do squeeze
+# Tio Urso Studio — Alpha 0.7.8 — ajuste do corpo do squeeze
 
 ## O que foi corrigido
 - Mantido o MESMO arquivo Meshy do squeeze.
@@ -16,7 +16,7 @@
 1. Extraia o ZIP.
 2. Faça upload dos arquivos extraídos na raiz do repositório/site, substituindo os antigos.
 3. Aguarde o GitHub Pages publicar.
-4. O topo do site deve mostrar **ALPHA 0.7.7**.
+4. O topo do site deve mostrar **ALPHA 0.7.8**.
 
 ## Observação
 Este ajuste ataca especificamente o problema do **pé branco aparecendo no mockup do squeeze**, tentando preservar a **borda preta da tampa**.
