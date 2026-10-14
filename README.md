@@ -1,18 +1,24 @@
-# Tio Urso Studio — Alpha 0.6.8
+# Tio Urso Studio — Alpha 0.7.0 (teste Meshy)
 
-**Atualização de publicação, sem alterações no modelo 3D.**
+Nesta versão **somente a caneca tradicional** passa a usar a geometria 3D real fornecida pelo usuário no arquivo GLB do Meshy. O modelo foi convertido em `meshy-caneca.bin` para o renderizador WebGL leve já utilizado pelo app. Não é necessário publicar o GLB original no GitHub.
 
-- Corrigido o indicador no cabeçalho que continuava mostrando `ALPHA 0.6.5`, mesmo quando outros arquivos eram 0.6.7.
-- Atualizados os identificadores de cache de `style.css`, `app.js` e `mock3d.js` para `?v=0680` — isso faz o navegador buscar novamente os arquivos após a implantação.
-- Arquivos do ZIP colocados diretamente na raiz para facilitar o upload no GitHub Pages.
-- Mantidas as funcionalidades atuais do editor, mockup, seletores de cenários e escolha de cor.
+## Teste
 
-## Como publicar
+1. Envie **todos os sete arquivos** deste ZIP para a raiz do repositório (branch `main`), substituindo os seis antigos e adicionando `meshy-caneca.bin`.
+2. Abra o GitHub Pages depois do deploy e confirme **ALPHA 0.7.0**.
+3. No editor, escolha **Caneca tradicional (21 × 9,7 cm)** e adicione sua arte.
+4. Em **Mockup**, verifique frente, lados e trás, principalmente o comportamento da alça e da emenda.
+5. Teste a paleta de cores da alça e do interior e a escolha de cenários.
 
-1. Extraia o ZIP no celular.
-2. Em `tio-urso-studio`, na branch `main`, escolha **Add file → Upload files**.
-3. Selecione os **seis arquivos** extraídos, não a pasta e não o ZIP.
-4. Confirme o commit. Aguarde a conclusão do GitHub Pages.
-5. Acesse `https://wesleyhulk-pixel.github.io/tio-urso-studio/?v=0680` e confira `ALPHA 0.6.8` no cabeçalho.
+## Funcionamento e limitações
 
-**Pendente:** posição e geometria da alça e mapeamento da arte da caneca ainda precisam de correções. Essas questões não foram alteradas neste pacote.
+- O corpo e a alça são geometria real do Meshy, com alça posicionada atrás na frente 0°.
+- A estampa usa projeção cilíndrica calculada e aplicada somente no exterior, não o UV original do Meshy.
+- A alça e o interior usam uma única cor configurável.
+- O modelo ocupa ~8,7 MB em formato de vértices; o carregamento inicial pode demorar em celulares mais lentos ou na rede móvel.
+- Se a geometria não carregar, o app mantém a prévia ilustrativa anterior.
+- A compatibilidade WebGL e a fidelidade da impressão devem ser validadas no celular antes do uso comercial.
+- Squeeze, chopp, camiseta, azulejos e funcionalidades de editor/exportação foram preservados da versão anterior.
+- A arte de impressão continua separada do mockup; nenhuma alteração de arte ou medida foi feita.
+
+Este protótipo não depende de scripts JavaScript externos para desenhar o modelo 3D e não envia projetos para servidores.

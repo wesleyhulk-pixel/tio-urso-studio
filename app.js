@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.8 — foco na caneca tradicional, com cenário por imagem e refino visual. */
+/* Tio Urso Studio Alpha 0.7.0 — foco na caneca tradicional, com cenário por imagem e refino visual. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -22,6 +22,12 @@ const sceneTriggerLabel=$('sceneTriggerLabel');
 const sceneImagePicker=$('sceneImagePicker');
 const mock3dCanvas=$('mock3dCanvas');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
+window.addEventListener('tio-meshy-ready',()=>{
+ if(state.product==='caneca')renderMockup();
+});
+window.addEventListener('tio-meshy-failed',()=>{
+ console.warn('O modelo Meshy não carregou. Mantendo a prévia ilustrativa.');
+});
 const rotaryProducts=new Set(['caneca','chopp','squeeze']);
 let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira'};
 let customSceneImage=null;
@@ -319,7 +325,7 @@ function renderMockup(){
  if(finishControls)finishControls.hidden=state.product!=='caneca';
  const three=rotaryProducts.has(state.product)&&mock3d?.supported;
  mock3dCanvas.hidden=!three;mock.hidden=three;mockSceneCanvas.hidden=!three;
- $('mockTypeTag').textContent=three?'3D BETA':'2D';
+ $('mockTypeTag').textContent=three?(state.product==='caneca'?'3D MESHY BETA':'3D BETA'):'2D';
  if(three){
    let drawn=false;
    try{

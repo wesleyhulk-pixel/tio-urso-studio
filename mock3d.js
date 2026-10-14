@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.8 — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.7.0 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -67,6 +67,28 @@ function createTioMock3D(canvas){
  gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE);
 
  const meshCache=new Map();
+ let meshyMug=null;
+ let meshyError=null;
+ async function loadMeshyMug(){
+   try{
+     const resp=await fetch('meshy-caneca.bin?v=0700',{cache:'no-store'});
+     if(!resp.ok)throw new Error('Falha ao carregar o modelo Meshy: HTTP '+resp.status);
+     const buffer=await resp.arrayBuffer();
+     const reader=new DataView(buffer);
+     const signature=String.fromCharCode(...new Uint8Array(buffer,0,4));
+     if(signature!=='TUM7')throw new Error('Geometria Meshy incompatível');
+     let offset=4;const parts=[];
+     for(let i=0;i<4;i++){
+       const count=reader.getUint32(offset,true);offset+=4;
+       if(count>500000 || offset+count*32>buffer.byteLength)throw new Error('Modelo Meshy incompleto');
+       const array=new Float32Array(buffer,offset,count*8);offset+=count*32;
+       parts.push(upload(array));
+     }
+     meshyMug={body:parts[0],inside:parts[1],handle:parts[2],trim:parts[3],insideFloor:null};
+     window.dispatchEvent(new Event('tio-meshy-ready'));
+   }catch(error){meshyError=error;console.warn('Meshy:',error);window.dispatchEvent(new Event('tio-meshy-failed'));}
+ }
+
  const mesh = () => [];
  const vec3 = (x,y,z) => [x,y,z];
  const sub = (a,b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
@@ -144,29 +166,40 @@ function createTioMock3D(canvas){
    }, 72, 18, tubeR);
  }
 
- // Alça cerâmica da caneca de café. Eixo local na retaguarda (-Z),
- // garantindo Frente=escondida, Esquerda=esquerda, Direita=direita.
- // Curva cúbica lisa, tubo circular com as pontas embutidas no corpo.
+ // Alça da caneca tradicional: fica no plano YZ, na RETAGUARDA (-Z).
+ // A frente da estampa está em +Z; a emenda UV da arte fica no lado oposto (-Z).
+ // Uma seção circular acompanha a semicircunferência da alça sem pontas.
  function coffeeHandle(dst, radius, top, bottom){
-   // Alça mais próxima da referência: curva elíptica, sem ponta e com abaulamento moderado.
-   const segments=112, sides=20;
-   const xAttach=-radius*1.005;
-   const yTop=top;
-   const yBottom=bottom;
-   const yMid=(yTop+yBottom)*0.5;
-   const half=(yTop-yBottom)*0.5;
-   const width=0.53;
-   const zBase=-0.035;
-   const tubeRadius=0.064;
-   const path=t=>{
-     const theta=-Math.PI/2 + t*Math.PI;
-     return [
-       xAttach - width*Math.cos(theta),
-       yMid + half*Math.sin(theta),
-       zBase
-     ];
-   };
-   sweepTube(dst, path, segments, sides, tubeRadius);
+   const segments=128, sides=24;
+   const yMid=(top+bottom)/2;
+   const half=(top-bottom)/2;
+   const zAttach=-radius*0.985; // penetra discretamente no corpo cerâmico
+   const outerDepth=0.70;       // abertura moderada em C, próxima da referência
+   const tubeRadius=0.086;      // espessura visual realista da alça
+   function point(t, alpha){
+     const theta=-Math.PI/2+t*Math.PI;
+     const center=[0, yMid+half*Math.sin(theta), zAttach-outerDepth*Math.cos(theta)];
+     // Derivada analítica da curva no plano YZ.
+     const tangent=norm([0, half*Math.PI*Math.cos(theta), outerDepth*Math.PI*Math.sin(theta)]);
+     // Vetores perpendiculares à tangente para criar tubo CIRCULAR, não achatado.
+     const across=[1,0,0];
+     const radialYZ=norm([0,-tangent[2],tangent[1]]);
+     const normal=norm(add(mul(across,Math.cos(alpha)),mul(radialYZ,Math.sin(alpha))));
+     return {position:add(center,mul(normal,tubeRadius)),normal};
+   }
+   function face(a,b,c){
+     vertex(dst,a.position,a.normal);
+     vertex(dst,b.position,b.normal);
+     vertex(dst,c.position,c.normal);
+   }
+   for(let i=0;i<segments;i++){
+     const t=i/segments,tNext=(i+1)/segments;
+     for(let j=0;j<sides;j++){
+       const a=(j/sides)*Math.PI*2, b=((j+1)/sides)*Math.PI*2;
+       const p=point(t,a),q=point(t,b),r=point(tNext,b),v=point(tNext,a);
+       face(p,q,r);face(p,r,v);
+     }
+   }
  }
 
  function ceramicInteriorFloor(dst,radius,y){
@@ -268,8 +301,9 @@ function createTioMock3D(canvas){
  }
  function render(kind, art, angle, mugFinishColor='#ffffff'){
    if(wasLost) return false;
-   const config = meshCache.get(kind) || makeProduct(kind);
-   meshCache.set(kind, config);
+   if(kind==='caneca' && !meshyMug)return false;
+   const config = kind==='caneca' ? meshyMug : (meshCache.get(kind) || makeProduct(kind));
+   if(kind!=='caneca') meshCache.set(kind,config);
 
    gl.viewport(0,0,canvas.width,canvas.height);
    gl.clearColor(0,0,0,0);
@@ -296,7 +330,8 @@ function createTioMock3D(canvas){
    return centerPixel[3] > 0;
  }
 
- return {supported:true,render};
+ loadMeshyMug();
+ return {supported:true,render,getMeshyStatus:()=>meshyMug?'ready':meshyError?'error':'loading'};
 }
 window.createTioMock3D=createTioMock3D;
 })();
