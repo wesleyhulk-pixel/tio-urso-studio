@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5.7 — mockup corrigido com cenário de mesa, alça refinada e rotação coerente. */
+/* Tio Urso Studio Alpha 0.5.8 — mockup corrigido com cenário de mesa, alça refinada e rotação coerente. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -247,13 +247,52 @@ function drawWrappedTexture(g,source,left,right,top,bottom,angle){
    g.drawImage(source,sx,0,1,source.height,x,yt,1.8,yb-yt);
  }
 }
+
+// Cenário atrás do modelo 3D, sem interferir na geometria nem na estampa.
+if(!window.paintTioScene){
+ window.paintTioScene = function(canvas, mode){
+  const g=canvas.getContext('2d'), W=canvas.width,H=canvas.height;
+  g.clearRect(0,0,W,H);
+  if(mode==='limpo'){
+   g.fillStyle='#edf4f8';g.fillRect(0,0,W,H);return;
+  }
+  const light=mode==='clara';
+  const wall=g.createLinearGradient(0,0,0,H*.68);
+  wall.addColorStop(0,light?'#f5f7f9':'#eef5ef');wall.addColorStop(1,light?'#e2edf1':'#d9e7dc');
+  g.fillStyle=wall;g.fillRect(0,0,W,H);
+  const table=g.createLinearGradient(0,H*.72,0,H);
+  table.addColorStop(0,light?'#f6f2ed':'#a9744c');
+  table.addColorStop(1,light?'#e9ded0':'#71462e');
+  g.fillStyle=table;g.fillRect(0,H*.72,W,H*.28);
+  g.fillStyle=light?'rgba(182,157,141,.19)':'rgba(64,38,24,.25)';
+  g.fillRect(0,H*.72,W,3);
+  for(let k=0;k<10;k++){
+   const y=H*.73+k*21;
+   g.fillStyle=light?'rgba(171,153,141,.09)':'rgba(54,28,16,.13)';
+   g.fillRect(0,y,W,1.4);
+  }
+ };
+}
+
 function renderMockup(){
  const finishControls=$('mugFinishControl');
  if(finishControls)finishControls.hidden=state.product!=='caneca';
  const three=rotaryProducts.has(state.product)&&mock3d?.supported;
  mock3dCanvas.hidden=!three;mock.hidden=three;mockSceneCanvas.hidden=!three;
  $('mockTypeTag').textContent=three?'3D BETA':'2D';
- if(three){window.paintTioScene?.(mockSceneCanvas,sceneSelect.value);mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle,state.mugFinishColor);return;}
+ if(three){
+   let drawn=false;
+   try{
+     drawn=mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle,state.mugFinishColor)!==false;
+   }catch(err){
+     console.error('Falha no mockup 3D, usando prévia de segurança:',err);
+   }
+   if(drawn){window.paintTioScene?.(mockSceneCanvas,sceneSelect.value);return;}
+   // O modo 3D não deve esconder o produto se houver uma falha gráfica.
+   mock3dCanvas.hidden=true;mockSceneCanvas.hidden=true;mock.hidden=false;
+   $('mockTypeTag').textContent='PRÉVIA 2D';
+ }
+
  const W=1100,H=660,g=mctx;
  g.clearRect(0,0,W,H);stageGradient(g);
  const source=artworkCanvas(1000,artH());

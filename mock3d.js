@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.5.7 — foco exclusivo no modelo da caneca tradicional.
+/* Tio Urso Studio Alpha 0.5.8 — foco exclusivo no modelo da caneca tradicional.
  * Geometrias de chopp e squeeze preservadas da 0.5.6. */
 (() => {
 'use strict';
@@ -165,7 +165,7 @@ function createTioMock3D(canvas){
        const p=curve(t),q=curve(t2);const tangent=norm(sub(q,p));
        const n=norm([0,-tangent[2],tangent[1]]);
        const normal=(ang)=>[Math.sin(ang),n[1]*Math.cos(ang),n[2]*Math.cos(ang)];
-       quad(dst,v0,v1,v2,v3,normal(a),normal(b),normal(b),normal(a));
+       quad(dst,v0,v1,v2,v3,normal(a));
      }
    }
  }
@@ -261,7 +261,7 @@ function createTioMock3D(canvas){
    return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
  }
  function render(kind, art, angle, mugFinishColor='#ffffff'){
-   if(wasLost) return;
+   if(wasLost) return false;
    const config = meshCache.get(kind) || makeProduct(kind);
    meshCache.set(kind, config);
 
@@ -282,6 +282,12 @@ function createTioMock3D(canvas){
    draw(config.trim,kind==='squeeze'?[.17,.20,.24]:[.965,.978,.992],false);
    draw(config.handle,isCoffee?finish:(kind==='chopp'?[.97,.98,1]:[.975,.985,1]),false);
    gl.flush();
+   // Confirma que o renderizador desenhou algo; evita mockup vazio em falhas de WebGL.
+   const glError = gl.getError();
+   if(glError !== gl.NO_ERROR) return false;
+   const centerPixel = new Uint8Array(4);
+   gl.readPixels(Math.floor(canvas.width/2), Math.floor(canvas.height/2), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, centerPixel);
+   return centerPixel[3] > 0;
  }
 
  return {supported:true,render};
