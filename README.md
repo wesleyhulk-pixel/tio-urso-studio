@@ -1,17 +1,18 @@
-# Tio Urso Studio — Alpha 0.6.7
+# Tio Urso Studio — Alpha 0.6.8
 
-Ajuste incremental focado **somente na caneca tradicional**.
+**Atualização de publicação, sem alterações no modelo 3D.**
 
-## Melhorias desta versão
-- **Alça refinada novamente**: menos abaulada, mais fina e mais aberta, buscando ficar mais próxima da referência.
-- **Arte menos achatada** no mockup da caneca: a janela frontal da textura foi estreitada para preservar melhor a proporção visual da estampa.
-- **Borda superior e parede interna** levemente afinadas, reduzindo a aparência de espessura excessiva.
-- Mantidas as melhorias da versão anterior:
-  - cenários fixos (**Mesa de madeira**, **Mesa clara**, **Fundo neutro**);
-  - opção **Escolher imagem** para trocar só o fundo e manter a mesa;
-  - **cor única sincronizada** para alça + interior.
+- Corrigido o indicador no cabeçalho que continuava mostrando `ALPHA 0.6.5`, mesmo quando outros arquivos eram 0.6.7.
+- Atualizados os identificadores de cache de `style.css`, `app.js` e `mock3d.js` para `?v=0680` — isso faz o navegador buscar novamente os arquivos após a implantação.
+- Arquivos do ZIP colocados diretamente na raiz para facilitar o upload no GitHub Pages.
+- Mantidas as funcionalidades atuais do editor, mockup, seletores de cenários e escolha de cor.
 
-## Teste sugerido
-1. Comparar a alça com a foto de referência.
-2. Conferir se a estampa parece menos comprimida/achatada na frente da caneca.
-3. Validar frente, esquerda, direita e trás com a mesma arte.
+## Como publicar
+
+1. Extraia o ZIP no celular.
+2. Em `tio-urso-studio`, na branch `main`, escolha **Add file → Upload files**.
+3. Selecione os **seis arquivos** extraídos, não a pasta e não o ZIP.
+4. Confirme o commit. Aguarde a conclusão do GitHub Pages.
+5. Acesse `https://wesleyhulk-pixel.github.io/tio-urso-studio/?v=0680` e confira `ALPHA 0.6.8` no cabeçalho.
+
+**Pendente:** posição e geometria da alça e mapeamento da arte da caneca ainda precisam de correções. Essas questões não foram alteradas neste pacote.

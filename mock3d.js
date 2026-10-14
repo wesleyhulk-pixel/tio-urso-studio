@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.6.7 — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.6.8 — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
