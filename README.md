@@ -1,29 +1,17 @@
-# Tio Urso Studio — Alpha 0.7.2 | Caneca Meshy 3D
+# Tio Urso Studio — Alpha 0.7.3 — correção vertical do squeeze
 
-Esta atualização é focada EXCLUSIVAMENTE no mockup da caneca tradicional. O editor, exportação, outros produtos, cores e cenários foram mantidos.
+## Mudança pontual
+- A impressão 3D do **squeeze 600 ml** utiliza 7% a menos da borda inferior do arquivo de textura, redistribuindo a área restante no corpo do squeeze. Isso busca reduzir a faixa branca vista na base do mockup, sem criar uma faixa vazia na parte superior.
+- A coordenada horizontal (U), responsável pela continuidade da estampa **360°**, foi preservada integralmente. A emenda já aprovada continua no mesmo lugar.
+- **Caneca tradicional aprovada**: a geometria, a alça, o acabamento e o mapeamento não foram modificados.
+- A tampa, bico e anel preto do squeeze permanecem conforme o modelo Meshy. O acabamento irregular da tampa não foi corrigido nesta atualização, para não alterar uma segunda parte sem validação.
 
-## Correções
-- O eixo da rotação agora passa pelo **centro do corpo da caneca**, independentemente da posição da alça. A caneca gira sobre si mesma.
-- A arte é projetada por ângulo na superfície externa, cobrindo aproximadamente **80% da circunferência**, sem cruzar a emenda traseira sob a alça. As bordas traseiras permanecem brancas.
-- UVs são calculadas por triângulo para não costurar a imagem repetida atrás da caneca.
-- A geometria Meshy e a posição da alça não foram alteradas.
+## Como atualizar no GitHub pelo celular
+1. Extraia o ZIP para a pasta Downloads.
+2. Selecione os **9 arquivos** extraídos, não a pasta e não o ZIP.
+3. No repositório `tio-urso-studio`, use **Add file → Upload files** na branch `main` e confirme a substituição dos arquivos com o mesmo nome.
+4. Aguarde o GitHub Pages publicar. No topo da página deve aparecer **ALPHA 0.7.3**. Se não aparecer, abra a página em guia anônima ou use `?v=073` no endereço.
+5. Teste as quatro posições do squeeze, a faixa inferior, a tampa e a emenda. O resultado deve ser validado no Android antes do uso em produção.
 
-## Atualização no GitHub
-1. Extraia o ZIP.
-2. Selecione os **sete arquivos** na pasta extraída (não selecione o ZIP nem a pasta inteira).
-3. No repositório `tio-urso-studio`, use **Add file → Upload files** na branch `main`, aceite a substituição e confirme.
-4. Aguarde o GitHub Pages publicar e abra o site. No topo deve aparecer **ALPHA 0.7.2**.
-5. Confira **Frente / Esquerda / Direita / Trás** com a mesma arte. Evite usar diretamente em produção até validar no celular.
-
-## Limites
-- O visual continua experimental e depende do WebGL do Android. A arte impressa não é alterada por esses ajustes; o recorte é apenas do **mockup 3D**.
-- A faixa de cobertura da caneca é estimada e pode precisar de calibração com a caneca física real.
-
-
-## Alpha 0.7.2 — teste do squeeze com Meshy
-
-- Squeeze agora utiliza o modelo 3D enviado pelo usuário e sua tampa articulada.
-- Textura é aplicada em 360° na parede lateral do corpo com fechamento na emenda; modelo permite visualizar o giro.
-- Caneca tradicional 0.7.1 preservada sem alterações de sua geometria, mapeamento nem renderização.
-- Arquivos adicionais obrigatórios: `meshy-squeeze.bin` e `squeeze-material.jpg`.
-- **Versão beta**: conferir alinhamento vertical da arte, lateral da tampa, aspecto da impressão e desempenho no Android antes de usar com clientes.
+## Observação
+A correção foi aplicada no mapeamento 3D, não na arte para impressão. A configuração de 24 × 15 cm e a exportação da estampa não foram modificadas. Como ainda não verificamos visualmente a nova composição no aparelho, considere esta uma versão de teste.

@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.7.2 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.7.3 — caneca real do Meshy — correção da geometria da caneca tradicional.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -162,7 +162,7 @@ function createTioMock3D(canvas){
  // separadas. A malha da caneca de café permanece INTACTA.
  async function loadMeshySqueeze(){
    try{
-     const resp=await fetch('meshy-squeeze.bin?v=0720',{cache:'no-store'});
+     const resp=await fetch('meshy-squeeze.bin?v=0730',{cache:'no-store'});
      if(!resp.ok)throw new Error('Não foi possível carregar o squeeze Meshy');
      const data=await resp.arrayBuffer(), view=new DataView(data);
      const signature=String.fromCharCode(...new Uint8Array(data,0,4));
@@ -172,7 +172,20 @@ function createTioMock3D(canvas){
        if(off+4>data.byteLength)throw new Error('Arquivo incompleto');
        const count=view.getUint32(off,true);off+=4;
        if(count>350000||off+count*32>data.byteLength)throw new Error('Geometria incorreta');
-       const item=new Float32Array(data,off,count*8);
+       // Cópia independente da malha: preservar o arquivo Meshy e as coordenadas U.
+       const item=new Float32Array(new Float32Array(data,off,count*8));
+       if(part===0){
+         // UV V cresce da base para a tampa. A arte original tinha uma faixa
+         // branca na base. Recortamos somente ~7% da borda inferior da arte,
+         // redistribuindo o restante sobre a MESMA altura física do corpo.
+         // UV U permanece idêntico, portanto a emenda horizontal continua 360°.
+         // A tampa (part 1) e a caneca tradicional não são modificadas.
+         const bottomCrop=0.07;
+         for(let i=7;i<item.length;i+=8){
+           const v=item[i];
+           item[i]=bottomCrop+(1-bottomCrop)*v;
+         }
+       }
        lists.push(upload(item)); off+=count*32;
      }
      meshySqueeze={body:lists[0],extras:lists[1]};
@@ -193,7 +206,7 @@ function createTioMock3D(canvas){
      window.dispatchEvent(new Event('tio-meshy-ready'));
    };
    im.onerror=()=>console.warn('Não foi possível carregar os materiais do squeeze');
-   im.src='squeeze-material.jpg?v=0720';
+   im.src='squeeze-material.jpg?v=0730';
  }
  const mesh = () => [];
  const vec3 = (x,y,z) => [x,y,z];
