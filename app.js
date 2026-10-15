@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.1 — camiseta Meshy base com mockup mais realista e área transparente. */
+/* Tio Urso Studio Alpha 0.9.2 — camiseta raglan refinada, fundo transparente, A4 proporcional. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -359,81 +359,95 @@ function shadeColor(hex,amount){
 }
 
 function drawShirtSilhouette(g,backView=false){
- const shirt=state.shirtColor||'#e7ebef';
- const trim=state.shirtTrimColor||'#3a4048';
- const shadow='rgba(22,52,76,.18)';
- const bodyGrad=g.createLinearGradient(0,136,0,586);
- bodyGrad.addColorStop(0,shadeColor(shirt,10));
- bodyGrad.addColorStop(.42,shirt);
- bodyGrad.addColorStop(1,shadeColor(shirt,-22));
- const sleeveGrad=g.createLinearGradient(300,170,805,340);
- sleeveGrad.addColorStop(0,shadeColor(trim,10));
- sleeveGrad.addColorStop(.55,trim);
- sleeveGrad.addColorStop(1,shadeColor(trim,-18));
+ // Camiseta raglan ilustrativa, com volume, costuras e mangas arredondadas.
+ // O modelo Meshy permanece no pacote como referência para evolução 3D.
+ const shirt=state.shirtColor||'#ffffff';
+ const trim=state.shirtTrimColor||'#d9dee4';
+ const fabric=g.createLinearGradient(418,0,686,0);
+ fabric.addColorStop(0,shadeColor(shirt,-25));
+ fabric.addColorStop(.18,shadeColor(shirt,-8));
+ fabric.addColorStop(.48,shadeColor(shirt,8));
+ fabric.addColorStop(.8,shirt);
+ fabric.addColorStop(1,shadeColor(shirt,-29));
+ const sleeve=g.createLinearGradient(300,190,818,350);
+ sleeve.addColorStop(0,shadeColor(trim,-24));
+ sleeve.addColorStop(.24,shadeColor(trim,7));
+ sleeve.addColorStop(.65,trim);
+ sleeve.addColorStop(1,shadeColor(trim,-24));
  g.save();
- g.shadowColor=shadow;g.shadowBlur=22;g.shadowOffsetY=17;
- // sleeves first
+ g.shadowColor='rgba(15,35,48,.26)';g.shadowBlur=21;g.shadowOffsetY=14;
+ // Parte central arredondada, levemente trapezoidal.
  g.beginPath();
- g.moveTo(420,174);g.lineTo(335,214);g.lineTo(286,305);g.lineTo(366,344);g.lineTo(441,240);g.closePath();
- g.fillStyle=sleeveGrad;g.fill();
+ g.moveTo(453,174);g.quadraticCurveTo(551,146,649,174);
+ g.bezierCurveTo(682,218,679,270,678,331);
+ g.lineTo(681,560);g.quadraticCurveTo(554,580,420,560);
+ g.lineTo(422,331);g.bezierCurveTo(422,269,420,216,453,174);
+ g.closePath();g.fillStyle=fabric;g.fill();
+ // Mangas raglan: recorte curvo sem pontas retas artificiais.
  g.beginPath();
- g.moveTo(682,174);g.lineTo(767,214);g.lineTo(816,305);g.lineTo(736,344);g.lineTo(661,240);g.closePath();
- g.fillStyle=sleeveGrad;g.fill();
- // torso
+ g.moveTo(453,174);g.quadraticCurveTo(420,184,377,203);
+ g.quadraticCurveTo(321,231,292,289);
+ g.quadraticCurveTo(286,308,299,315);
+ g.quadraticCurveTo(333,335,366,343);
+ g.quadraticCurveTo(396,302,432,248);
+ g.quadraticCurveTo(453,211,470,193);g.closePath();
+ g.fillStyle=sleeve;g.fill();
  g.beginPath();
- g.moveTo(441,173);g.quadraticCurveTo(490,143,551,143);g.quadraticCurveTo(612,143,661,173);
- g.lineTo(686,212);g.lineTo(686,571);g.quadraticCurveTo(552,590,416,571);g.lineTo(416,212);g.closePath();
- g.fillStyle=bodyGrad;g.fill();
+ g.moveTo(649,174);g.quadraticCurveTo(682,184,725,203);
+ g.quadraticCurveTo(781,231,810,289);
+ g.quadraticCurveTo(816,308,803,315);
+ g.quadraticCurveTo(769,335,736,343);
+ g.quadraticCurveTo(706,302,670,248);
+ g.quadraticCurveTo(649,211,632,193);g.closePath();
+ g.fillStyle=sleeve;g.fill();
  g.restore();
- // seams and borders
+ // Gola fechada e curva: sem arco suspenso acima do tecido.
  g.save();
- g.lineWidth=7;g.strokeStyle=shadeColor(trim,10);
- g.beginPath();g.moveTo(441,174);g.lineTo(335,214);g.lineTo(286,305);g.lineTo(366,344);g.lineTo(441,240);g.stroke();
- g.beginPath();g.moveTo(661,174);g.lineTo(767,214);g.lineTo(816,305);g.lineTo(736,344);g.lineTo(661,240);g.stroke();
- g.lineWidth=6;g.strokeStyle='rgba(255,255,255,.2)';
- g.beginPath();g.moveTo(441,176);g.quadraticCurveTo(496,226,511,258);g.stroke();
- g.beginPath();g.moveTo(661,176);g.quadraticCurveTo(606,226,591,258);g.stroke();
- g.lineWidth=8;g.strokeStyle='rgba(18,40,57,.18)';
- g.beginPath();g.moveTo(441,173);g.quadraticCurveTo(490,143,551,143);g.quadraticCurveTo(612,143,661,173);g.lineTo(686,212);g.lineTo(686,571);g.quadraticCurveTo(552,590,416,571);g.lineTo(416,212);g.closePath();g.stroke();
- // collar
- g.fillStyle=sleeveGrad;
- g.beginPath();g.ellipse(551,158,54,24,0,0,Math.PI*2);g.fill();
- g.fillStyle='#eef2f5';
- g.beginPath();g.ellipse(551,160,38,14,0,0,Math.PI*2);g.fill();
+ g.fillStyle=shadeColor(trim,-10);
+ g.beginPath();g.moveTo(492,166);g.quadraticCurveTo(551,215,610,166);
+ g.quadraticCurveTo(594,151,580,148);g.quadraticCurveTo(551,168,523,148);
+ g.quadraticCurveTo(505,152,492,166);g.fill();
+ g.lineWidth=5;g.strokeStyle=shadeColor(trim,12);
+ g.beginPath();g.moveTo(492,166);g.quadraticCurveTo(551,215,610,166);g.stroke();
+ // Costuras: pouca opacidade para a textura não parecer um desenho rígido.
+ g.strokeStyle='rgba(20,36,49,.22)';g.lineWidth=2.5;g.lineCap='round';
+ g.beginPath();g.moveTo(454,174);g.bezierCurveTo(471,191,495,222,513,252);g.stroke();
+ g.beginPath();g.moveTo(648,174);g.bezierCurveTo(631,191,607,222,589,252);g.stroke();
+ g.strokeStyle='rgba(255,255,255,.3)';g.lineWidth=3;
+ g.beginPath();g.moveTo(304,311);g.quadraticCurveTo(334,328,361,337);g.stroke();
+ g.beginPath();g.moveTo(798,311);g.quadraticCurveTo(768,328,741,337);g.stroke();
+ // Dobras suaves no corpo e bainha.
+ const fold=g.createLinearGradient(436,260,476,260);
+ fold.addColorStop(0,'rgba(0,0,0,.09)');fold.addColorStop(1,'rgba(0,0,0,0)');
+ g.fillStyle=fold;g.fillRect(428,263,52,293);
+ const foldR=g.createLinearGradient(626,250,677,250);
+ foldR.addColorStop(0,'rgba(0,0,0,0)');foldR.addColorStop(1,'rgba(0,0,0,.12)');
+ g.fillStyle=foldR;g.fillRect(626,263,52,293);
+ g.lineWidth=2.4;g.strokeStyle='rgba(20,36,49,.2)';
+ g.beginPath();g.moveTo(429,548);g.quadraticCurveTo(552,566,675,548);g.stroke();
+ g.strokeStyle='rgba(255,255,255,.21)';
+ g.beginPath();g.moveTo(432,554);g.quadraticCurveTo(552,571,673,554);g.stroke();
  if(backView){
-   g.strokeStyle='rgba(18,40,57,.12)';g.lineWidth=4;
-   g.beginPath();g.moveTo(551,192);g.lineTo(551,555);g.stroke();
- }else{
-   g.strokeStyle='rgba(255,255,255,.22)';g.lineWidth=3;
-   g.beginPath();g.moveTo(463,214);g.quadraticCurveTo(551,198,639,214);g.stroke();
+  g.strokeStyle='rgba(20,36,49,.09)';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(551,210);g.lineTo(551,550);g.stroke();
  }
- g.strokeStyle='rgba(255,255,255,.14)';g.lineWidth=3;
- g.beginPath();g.moveTo(435,245);g.lineTo(435,553);g.stroke();
- g.beginPath();g.moveTo(667,245);g.lineTo(667,553);g.stroke();
  g.restore();
 }
 function drawShirtArtwork(g,source,zone){
+ // Dimensão de impressão em mm continua controlada pelo editor, aqui apenas
+ // representamos cada tamanho físico em proporção reduzida à peça.
  const areas={
-  frente:{x:470,y:208,w:168,h:238,r:14,back:false},
-  costas:{x:470,y:202,w:168,h:238,r:14,back:true},
-  peito:{x:553,y:236,w:92,h:92,r:12,back:false},
-  manga_d:{x:308,y:233,w:78,h:78,r:10,back:false},
-  manga_e:{x:716,y:233,w:78,h:78,r:10,back:false}
+  frente:{x:483,y:225,w:136,h:192,back:false},
+  costas:{x:483,y:215,w:136,h:192,back:true},
+  peito:{x:576,y:246,w:65,h:65,back:false},
+  manga_d:{x:322,y:247,w:49,h:49,back:false},
+  manga_e:{x:731,y:247,w:49,h:49,back:false}
  };
  const cfg=areas[zone]||areas.frente;
  drawShirtSilhouette(g,cfg.back);
  g.save();
- g.globalAlpha=.12;
- g.fillStyle='rgba(18,40,57,.55)';
- roundPath(g,cfg.x+3,cfg.y+6,cfg.w,cfg.h,cfg.r);g.fill();
- g.restore();
- g.save();
- roundPath(g,cfg.x,cfg.y,cfg.w,cfg.h,cfg.r);g.clip();
+ // Sem quadrado branco: arte do canvas com alpha preservado e sem contorno.
  g.drawImage(source,cfg.x,cfg.y,cfg.w,cfg.h);
- g.restore();
- g.save();
- g.lineWidth=1.5;g.strokeStyle='rgba(70,109,132,.14)';
- roundPath(g,cfg.x,cfg.y,cfg.w,cfg.h,cfg.r);g.stroke();
  g.restore();
 }
 
