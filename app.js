@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.4 — camiseta raglan refinada, fundo transparente, A4 proporcional. */
+/* Tio Urso Studio Alpha 0.9.5 — camiseta com mangas sólidas e gola independente. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -37,7 +37,7 @@ window.addEventListener('tio-meshy-failed',()=>{
  console.warn('O modelo Meshy não carregou. Mantendo a prévia ilustrativa.');
 });
 const rotaryProducts=new Set(['caneca','chopp','squeeze','camiseta']);
-let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira',shirtZone:'frente',shirtColor:'#ffffff',shirtTrimColor:'#d9dee4'};
+let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira',shirtZone:'frente',shirtColor:'#ffffff',shirtTrimColor:'#d9dee4',shirtCollarColor:'#d9dee4'};
 let customSceneImage=null;
 const imageCache = new Map();
 let drag = null, activeGuides = null, toastHandle = null, seq = 0, previewQueued=false;
@@ -59,6 +59,7 @@ function updateProductSpecificUI(){
   $('shirtZone').value=state.shirtZone;
   $('shirtColor').value=state.shirtColor;
   $('shirtTrimColor').value=state.shirtTrimColor;
+  $('shirtCollarColor').value=state.shirtCollarColor;
  }
 }
 function canvasFont(it){const family=String(it.font||'Arial').replace(/[\"\\]/g,'');return `bold ${it.fontSize||65}px \"${family}\"`;}
@@ -260,6 +261,7 @@ $('product').addEventListener('change',ev=>setProduct(ev.target.value));
 $('shirtZone')?.addEventListener('change',ev=>setShirtZone(ev.target.value));
 $('shirtColor')?.addEventListener('input',ev=>{state.shirtColor=ev.target.value;renderMockup();});
 $('shirtTrimColor')?.addEventListener('input',ev=>{state.shirtTrimColor=ev.target.value;renderMockup();});
+$('shirtCollarColor')?.addEventListener('input',ev=>{state.shirtCollarColor=ev.target.value;renderMockup();});
 function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup'){ $('mockControls').hidden=!rotaryProducts.has(state.product);renderMockup();}if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
 $('backToEditor').addEventListener('click',()=>switchView('editor'));
@@ -365,6 +367,7 @@ function drawShirtSilhouette(g,backView=false){
  // O modelo Meshy permanece no pacote como referência para evolução 3D.
  const shirt=state.shirtColor||'#ffffff';
  const trim=state.shirtTrimColor||'#d9dee4';
+ const collar=state.shirtCollarColor||trim;
  const fabric=g.createLinearGradient(418,0,686,0);
  fabric.addColorStop(0,shadeColor(shirt,-25));
  fabric.addColorStop(.18,shadeColor(shirt,-8));
@@ -405,11 +408,11 @@ function drawShirtSilhouette(g,backView=false){
  g.restore();
  // Gola fechada e curva: sem arco suspenso acima do tecido.
  g.save();
- g.fillStyle=shadeColor(trim,-10);
+ g.fillStyle=shadeColor(collar,-10);
  g.beginPath();g.moveTo(492,166);g.quadraticCurveTo(551,215,610,166);
  g.quadraticCurveTo(594,151,580,148);g.quadraticCurveTo(551,168,523,148);
  g.quadraticCurveTo(505,152,492,166);g.fill();
- g.lineWidth=5;g.strokeStyle=shadeColor(trim,12);
+ g.lineWidth=5;g.strokeStyle=shadeColor(collar,12);
  g.beginPath();g.moveTo(492,166);g.quadraticCurveTo(551,215,610,166);g.stroke();
  // Costuras: pouca opacidade para a textura não parecer um desenho rígido.
  g.strokeStyle='rgba(20,36,49,.22)';g.lineWidth=2.5;g.lineCap='round';
@@ -463,7 +466,7 @@ function renderMockup(){
  if(three){
    let drawn=false;
    try{
-     drawn=mock3d.render(state.product,artworkCanvas(1000,artH(),false,state.product==='camiseta'),mockAngle,state.mugFinishColor,state.product==='camiseta'?{zone:state.shirtZone,bodyColor:state.shirtColor,trimColor:state.shirtTrimColor}:null)!==false;
+     drawn=mock3d.render(state.product,artworkCanvas(1000,artH(),false,state.product==='camiseta'),mockAngle,state.mugFinishColor,state.product==='camiseta'?{zone:state.shirtZone,bodyColor:state.shirtColor,trimColor:state.shirtTrimColor,collarColor:state.shirtCollarColor}:null)!==false;
    }catch(err){
      console.error('Falha no mockup 3D, usando prévia de segurança:',err);
    }
@@ -637,7 +640,7 @@ function calculate(){const c=['productCost','printingCost','extraCost'].reduce((
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
 $('saveProject').addEventListener('click',()=>{const backup={version:1,...state,selected:null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
 $('openProject').addEventListener('click',()=>$('projectPicker').click());
-$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4'};
+$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4',shirtCollarColor:/^#[0-9a-f]{6}$/i.test(data.shirtCollarColor)?data.shirtCollarColor:(/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4')};
  customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
  updateSceneMenuUI();
  setMugFinish(state.mugFinishColor,false);
@@ -646,7 +649,7 @@ $('projectPicker').addEventListener('change',async ev=>{const file=ev.target.fil
   try{await loadCustomFont(family,info.src);state.customFonts[family]={label:String(info.label||'Fonte personalizada').slice(0,90),src:info.src};}catch(_){}
  }
  refreshFontOptions();imageCache.clear();for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;updateMeasurements();render();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
-$('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';imageCache.clear();$('backgroundColor').value='#ffffff';$('bgColorSample').style.backgroundColor='#ffffff';updateMeasurements();render();toast('Nova arte em branco.');});
+$('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';state.shirtCollarColor='#d9dee4';imageCache.clear();$('backgroundColor').value='#ffffff';$('bgColorSample').style.backgroundColor='#ffffff';updateMeasurements();render();toast('Nova arte em branco.');});
 // Orientação explícita para a impressão e prévia fiel à exportação.
 function renderExportPreview(){
  if(!exportPreview)return;
