@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.0 — desfazer/refazer, camadas; gestos 0.9.9 e 3D preservados. */
+/* Tio Urso Studio Alpha 1.0.1 — pinça/rotação no editor, camadas junto à arte e mockups preservados. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -263,7 +263,7 @@ $('layerRename').addEventListener('click',()=>{
 });
 
 function updateControls(){
- const it=selected();$('selectionControls').hidden=!it;if(!it)return;
+ const it=selected();$('selectionControls').hidden=!it||it.kind!=='text';if(!it)return;
  $('selectionControls').classList.toggle('layer-locked',!!it.locked);
  $('selectionControls').querySelectorAll('input,select,button').forEach(el=>{el.disabled=!!it.locked;});
  $('textControls').hidden=it.kind!=='text';$('textEffects').hidden=it.kind!=='text';$('colorControl').hidden=it.kind!=='text';$('fontFamily').parentElement.hidden=it.kind!=='text';
@@ -275,8 +275,6 @@ function updateControls(){
   $('textShadow').value=it.shadowBlur||0;$('textShadowValue').textContent=it.shadowBlur||0;
   $('shadowColor').value=it.shadowColor||'#293f4b';
  }
- $('elementScale').value=Math.round((it.scale||1)*100);$('scaleValue').textContent=Math.round((it.scale||1)*100)+'%';
- $('elementRotation').value=it.rotation||0;$('rotationValue').textContent=(it.rotation||0)+'°';
 }
 function createText(){const it={id:'e'+(++seq),kind:'text',text:'Seu texto aqui',color:'#123b62',font:'Arial',fontSize:64,x:500,y:artH()/2,scale:1,rotation:0};state.items.push(it);state.selected=it.id;render();recordHistory();$('textValue').focus();$('textValue').select();}
 async function loadFileAsImage(file){
@@ -347,22 +345,107 @@ function snapDraggedItem(it){
  if(!x && (it.x-hx<0||it.x+hx>1000))activeGuides.x={type:'edge',line:it.x<500?0:1000};
  if(!y && (it.y-hy<0||it.y+hy>artH()))activeGuides.y={type:'edge',line:it.y<artH()/2?0:artH()};
 }
-function endDrag(){if(!drag)return;drag=null;activeGuides=null;render();recordHistory();}
+// Alpha 1.0.1: gestos restritos ao canvas de edição. O mockup tem controles próprios.
+// Mantém o histórico em UM passo ao final de cada movimento, inclusive pinças longas.
+const artPointers=new Map();
+let artGesture=null, artGestureChanged=false;
+const gestureDistance=(a,b)=>Math.hypot(b.x-a.x,b.y-a.y);
+const gestureAngle=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x);
+const gestureMidpoint=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+function getFirstTwoArtPointers(){return [...artPointers.values()].slice(0,2);}
+function startPinchOnArt(){
+ const it=selected();
+ if(!it||it.hidden||it.locked||artPointers.size<2){artGesture=null;drag=null;activeGuides=null;return;}
+ const [a,b]=getFirstTwoArtPointers();
+ artGesture={mode:'pinch',id:it.id,scale:it.scale||1,rotation:it.rotation||0,
+   x:it.x,y:it.y,mid:gestureMidpoint(a,b),distance:Math.max(1,gestureDistance(a,b)),
+   lastAngle:gestureAngle(a,b),totalAngle:0};
+ drag=null;activeGuides=null;
+}
+function finishArtGesture(){
+ if(artGestureChanged)recordHistory();
+ artGestureChanged=false;artGesture=null;drag=null;activeGuides=null;
+ render();
+}
 art.addEventListener('pointerdown',ev=>{
- ev.preventDefault();const pt=pointerCoord(ev),it=itemAt(pt);state.selected=it?.id||null;
- if(it&&!it.locked){drag={id:it.id,pointerId:ev.pointerId,offX:pt.x-it.x,offY:pt.y-it.y};try{art.setPointerCapture(ev.pointerId);}catch(_){}}
- else drag=null;
+ if(ev.pointerType==='mouse'&&ev.button!==0)return;
+ if(artPointers.size>=2)return;
+ ev.preventDefault();
+ const pt=pointerCoord(ev);
+ artPointers.set(ev.pointerId,pt);
+ try{art.setPointerCapture(ev.pointerId);}catch(_){}
+ if(artPointers.size===1){
+   artGestureChanged=false;
+   const hit=itemAt(pt);
+   if(hit)state.selected=hit.id;
+   const it=selected();
+   artGesture={mode:hit&&!hit.locked?'drag':'pending',id:it?.id||null,
+     pointerId:ev.pointerId,startPt:pt,startX:it?.x||0,startY:it?.y||0,
+     blankTap:!hit,moved:false};
+ }else if(artPointers.size===2){
+   // O segundo dedo pode começar em qualquer ponto do canvas, não fora dele.
+   if(!selected()){
+     const hit=itemAt(pt);if(hit)state.selected=hit.id;
+   }
+   startPinchOnArt();
+ }
  activeGuides=null;render();
 });
 art.addEventListener('pointermove',ev=>{
- if(!drag || drag.pointerId!==ev.pointerId)return;
- ev.preventDefault();const it=selected();if(!it||it.id!==drag.id)return;
- const pt=pointerCoord(ev);it.x=pt.x-drag.offX;it.y=pt.y-drag.offY;
- snapDraggedItem(it);render();
+ if(!artPointers.has(ev.pointerId))return;
+ if(ev.pointerType==='mouse'&&ev.buttons===0)return;
+ ev.preventDefault();
+ const pt=pointerCoord(ev);artPointers.set(ev.pointerId,pt);
+ const g=artGesture,it=selected();
+ if(!g||!it||it.hidden||it.locked||it.id!==g.id)return;
+ if(artPointers.size>=2 && g.mode==='pinch'){
+   const [a,b]=getFirstTwoArtPointers();
+   const dist=Math.max(1,gestureDistance(a,b));
+   const angle=gestureAngle(a,b);
+   // Acumula diferenças angulares curtas: girar além de 180° não causa salto.
+   g.totalAngle+=Math.atan2(Math.sin(angle-g.lastAngle),Math.cos(angle-g.lastAngle));
+   g.lastAngle=angle;
+   const nextScale=Math.max(.1,Math.min(8,g.scale*(dist/g.distance)));
+   const factor=nextScale/g.scale,mid=gestureMidpoint(a,b);
+   const dx=g.x-g.mid.x,dy=g.y-g.mid.y;
+   const c=Math.cos(g.totalAngle),s=Math.sin(g.totalAngle);
+   // Mantém o ponto entre os dedos como âncora, incluindo deslocamento simultâneo.
+   it.scale=nextScale;
+   it.rotation=g.rotation+g.totalAngle*180/Math.PI;
+   it.x=mid.x+factor*(c*dx-s*dy);
+   it.y=mid.y+factor*(s*dx+c*dy);
+   artGestureChanged=true;
+   activeGuides=null;drag=null;render();return;
+ }
+ if(artPointers.size===1 && g.mode==='drag' && g.pointerId===ev.pointerId){
+   const dx=pt.x-g.startPt.x,dy=pt.y-g.startPt.y;
+   if(Math.hypot(dx,dy)<.3&&!g.moved)return;
+   it.x=g.startX+dx;it.y=g.startY+dy;
+   g.moved=true;artGestureChanged=true;
+   drag={id:it.id,pointerId:ev.pointerId};
+   snapDraggedItem(it);render();
+ }
 });
-art.addEventListener('pointerup',ev=>{if(drag?.pointerId===ev.pointerId)endDrag();});
-art.addEventListener('pointercancel',ev=>{if(drag?.pointerId===ev.pointerId)endDrag();});
-art.addEventListener('lostpointercapture',endDrag);
+function releaseArtPointer(ev){
+ if(!artPointers.has(ev.pointerId))return;
+ ev.preventDefault();
+ artPointers.delete(ev.pointerId);
+ if(artPointers.size===1){
+   const [remainingId,pt]=[...artPointers.entries()][0],it=selected();
+   // Soltando um dos dedos, o outro pode continuar arrastando sem salto.
+   artGesture=it&&!it.locked&&!it.hidden
+     ?{mode:'drag',id:it.id,pointerId:remainingId,startPt:pt,startX:it.x,startY:it.y,blankTap:false,moved:false}
+     :null;
+   activeGuides=null;drag=null;render();
+ }else if(artPointers.size===0){
+   const deselect=artGesture?.blankTap&&!artGestureChanged;
+   if(deselect)state.selected=null;
+   finishArtGesture();
+ }
+}
+art.addEventListener('pointerup',releaseArtPointer);
+art.addEventListener('pointercancel',releaseArtPointer);
+art.addEventListener('lostpointercapture',releaseArtPointer);
 $('smartGuidesToggle').addEventListener('change',()=>{activeGuides=null;render();});
 function changeItem(fn,key='item'){const it=selected();if(!it||it.locked)return;fn(it);render();recordHistory(key+':'+it.id);}
 $('addText').addEventListener('click',createText);$('addImage').addEventListener('click',()=>$('imagePicker').click());
@@ -409,10 +492,6 @@ $('outlineColor').addEventListener('input',ev=>changeItem(it=>{it.outlineColor=e
 $('outlineSize').addEventListener('input',ev=>changeItem(it=>{it.outlineSize=+ev.target.value;},'outlineSize'));
 $('textShadow').addEventListener('input',ev=>changeItem(it=>{it.shadowBlur=+ev.target.value;},'shadowBlur'));
 $('shadowColor').addEventListener('input',ev=>changeItem(it=>{it.shadowColor=ev.target.value;},'shadowColor'));
-$('elementScale').addEventListener('input',ev=>changeItem(it=>{it.scale=+ev.target.value/100;},'scale'));
-$('elementRotation').addEventListener('input',ev=>changeItem(it=>{it.rotation=+ev.target.value;},'rotation'));
-$('layerUp').addEventListener('click',()=>reorderLayer(1));
-$('layerDown').addEventListener('click',()=>reorderLayer(-1));
 $('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;$('bgColorSample').style.backgroundColor=state.bg;render();recordHistory('background');});
 $('product').addEventListener('change',ev=>setProduct(ev.target.value));
 $('shirtZone')?.addEventListener('change',ev=>setShirtZone(ev.target.value));

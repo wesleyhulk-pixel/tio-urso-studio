@@ -258,3 +258,12 @@
 .layers-empty{text-align:center;font-size:12px;color:#7e95a5;padding:12px;margin:0}
 .selection-controls.layer-locked{border:1px dashed #e3bf85;padding:10px;border-radius:12px;opacity:.68}
 @media(max-width:520px){.editor-history-bar{gap:6px}.history-button{flex:1;padding:8px 5px}.editor-history-bar small{flex:0 0 100%;text-align:center;margin:0}.layers-panel{padding:13px 9px}.layers-actions button{font-size:10px}.layers-count{font-size:9px}.layers-heading h3{font-size:15px}}
+
+/* Alpha 1.0.1 — painel de camadas imediatamente abaixo da estampa. */
+.design-card .canvas-surround { margin-bottom: 0; }
+.canvas-gesture-hint { margin: 9px 2px 0 !important; color:#527b8d !important; font-size:11px !important; line-height:1.5 !important; }
+.canvas-gesture-hint strong { color:#0a819b; }
+.design-card .layers-panel { margin-top:11px; }
+.design-card .tool-row { margin-top:13px; }
+.design-card .selection-controls { margin-top:12px; }
+@media (max-width:520px){.design-card .layers-panel{padding:11px 9px}.canvas-gesture-hint{font-size:10px!important}}

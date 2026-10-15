@@ -1,17 +1,15 @@
-# Tio Urso Studio — Alpha 1.0.0 (Editor: Histórico e Camadas)
+# Tio Urso Studio — Alpha 1.0.1
 
-Base: **Alpha 0.9.9 original** (giro infinito, zoom por pinça até 300%, mockups Meshy, camiseta, gola, cores, cenário e exportação preservados).
+## Melhorias desta versão
+- **Um dedo dentro da área da arte**: selecione e arraste o texto ou a imagem.
+- **Dois dedos na área da arte**: pinça para redimensionar; gire os dedos para rotacionar; mova os dois para reposicionar.
+- **Gestos restritos ao canvas da estampa**: navegar fora dele continua rolando a página normalmente.
+- **Painel Camadas da arte** posicionado imediatamente abaixo da estampa; seleção, ordem, ocultar, bloquear, duplicar, renomear e excluir mantidos.
+- **Controles antigos de tamanho e rotação** removidos; formatação de texto preservada para quando selecionar um texto.
+- **Desfazer/Refazer** continuam funcionando: cada sessão de arrastar ou pinçar entra no histórico como uma alteração.
+- **Mockups 3D Meshy, gola, zoom por pinça no mockup e giro infinito** mantidos sem alteração do renderizador 3D.
 
-## Novidades do editor
-- **Desfazer** ↶ e **Refazer** ↷; até 70 estados (ações contínuas de digitação/slider são agrupadas); atalhos Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z quando não estiver editando texto.
-- **Camadas**: selecionar, ocultar, bloquear, subir/descer, duplicar, renomear e excluir. Ordem do topo da lista = frente da estampa.
-- Elementos ocultos não aparecem nos mockups nem nas exportações. Elementos bloqueados não são movidos nem editados até desbloquear.
-- Inclusão, exclusão, transformações, posição, camada, texto, cores de estampa, produto e posição da camiseta entram no histórico.
-- Formato JSON de projeto preservado (`version:1`) e grava propriedades de camada (nome, oculto e bloqueado).
+## Como atualizar no GitHub Pages
+Descompacte e envie o **conteúdo** (não a pasta) à raiz do repositório, substituindo os arquivos anteriores. Aguarde o GitHub Pages atualizar e confira o selo `ALPHA 1.0.1`.
 
-## Publicação no GitHub Pages
-Envie **todos os 13 arquivos deste ZIP** à raiz do repositório, substituindo os arquivos anteriores. Não mova os arquivos binários Meshy para subpastas. Atualização de cache em index.html para `v=1000`.
-
-Observação: o histórico vive apenas enquanto o editor está aberto. Para preservar o projeto entre sessões, use **Salvar projeto** (JSON).
-
-A aparência e os gestos reais devem ser validados no Android depois de publicado.
+Faça um backup da versão 1.0.0 antes de publicar esta Alpha.
