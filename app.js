@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.8 — camiseta com mangas sólidas e gola independente. */
+/* Tio Urso Studio Alpha 0.9.9 — giro livre e zoom por pinça; acabamento 0.9.8 preservado. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -835,21 +835,37 @@ $('applyColor').addEventListener('click',()=>{
 ['textColor2','outlineColor','shadowColor'].forEach(id=>$(id).addEventListener('input',()=>refreshColorTrigger(id)));
 refreshColorTriggers();
 
-// Controle de orientação da estampa no mockup. Não altera a arte nem seu arquivo de impressão.
+// Alpha 0.9.9 — giro contínuo (sem batente) e zoom por pinça na prévia.
+// O ângulo é normalizado apenas para manter precisão no WebGL após muitas voltas.
+// A interação segue livre: ao completar 360°, a próxima volta começa imediatamente.
 const mockAngleInput=$('mockAngle');
+const MIN_MOCK_ZOOM=70;
+const MAX_MOCK_ZOOM=300;
+function normalizeMockAngle(angle){
+ const n=Number(angle);
+ if(!Number.isFinite(n))return 0;
+ let normalized=((n+180)%360+360)%360-180;
+ if(normalized===-180 && n>0)normalized=180;
+ return normalized;
+}
 function updateMockAngle(angle){
- mockAngle=Math.round(Math.max(-180,Math.min(180,Number(angle)||0)));
- mockAngleInput.value=String(mockAngle);
- $('mockAngleLabel').textContent=Math.abs(mockAngle)>=150?'Trás • 180°':(mockAngle===0?'Frente • 0°':(mockAngle<0?'Esquerda':'Direita')+' • '+Math.abs(mockAngle)+'°');
- document.querySelectorAll('[data-mock-angle]').forEach(el=>el.classList.toggle('active',Number(el.dataset.mockAngle)===mockAngle));
+ mockAngle=normalizeMockAngle(angle);
+ const display=Math.round(mockAngle);
+ mockAngleInput.value=String(display);
+ $('mockAngleLabel').textContent=display===0?'Frente • 0°':Math.abs(display)===180?'Trás • 180°':(display<0?'Esquerda':'Direita')+' • '+Math.abs(display)+'°';
+ document.querySelectorAll('[data-mock-angle]').forEach(el=>{
+   const target=Number(el.dataset.mockAngle);
+   el.classList.toggle('active',Math.abs(normalizeMockAngle(mockAngle-target))<.6);
+ });
  renderMockup();
 }
 function updateMockZoom(value){
- const input=$('mockZoom'), label=$('mockZoomLabel');
- mockZoom=Math.max(70,Math.min(170,Math.round(Number(value)||100)));
- if(input) input.value=String(mockZoom);
- if(label) label.textContent=mockZoom+'%';
- if(mockStage) mockStage.style.setProperty('--mock-scale', (mockZoom/100).toFixed(2));
+ const input=$('mockZoom'),label=$('mockZoomLabel');
+ const n=Number(value);
+ mockZoom=Math.max(MIN_MOCK_ZOOM,Math.min(MAX_MOCK_ZOOM,Number.isFinite(n)?n:100));
+ if(input)input.value=String(Math.round(mockZoom));
+ if(label)label.textContent=Math.round(mockZoom)+'%';
+ if(mockStage)mockStage.style.setProperty('--mock-scale',String(mockZoom/100));
 }
 function drawStageCover(g, layer, outW, outH){
  if(!layer || layer.hidden) return;
@@ -877,14 +893,61 @@ const mockZoomInput=$('mockZoom');
 mockZoomInput?.addEventListener('input',e=>updateMockZoom(e.target.value));
 document.querySelectorAll('[data-zoom-step]').forEach(button=>button.addEventListener('click',()=>updateMockZoom(mockZoom+Number(button.dataset.zoomStep||0))));
 $('mockZoomReset')?.addEventListener('click',()=>updateMockZoom(100));
-mockStage?.addEventListener('wheel',ev=>{if(!ev.ctrlKey && Math.abs(ev.deltaY)<1)return;ev.preventDefault();updateMockZoom(mockZoom+(ev.deltaY<0?5:-5));},{passive:false});
-let spinDrag=null;
-mock3dCanvas.addEventListener('pointerdown',ev=>{if(mock3dCanvas.hidden)return;spinDrag={x:ev.clientX,angle:mockAngle,id:ev.pointerId};mock3dCanvas.setPointerCapture(ev.pointerId);});
-mock3dCanvas.addEventListener('pointermove',ev=>{if(!spinDrag||spinDrag.id!==ev.pointerId)return;updateMockAngle(spinDrag.angle+(ev.clientX-spinDrag.x)*.7);});
-for(const event of ['pointerup','pointercancel','lostpointercapture'])mock3dCanvas.addEventListener(event,()=>{spinDrag=null;});
+mockStage?.addEventListener('wheel',ev=>{
+ if(!ev.ctrlKey && Math.abs(ev.deltaY)<1)return;
+ ev.preventDefault();
+ updateMockZoom(mockZoom+(ev.deltaY<0?10:-10));
+},{passive:false});
+
+// Um dedo/mouse: rotação livre de 360° quantas vezes desejar.
+// Dois dedos: escala proporcional à distância entre as pontas dos dedos.
+// A captura no palco, em vez de apenas no canvas WebGL, também funciona
+// com a prévia ilustrativa quando o dispositivo não suporta WebGL.
+const mockPointers=new Map();
+let pinchOriginDistance=0;
+let pinchOriginZoom=100;
+function pointerDistance(){
+ const points=[...mockPointers.values()];
+ if(points.length<2)return 0;
+ return Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);
+}
+function beginPinch(){
+ pinchOriginDistance=Math.max(1,pointerDistance());
+ pinchOriginZoom=mockZoom;
+}
+mockStage?.addEventListener('pointerdown',ev=>{
+ if(ev.pointerType==='mouse' && ev.button!==0)return;
+ if(mockPointers.size>=2)return;
+ ev.preventDefault();
+ mockPointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+ try{mockStage.setPointerCapture(ev.pointerId);}catch(_){}
+ if(mockPointers.size===2)beginPinch();
+ mockStage.classList.add('is-gesturing');
+});
+mockStage?.addEventListener('pointermove',ev=>{
+ const previous=mockPointers.get(ev.pointerId);
+ if(!previous)return;
+ ev.preventDefault();
+ mockPointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+ if(mockPointers.size>=2){
+   const distance=pointerDistance();
+   if(distance>0)updateMockZoom(pinchOriginZoom*(distance/pinchOriginDistance));
+ }else if(rotaryProducts.has(state.product)){
+   updateMockAngle(mockAngle+(ev.clientX-previous.x)*.7);
+ }
+});
+function finishMockPointer(ev){
+ if(!mockPointers.has(ev.pointerId))return;
+ mockPointers.delete(ev.pointerId);
+ // Se um dedo continuar apoiado, o próximo movimento já poderá girar.
+ if(mockPointers.size===0)mockStage.classList.remove('is-gesturing');
+ if(mockPointers.size===2)beginPinch();
+}
+for(const type of ['pointerup','pointercancel','lostpointercapture']){
+ mockStage?.addEventListener(type,finishMockPointer);
+}
 document.querySelectorAll('[data-mock-angle]').forEach(button=>button.addEventListener('click',()=>updateMockAngle(button.dataset.mockAngle)));
 updateMockZoom(100);
-
 // Inicialização. Sem salvamento remoto nem coleta de dados.
 updateMeasurements();updateProductSpecificUI();$('bgColorSample').style.backgroundColor=state.bg;updateSceneMenuUI();render();calculate();updateOrientationUI();
 // O modo PWA completo será ativado quando os ícones, manifesto e SW estiverem publicados.
