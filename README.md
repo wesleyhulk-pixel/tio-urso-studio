@@ -1,14 +1,16 @@
-# Tio Urso Studio — Alpha 0.9.5
+# Tio Urso Studio — Alpha 0.9.6
 
-## Camiseta: cores sólidas
+Ajuste pontual da camiseta Meshy 3D. Canecas, caneca de chopp, squeeze, zoom, giro e modo retrato preservados.
 
-- Corrigida a faixa de mistura gradual entre mangas e corpo no shader 3D da camiseta Meshy.
-- Cor principal do corpo e cor das mangas agora são selecionadas separadamente, com transição firme e apenas iluminação leve do tecido.
-- Adicionada opção independente **Cor da gola** no editor.
-- Projetos salvos anteriormente continuam compatíveis: a gola herda a cor anterior das mangas quando o projeto não tiver cor específica da gola.
-- Preservados os arquivos, geometria e controles de giro e zoom da caneca, caneca de chopp, squeeze e camiseta.
-- Versão, cache e README atualizados para Alpha 0.9.5.
+## Correções
 
-## Publicação no GitHub Pages
+- Mangas com recorte raglan sem degradê e com separação mais fiel ao tronco — sem formato de avental.
+- Gola independente em faixa **curva** acompanhando o decote, sem barra vermelha horizontal.
+- Sombreamento do modelo 3D recuperado para mostrar melhor as dobras, preservando cores sólidas.
+- Versão 0.9.6 em todos os identificadores e parâmetros de cache.
 
-Extraia o ZIP e envie os 13 arquivos diretamente para a raiz do repositório (mesmo local do `index.html`), substituindo as versões antigas. Não envie a pasta externa.
+## Instalação no GitHub Pages
+
+Extraia o ZIP e faça upload dos **13 arquivos diretamente para a raiz** do repositório, substituindo os arquivos antigos (sem criar pasta adicional). Aguarde a publicação e confirme o selo `ALPHA 0.9.6`.
+
+**Prévia experimental:** confira visualmente o recorte das mangas e a gola no celular. Exportação e áreas de impressão continuam sujeitas a conferência antes da produção.
