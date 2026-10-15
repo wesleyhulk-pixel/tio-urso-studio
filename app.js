@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.7 — camiseta com mangas sólidas e gola independente. */
+/* Tio Urso Studio Alpha 0.9.8 — camiseta com mangas sólidas e gola independente. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -60,6 +60,7 @@ function updateProductSpecificUI(){
   $('shirtColor').value=state.shirtColor;
   $('shirtTrimColor').value=state.shirtTrimColor;
   $('shirtCollarColor').value=state.shirtCollarColor;
+  ['shirtColor','shirtTrimColor','shirtCollarColor'].forEach(refreshColorTrigger);
  }
 }
 function canvasFont(it){const family=String(it.font||'Arial').replace(/[\"\\]/g,'');return `bold ${it.fontSize||65}px \"${family}\"`;}
@@ -259,9 +260,9 @@ $('layerDown').addEventListener('click',()=>{const i=state.items.findIndex(it=>i
 $('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;$('bgColorSample').style.backgroundColor=state.bg;render();});
 $('product').addEventListener('change',ev=>setProduct(ev.target.value));
 $('shirtZone')?.addEventListener('change',ev=>setShirtZone(ev.target.value));
-$('shirtColor')?.addEventListener('input',ev=>{state.shirtColor=ev.target.value;renderMockup();});
-$('shirtTrimColor')?.addEventListener('input',ev=>{state.shirtTrimColor=ev.target.value;renderMockup();});
-$('shirtCollarColor')?.addEventListener('input',ev=>{state.shirtCollarColor=ev.target.value;renderMockup();});
+$('shirtColor')?.addEventListener('input',ev=>{state.shirtColor=ev.target.value;refreshColorTrigger('shirtColor');renderMockup();});
+$('shirtTrimColor')?.addEventListener('input',ev=>{state.shirtTrimColor=ev.target.value;refreshColorTrigger('shirtTrimColor');renderMockup();});
+$('shirtCollarColor')?.addEventListener('input',ev=>{state.shirtCollarColor=ev.target.value;refreshColorTrigger('shirtCollarColor');renderMockup();});
 function switchView(name){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name));document.querySelectorAll('.tab').forEach(t=>{t.classList.toggle('selected',t.dataset.view===name);t.setAttribute('aria-current',t.dataset.view===name?'page':'false');});if(name==='mockup'){ $('mockControls').hidden=!rotaryProducts.has(state.product);renderMockup();}if(name==='preco')calculate();if(name==='export')updateOrientationUI();window.scrollTo({top:0,behavior:'instant'});}
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchView(t.dataset.view)));
 $('backToEditor').addEventListener('click',()=>switchView('editor'));
@@ -628,6 +629,7 @@ function setMugFinish(hex,refresh=true){
  finishPicker.value=state.mugFinishColor;
  $('mugFinishSample').style.backgroundColor=state.mugFinishColor;
  mugFinishChoices.forEach(button=>button.classList.toggle('active',button.dataset.finish.toLowerCase()===state.mugFinishColor));
+ refreshColorTrigger('mugFinishColor');
  if(refresh)renderMockup();
 }
 finishPicker.addEventListener('input',event=>setMugFinish(event.target.value));
@@ -716,7 +718,8 @@ document.querySelectorAll('.font-category').forEach(btn=>btn.addEventListener('c
 $('fontImportAction').addEventListener('click',()=>{$('fontPicker').click();});
 $('fontPicker').addEventListener('change',()=>setTimeout(()=>{closeSheet();fontGalleryRender();},250));
 
-// Paleta completa, recent colors, HEX e seletor avançado nativo opcional.
+// Alpha 0.9.8 — seletor de cores próprio, consistente no Android e no desktop.
+// Usa os mesmos inputs ocultos e eventos do projeto 0.9.7: não altera modelos 3D.
 const predefinedColors = [
  '#FFFFFF','#F3F4F6','#C7CDD4','#808080','#374151','#000000','#7F1D1D','#AA1111',
  '#FF0000','#F43F5E','#FF7E8A','#FF9E00','#FFCF00','#FFF500','#A7E300','#51B749',
@@ -725,26 +728,112 @@ const predefinedColors = [
  '#FCE7F3','#E4F4FF','#BAE6FD','#A7F3D0','#FFEDD5','#FDF2B8','#123B62','#0B2136',
  '#EC4899','#BE185D','#14B8A6','#0E7490','#65A30D','#B45309','#9333EA','#1D4ED8'
 ];
-let colorTarget='text', chosenColor='#ff0000';
-let recentColors=[];try{const saved=JSON.parse(localStorage.getItem('tuStudioRecentColors')||'[]');if(Array.isArray(saved))recentColors=saved.filter(v=>/^#[0-9A-F]{6}$/i.test(v)).slice(0,8);}catch(_){}
+let colorTarget='textColor', chosenColor='#FF0000', originalColor='#FF0000';
+let hue=0, saturation=100, brightness=100;
 const validHex=s=>/^#[0-9A-F]{6}$/i.test(s);
-function makeSwatch(color,container){const btn=document.createElement('button');btn.type='button';btn.className='swatch'+(chosenColor.toLowerCase()===color.toLowerCase()?' active':'');btn.style.backgroundColor=color;btn.title=color;btn.setAttribute('aria-label','Cor '+color);btn.addEventListener('click',()=>{chosenColor=color.toUpperCase();syncColors();});container.append(btn);}
-function swatchesRender(){const grid=$('colorSwatches'),recent=$('recentSwatches');grid.replaceChildren();recent.replaceChildren();predefinedColors.forEach(c=>makeSwatch(c,grid));(recentColors.length?recentColors:[chosenColor]).forEach(c=>makeSwatch(c,recent));}
-function syncColors(){if(!validHex(chosenColor))return;chosenColor=chosenColor.toUpperCase();$('hexColor').value=chosenColor;$('nativeColor').value=chosenColor;$('selectedColorChip').style.backgroundColor=chosenColor;$('selectedColorLabel').textContent=chosenColor;swatchesRender();}
-function showColor(target){colorTarget=target;chosenColor=(target==='text'?selected()?.color:state.bg)||'#ffffff';syncColors();openSheet('colorOverlay');}
-$('chooseTextColor').addEventListener('click',()=>{if(selected()?.kind==='text')showColor('text');});
-$('chooseBgColor').addEventListener('click',()=>showColor('background'));
-$('hexColor').addEventListener('input',event=>{let value=event.target.value.trim();if(value&&!value.startsWith('#'))value='#'+value;if(validHex(value)){chosenColor=value;syncColors();}});
-$('nativeColor').addEventListener('input',event=>{chosenColor=event.target.value;syncColors();});
-$('applyColor').addEventListener('click',()=>{
- const hex=$('hexColor').value.trim();if(!validHex(hex)){toast('Informe um HEX válido, exemplo: #FF0000');return;}
- chosenColor=hex.toUpperCase();const target=colorTarget==='text'?'textColor':'backgroundColor';$(target).value=chosenColor;$(target).dispatchEvent(new Event('input',{bubbles:true}));
- if(colorTarget==='text')$('textColorSample').style.backgroundColor=chosenColor;
- recentColors=[chosenColor,...recentColors.filter(c=>c!==chosenColor)].slice(0,8);
- try{localStorage.setItem('tuStudioRecentColors',JSON.stringify(recentColors));}catch(_){}
- closeSheet();toast('Cor aplicada: '+chosenColor);
+let recentColors=[];
+try{const saved=JSON.parse(localStorage.getItem('tuStudioRecentColors')||'[]');if(Array.isArray(saved))recentColors=saved.filter(validHex).slice(0,12).map(s=>s.toUpperCase());}catch(_){}
+const targetNames={textColor:'Cor do texto',backgroundColor:'Fundo da estampa',shirtColor:'Cor da camiseta',shirtTrimColor:'Cor das mangas',shirtCollarColor:'Cor da gola',mugFinishColor:'Alça e interior da caneca',textColor2:'Segunda cor do texto',outlineColor:'Cor do contorno',shadowColor:'Cor da sombra'};
+function rgbFromHex(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));}
+function rgbToHex(r,g,b){return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('').toUpperCase();}
+function rgbToHsv(r,g,b){r/=255;g/=255;b/=255;const hi=Math.max(r,g,b),lo=Math.min(r,g,b),d=hi-lo;let h=0;if(d){switch(hi){case r:h=((g-b)/d)%6;break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;}h*=60;}return [(h+360)%360,hi===0?0:d/hi*100,hi*100];}
+function hsvToRgb(h,s,v){s/=100;v/=100;const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;let a;if(h<60)a=[c,x,0];else if(h<120)a=[x,c,0];else if(h<180)a=[0,c,x];else if(h<240)a=[0,x,c];else if(h<300)a=[x,0,c];else a=[c,0,x];return a.map(n=>(n+m)*255);}
+function refreshColorTrigger(id){
+ const input=$(id);if(!input)return;
+ const color=/^#[0-9a-f]{6}$/i.test(input.value)?input.value.toUpperCase():'#FFFFFF';
+ document.querySelectorAll('[data-color-sample="'+id+'"],[data-color-code="'+id+'"]').forEach(el=>{
+   if(el.hasAttribute('data-color-sample'))el.style.backgroundColor=color;
+   else el.textContent=color;
+ });
+}
+function refreshColorTriggers(){document.querySelectorAll('[data-color-target]').forEach(el=>refreshColorTrigger(el.dataset.colorTarget));}
+function makeSwatch(color,container){
+ const btn=document.createElement('button');btn.type='button';btn.className='swatch';btn.dataset.swatchColor=color.toUpperCase();btn.style.backgroundColor=color;
+ btn.title=color;btn.setAttribute('aria-label','Escolher cor '+color);
+ btn.addEventListener('click',()=>setChosenColor(color));container.append(btn);
+}
+function swatchesRender(){
+ const grid=$('colorSwatches'),recent=$('recentSwatches');grid.replaceChildren();recent.replaceChildren();
+ predefinedColors.forEach(c=>makeSwatch(c,grid));
+ (recentColors.length?recentColors:[chosenColor]).forEach(c=>makeSwatch(c,recent));
+ markSelectedSwatch();
+}
+function markSelectedSwatch(){document.querySelectorAll('#colorOverlay .swatch').forEach(el=>el.classList.toggle('active',el.dataset.swatchColor===chosenColor));}
+function syncChosenColor(fromHex=false){
+ chosenColor=rgbToHex(...hsvToRgb(hue,saturation,brightness));
+ if(!fromHex)$('hexColor').value=chosenColor;
+ const [r,g,b]=rgbFromHex(chosenColor);
+ $('colorR').value=r;$('colorG').value=g;$('colorB').value=b;
+ $('colorSvPlane').style.setProperty('--chosen-hue',`hsl(${Math.round(hue)},100%,50%)`);
+ $('colorSvCursor').style.left=saturation+'%';$('colorSvCursor').style.top=(100-brightness)+'%';
+ $('colorHue').value=String(Math.round(hue));$('colorHueValue').textContent=Math.round(hue)+'°';
+ $('selectedColorChip').style.backgroundColor=chosenColor;$('selectedColorLabel').textContent=chosenColor;
+ $('colorSvPlane').setAttribute('aria-label',`Saturação ${Math.round(saturation)}%, brilho ${Math.round(brightness)}%. Arraste ou use setas para ajustar`);
+ markSelectedSwatch();
+}
+function setChosenColor(hex){
+ if(!validHex(hex))return;
+ const [h,s,v]=rgbToHsv(...rgbFromHex(hex));
+ // Manter matiz previamente escolhida quando a cor é branca/cinza/preta.
+ if(s>.05)hue=h;saturation=s;brightness=v;
+ syncChosenColor();
+}
+function showColor(target){
+ if(!(target in targetNames))return;
+ if(target==='textColor' && selected()?.kind!=='text')return;
+ colorTarget=target;
+ chosenColor=($(target)?.value||'#FFFFFF').toUpperCase();originalColor=chosenColor;
+ $('colorTargetLabel').textContent=targetNames[target];
+ $('originalColorChip').style.backgroundColor=originalColor;
+ setChosenColor(chosenColor);
+ swatchesRender();openSheet('colorOverlay');
+}
+document.querySelectorAll('[data-color-target]').forEach(btn=>btn.addEventListener('click',()=>showColor(btn.dataset.colorTarget)));
+$('chooseTextColor').addEventListener('click',()=>showColor('textColor'));
+$('chooseBgColor').addEventListener('click',()=>showColor('backgroundColor'));
+$('cancelColor').addEventListener('click',closeSheet);
+$('colorHue').addEventListener('input',ev=>{hue=Number(ev.target.value);syncChosenColor();});
+const svPlane=$('colorSvPlane');
+function pickSV(event){
+ const rect=svPlane.getBoundingClientRect();if(!rect.width||!rect.height)return;
+ saturation=Math.round(Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width))*1000)/10;
+ brightness=Math.round((1-Math.max(0,Math.min(1,(event.clientY-rect.top)/rect.height)))*1000)/10;
+ syncChosenColor();
+}
+svPlane.addEventListener('pointerdown',event=>{if(event.button!==0&&event.pointerType==='mouse')return;svPlane.setPointerCapture(event.pointerId);pickSV(event);event.preventDefault();});
+svPlane.addEventListener('pointermove',event=>{if(svPlane.hasPointerCapture(event.pointerId)){pickSV(event);event.preventDefault();}});
+svPlane.addEventListener('keydown',event=>{
+ const step=event.shiftKey?10:2;
+ if(event.key==='ArrowLeft')saturation=Math.max(0,saturation-step);
+ else if(event.key==='ArrowRight')saturation=Math.min(100,saturation+step);
+ else if(event.key==='ArrowUp')brightness=Math.min(100,brightness+step);
+ else if(event.key==='ArrowDown')brightness=Math.max(0,brightness-step);
+ else return;
+ event.preventDefault();syncChosenColor();
 });
-
+$('hexColor').addEventListener('input',event=>{
+ const entered=event.target.value.trim();const hex=(entered.startsWith('#')?entered:'#'+entered);
+ if(validHex(hex))setChosenColor(hex);
+});
+for(const id of ['colorR','colorG','colorB'])$(id).addEventListener('input',()=>{
+ const fields=['colorR','colorG','colorB'].map(key=>$(key));
+ if(fields.some(el=>el.value.trim()===''||!Number.isFinite(Number(el.value))||Number(el.value)<0||Number(el.value)>255))return;
+ setChosenColor(rgbToHex(...fields.map(el=>Number(el.value))));
+});
+$('applyColor').addEventListener('click',()=>{
+ const value=$('hexColor').value.trim();const hex=(value.startsWith('#')?value:'#'+value).toUpperCase();
+ if(!validHex(hex)){toast('Informe um HEX válido, como #0055FF');$('hexColor').focus();return;}
+ const input=$(colorTarget);if(!input)return;
+ chosenColor=hex;input.value=hex;
+ input.dispatchEvent(new Event('input',{bubbles:true}));
+ refreshColorTrigger(colorTarget);
+ recentColors=[hex,...recentColors.filter(c=>c!==hex)].slice(0,12);
+ try{localStorage.setItem('tuStudioRecentColors',JSON.stringify(recentColors));}catch(_){}
+ closeSheet();toast('Cor aplicada: '+hex);
+});
+// Atualiza os botões dos efeitos após a alteração das propriedades do texto.
+['textColor2','outlineColor','shadowColor'].forEach(id=>$(id).addEventListener('input',()=>refreshColorTrigger(id)));
+refreshColorTriggers();
 
 // Controle de orientação da estampa no mockup. Não altera a arte nem seu arquivo de impressão.
 const mockAngleInput=$('mockAngle');

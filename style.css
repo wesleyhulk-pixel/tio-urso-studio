@@ -166,3 +166,57 @@
 @media (max-width: 640px){
   .mockup-stage.portrait-preview{max-width:none;aspect-ratio:4/5.35;min-height:460px}
 }
+
+
+/* Alpha 0.9.8 — seletor de cores consistente Android/PC; não modifica o modelo 3D */
+.studio-color-trigger{display:flex;align-items:center;gap:10px;width:100%;min-height:53px;padding:9px 12px;border:1px solid #cddfe7;background:#f9fcfd;border-radius:13px;color:#274d63;text-align:left;font-weight:750}
+.studio-color-trigger:focus-visible{outline:3px solid #43b8d1;outline-offset:2px}
+.studio-color-sample{display:block;flex:0 0 32px;width:32px;height:32px;border:2px solid rgba(34,57,73,.14);border-radius:9px;background:#d9dee4;box-shadow:0 0 0 1px #ffffff, 0 2px 4px #00000016}
+.studio-color-code{font-size:14px;font-weight:800;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.studio-color-arrow{margin-left:auto;font-size:21px;line-height:1;color:#1597ad}
+.effect-color-field{display:flex;flex-direction:column;gap:7px;font-size:12px;color:#456579;font-weight:700}
+.effect-color-trigger{min-height:45px;padding:6px 9px}
+.effect-color-trigger .studio-color-sample{flex-basis:28px;width:28px;height:28px}
+.effect-color-trigger .studio-color-code{font-size:11px}
+.studio-finish-trigger{background:#f8fbfd;border:1px solid #d6e4eb;border-radius:11px;padding:5px 9px;min-height:43px}
+.studio-finish-trigger .studio-color-sample{width:30px;height:30px;flex-basis:30px}
+.color-sheet{max-height:min(94dvh,990px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(20px + env(safe-area-inset-bottom));scrollbar-gutter:stable}
+.color-sheet .sheet-head{margin-bottom:14px}
+.color-sheet .sheet-head h2{font-size:23px}
+.color-subtitle{margin:4px 0 0;color:#537489;font-size:13px;font-weight:700}
+.color-studio-main{margin:0 0 15px}
+.color-sv{position:relative;width:100%;height:clamp(160px,24dvh,228px);border-radius:15px;touch-action:none;cursor:crosshair;background:linear-gradient(to top,#000 0%,transparent 100%),linear-gradient(to right,#fff 0%,var(--chosen-hue,#ff0000) 100%);border:1px solid #cfdfe8;box-shadow:inset 0 0 0 1px #fff8;outline-offset:3px}
+.color-sv-cursor{position:absolute;left:100%;top:0;width:20px;height:20px;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #1c3b57,0 2px 7px #112a47aa;transform:translate(-50%,-50%);pointer-events:none}
+.color-sv-hint{font-size:11px;color:#688395;line-height:1.4;margin:7px 1px 12px}
+.color-hue-row{display:grid;grid-template-columns:75px 1fr 37px;align-items:center;gap:8px}
+.color-hue-row label{font-size:12px;font-weight:800;color:#3d6379}
+.color-hue-row output{font-size:12px;color:#38617a;text-align:right;font-variant-numeric:tabular-nums}
+#colorHue{appearance:none;-webkit-appearance:none;width:100%;height:21px;border-radius:99px;cursor:pointer;outline-offset:5px;border:1px solid #ccdce3;background:linear-gradient(to right,#f00 0%,#ff0 16.66%,#0f0 33.33%,#0ff 50%,#00f 66.66%,#f0f 83.33%,#f00 100%)}
+#colorHue::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:25px;height:25px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px #23516c,0 2px 6px #0004;background:#ffffff}
+#colorHue::-moz-range-thumb{width:19px;height:19px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px #23516c;background:#ffffff}
+.color-precision{display:grid;grid-template-columns:1fr 1.4fr;gap:12px;align-items:end;border-top:1px solid #e8f0f4;padding-top:14px}
+.color-precision .field label,.color-rgb-fields label{display:block;margin-bottom:6px;color:#47677e;font-size:11px;font-weight:800}
+.color-precision .field input,.color-rgb-fields input{height:45px;min-height:45px;font-size:15px;border-radius:10px;padding:9px 10px;text-align:center;box-shadow:inset 0 1px 2px #0000000a}
+.color-precision .field input{text-align:left;font-weight:800;text-transform:uppercase;letter-spacing:.25px}
+.color-rgb-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.color-rgb-fields input{width:100%;min-width:0;padding:8px 3px;font-variant-numeric:tabular-nums}
+.color-preview-bar{margin:13px 0 9px;padding:10px 12px;gap:11px}
+.color-preview-bar>span{width:44px;height:44px;flex:0 0 44px;border:2px solid #ffffff;box-shadow:0 0 0 1px #bfd2dc}
+.color-preview-bar>div:nth-child(2){display:flex;flex-direction:column;gap:3px;flex:1}
+.color-preview-bar small{font-size:10px;color:#688396}
+.color-preview-bar strong{font-size:15px;color:#213e54;font-variant-numeric:tabular-nums}
+.color-preview-old{display:flex;align-items:center;flex-direction:column;gap:5px}
+#originalColorChip{width:28px;height:28px;border:1px solid #b8cbd6;border-radius:7px;background:white;display:block}
+.color-palettes{border-top:1px solid #e6eff3;padding-top:10px;margin-top:10px}
+.color-palettes summary{font-size:13px;font-weight:850;color:#3c6177;cursor:pointer;display:flex;justify-content:space-between;gap:12px;align-items:center;list-style:none;min-height:28px}
+.color-palettes summary::-webkit-details-marker{display:none}
+.color-palettes summary:before{content:'▸';color:#008fa5;margin-right:4px}.color-palettes[open] summary:before{content:'▾'}
+.color-palettes summary span{margin-left:auto;color:#7f97a5;font-size:11px}
+.color-palettes .swatch-grid{margin-top:12px}
+.color-sheet .swatch-grid{grid-template-columns:repeat(10,minmax(0,1fr));gap:9px}
+.color-sheet .swatch-grid.recent{grid-template-columns:repeat(10,minmax(0,1fr));min-height:28px}
+.color-sheet .swatch{border-radius:8px;min-height:24px}
+.color-sheet .swatch-title{font-size:12px;margin:12px 0 9px}
+.color-studio-actions{position:sticky;bottom:-1px;display:grid;grid-template-columns:1fr 1.5fr;gap:10px;background:linear-gradient(180deg,#fffffff2,#fff 25%);padding:13px 0 1px;margin-top:5px;z-index:2}
+.color-studio-actions .btn{margin:0;min-height:48px}
+@media(max-width:520px){.color-sheet{padding:16px 15px calc(12px + env(safe-area-inset-bottom))}.color-sheet .sheet-head h2{font-size:21px}.color-sheet .swatch-grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}.color-sheet .swatch-grid.recent{grid-template-columns:repeat(8,minmax(0,1fr))}.color-sv{height:clamp(150px,23dvh,205px)}.color-precision{grid-template-columns:1fr 1.3fr;gap:8px}.color-rgb-fields{gap:5px}.color-precision .field input,.color-rgb-fields input{font-size:13px}}

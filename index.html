@@ -4,18 +4,18 @@
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
  <meta name="theme-color" content="#071d37">
- <meta name="description" content="Tio Urso Studio Alpha 0.9.7 — editor de estampas, mockups e orçamentos para personalizados.">
- <title>Tio Urso Studio · Alpha 0.9.7</title>
+ <meta name="description" content="Tio Urso Studio Alpha 0.9.8 — editor de estampas, mockups e orçamentos para personalizados.">
+ <title>Tio Urso Studio · Alpha 0.9.8</title>
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Montserrat:wght@700&family=Poppins:wght@700&family=Righteous&family=Bangers&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Great+Vibes&family=Permanent+Marker&family=Cinzel:wght@700&family=Playfair+Display:wght@700&family=Fredoka:wght@700&family=Satisfy&family=Kalam:wght@700&family=Abril+Fatface&family=Russo+One&family=Caveat:wght@700&family=Indie+Flower&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="style.css?v=0970">
- <script src="mock3d.js?v=0970" defer></script>
- <script src="app.js?v=0970" defer></script>
+ <link rel="stylesheet" href="style.css?v=0980">
+ <script src="mock3d.js?v=0980" defer></script>
+ <script src="app.js?v=0980" defer></script>
 </head>
 <body>
  <header class="topbar">
-   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote.png" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 0.9.7</span></div>
+   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote.png" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 0.9.8</span></div>
  </header>
  <div class="app-layout">
   <nav class="tabs" aria-label="Navegação principal">
@@ -60,9 +60,9 @@
        <div class="card-head shirt-head"><div><h2>Camiseta · Meshy base</h2><p>Escolha a posição de impressão e as cores base do mockup.</p></div><span class="tag">A4</span></div>
        <div class="control-grid shirt-grid">
          <div class="field"><label for="shirtZone">Posição da arte</label><select id="shirtZone"><option value="frente">Frente · A4</option><option value="costas">Costas · A4</option><option value="peito">Peito · 12 × 12 cm</option><option value="manga_d">Braço direito · 9 × 9 cm</option><option value="manga_e">Braço esquerdo · 9 × 9 cm</option></select></div>
-         <div class="field"><label for="shirtColor">Cor da camiseta</label><input id="shirtColor" type="color" value="#ffffff"></div>
-         <div class="field"><label for="shirtTrimColor">Cor das mangas</label><input id="shirtTrimColor" type="color" value="#d9dee4"></div>
-         <div class="field"><label for="shirtCollarColor">Cor da gola</label><input id="shirtCollarColor" type="color" value="#d9dee4"></div>
+         <div class="field"><label id="label-shirtColor">Cor da camiseta</label><button class="studio-color-trigger" type="button" data-color-target="shirtColor" aria-labelledby="label-shirtColor"><span class="studio-color-sample" data-color-sample="shirtColor" aria-hidden="true"></span><span class="studio-color-code" data-color-code="shirtColor"></span><span class="studio-color-arrow" aria-hidden="true">›</span></button><input id="shirtColor" type="color" value="#ffffff" hidden></div>
+         <div class="field"><label id="label-shirtTrimColor">Cor das mangas</label><button class="studio-color-trigger" type="button" data-color-target="shirtTrimColor" aria-labelledby="label-shirtTrimColor"><span class="studio-color-sample" data-color-sample="shirtTrimColor" aria-hidden="true"></span><span class="studio-color-code" data-color-code="shirtTrimColor"></span><span class="studio-color-arrow" aria-hidden="true">›</span></button><input id="shirtTrimColor" type="color" value="#d9dee4" hidden></div>
+         <div class="field"><label id="label-shirtCollarColor">Cor da gola</label><button class="studio-color-trigger" type="button" data-color-target="shirtCollarColor" aria-labelledby="label-shirtCollarColor"><span class="studio-color-sample" data-color-sample="shirtCollarColor" aria-hidden="true"></span><span class="studio-color-code" data-color-code="shirtCollarColor"></span><span class="studio-color-arrow" aria-hidden="true">›</span></button><input id="shirtCollarColor" type="color" value="#d9dee4" hidden></div>
        </div>
        <div class="notice shirt-note"><strong>Área liberada:</strong> frente e costas em <strong>A4 (21 × 29,7 cm)</strong>; peito em <strong>12 × 12 cm</strong>; braço direito e esquerdo em <strong>9 × 9 cm</strong>.</div>
      </section>
@@ -78,11 +78,11 @@
          <div class="text-effects" id="textEffects" hidden>
   <h3>Acabamento do texto</h3>
   <label class="effect-check"><input id="twoToneToggle" type="checkbox"> Duas cores / degradê</label>
-  <div class="effect-grid"><label>Segunda cor <input id="textColor2" type="color" value="#00d3e7"></label>
-  <label>Cor do contorno <input id="outlineColor" type="color" value="#ffffff"></label>
+  <div class="effect-grid"><div class="effect-color-field"><span>Segunda cor</span><button class="studio-color-trigger effect-color-trigger" type="button" data-color-target="textColor2" aria-label="Selecionar segunda cor"><span class="studio-color-sample" data-color-sample="textColor2" aria-hidden="true"></span><span class="studio-color-code" data-color-code="textColor2"></span><span class="studio-color-arrow" aria-hidden="true">›</span></button><input id="textColor2" type="color" value="#00d3e7" hidden></div>
+  <div class="effect-color-field"><span>Cor do contorno</span><button class="studio-color-trigger effect-color-trigger" type="button" data-color-target="outlineColor" aria-label="Selecionar cor do contorno"><span class="studio-color-sample" data-color-sample="outlineColor" aria-hidden="true"></span><span class="studio-color-code" data-color-code="outlineColor"></span><span class="studio-color-arrow" aria-hidden="true">›</span></button><input id="outlineColor" type="color" value="#ffffff" hidden></div>
   <label>Espessura do contorno <output id="outlineSizeValue">0</output> <input id="outlineSize" type="range" min="0" max="20" step="1" value="0"></label>
   <label>Desfoque da sombra <output id="textShadowValue">0</output> <input id="textShadow" type="range" min="0" max="22" step="1" value="0"></label></div>
-  <label>Cor da sombra <input id="shadowColor" type="color" value="#293f4b"></label>
+  <div class="effect-color-field"><span>Cor da sombra</span><button class="studio-color-trigger effect-color-trigger" type="button" data-color-target="shadowColor" aria-label="Selecionar cor da sombra"><span class="studio-color-sample" data-color-sample="shadowColor" aria-hidden="true"></span><span class="studio-color-code" data-color-code="shadowColor"></span><span class="studio-color-arrow" aria-hidden="true">›</span></button><input id="shadowColor" type="color" value="#293f4b" hidden></div>
 </div>
 <div class="action-row"><button id="layerDown" class="btn ghost" type="button">↓ Para trás</button><button id="layerUp" class="btn ghost" type="button">↑ Para frente</button></div>
        </div>
@@ -118,7 +118,7 @@
        <button type="button" class="finish-swatch" data-finish="#16935e" style="--swatch:#16935e" aria-label="Verde" title="Verde"></button>
        <button type="button" class="finish-swatch" data-finish="#fbbf24" style="--swatch:#fbbf24" aria-label="Amarelo" title="Amarelo"></button>
        <button type="button" class="finish-swatch" data-finish="#ea68ae" style="--swatch:#ea68ae" aria-label="Rosa" title="Rosa"></button>
-       <label class="finish-custom">Personalizar <input id="mugFinishColor" type="color" value="#ffffff" aria-label="Cor personalizada da alça e interior"></label>
+       <button class="finish-custom studio-finish-trigger" type="button" data-color-target="mugFinishColor" aria-label="Personalizar cor da alça e do interior">Personalizar <span class="studio-color-sample" data-color-sample="mugFinishColor" aria-hidden="true"></span><span aria-hidden="true">›</span></button><input id="mugFinishColor" type="color" value="#ffffff" hidden>
       </div>
     </div>
     <div class="mock-controls" id="mockControls"><div class="mock-control-header"><strong>Girar o produto inteiro</strong><output id="mockAngleLabel">Frente • 0°</output></div><div class="mock-buttons"><button type="button" data-mock-angle="-90">◂ Lado esquerdo</button><button type="button" data-mock-angle="0" class="active">Frente</button><button type="button" data-mock-angle="90">Lado direito ▸</button><button type="button" data-mock-angle="180">Trás ↶</button></div><label for="mockAngle" id="mockRotateLabel">Arraste o produto com o dedo ou use o controle para girar</label><input type="range" id="mockAngle" min="-180" max="180" step="5" value="0"><div class="mock-zoom-panel"><div class="mock-control-header"><strong>Ampliar visualização</strong><output id="mockZoomLabel">100%</output></div><div class="mock-buttons zoom-buttons"><button type="button" data-zoom-step="-10">－</button><button type="button" id="mockZoomReset">Centralizar</button><button type="button" data-zoom-step="10">＋</button></div><label for="mockZoom">Aproxime ou afaste o mockup para enxergar melhor os detalhes</label><input type="range" id="mockZoom" min="70" max="170" step="5" value="100"></div><p>Canecas, squeeze e camiseta: prévia tridimensional experimental. As áreas de estampa devem ser conferidas antes da produção.</p></div>
@@ -149,11 +149,28 @@
        <div class="action-row"><button id="downloadPng" class="btn primary" type="button">⇩ Exportar PNG</button><button id="downloadPdf" class="btn" type="button">⇩ Exportar PDF</button></div><div class="notice"><strong>Para sublimação:</strong> espelhe apenas quando necessário e desative o espelhamento adicional no software de impressão. Esta Alpha não aplica perfil ICC e não garante as cores finais. Para imprimir no tamanho certo, desative “ajustar à página” no diálogo de impressão.</div>
      </section><button type="button" class="btn ghost full-cta" data-goto="editor">← Voltar ao editor</button>
    </section>
-   <footer>🐻 Tio Urso Studio • Alpha 0.9.7 experimental • Teste de impressão obrigatório</footer>
+   <footer>🐻 Tio Urso Studio • Alpha 0.9.8 experimental • Teste de impressão obrigatório</footer>
   </main>
  </div>
  <div class="sheet-overlay" id="fontOverlay" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Galeria de fontes"><div class="sheet-head"><div><small>PERSONALIZE SEU TEXTO</small><h2>Escolher fonte</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar fontes">✕</button></div><input id="fontSearch" class="search-input" type="search" placeholder="Buscar fonte pelo nome…"><div class="font-categories"><button type="button" class="font-category active" data-font-category="Todas">Todas</button><button type="button" class="font-category" data-font-category="Divertidas">Divertidas</button><button type="button" class="font-category" data-font-category="Elegantes">Elegantes</button><button type="button" class="font-category" data-font-category="Manuscritas">Manuscritas</button><button type="button" class="font-category" data-font-category="Fortes">Fortes</button></div><div id="fontGallery" class="font-gallery"></div><button type="button" class="btn full-cta" id="fontImportAction">＋ Importar fonte TTF/OTF</button><p class="sheet-note">Fontes online precisam de internet ao carregar. Para uso comercial, confira a licença das fontes importadas.</p></section></div>
- <div class="sheet-overlay" id="colorOverlay" hidden><section class="sheet color-sheet" role="dialog" aria-modal="true" aria-label="Paleta de cores"><div class="sheet-head"><div><small>PERSONALIZE AS CORES</small><h2>Escolher cor</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar cores">✕</button></div><div class="swatch-title">Paleta de cores</div><div class="swatch-grid" id="colorSwatches"></div><div class="swatch-title">Cores recentes</div><div class="swatch-grid recent" id="recentSwatches"></div><div class="custom-color"><div class="field"><label for="hexColor">Código HEX</label><input id="hexColor" maxlength="7" placeholder="#00A6B9" autocapitalize="characters"></div><label class="color-native"><span>Personalizada</span><input id="nativeColor" type="color" value="#0797ad"></label></div><div class="color-preview-bar"><span id="selectedColorChip"></span><strong id="selectedColorLabel">#0797AD</strong></div><button class="btn primary full-cta" id="applyColor" type="button">Aplicar cor</button></section></div>
+ <div class="sheet-overlay" id="colorOverlay" hidden>
+  <section class="sheet color-sheet" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle">
+    <div class="sheet-head"><div><small>ESTÚDIO DE CORES · ALPHA 0.9.8</small><h2 id="colorModalTitle">Escolher cor</h2><p class="color-subtitle" id="colorTargetLabel">Personalize qualquer tonalidade</p></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar sem aplicar">✕</button></div>
+    <div class="color-studio-main">
+      <div class="color-sv" id="colorSvPlane" role="group" tabindex="0" aria-label="Área de cor: deslize para os lados para mudar a saturação e para cima ou baixo para ajustar a luminosidade" aria-describedby="colorSvHint"><span id="colorSvCursor" class="color-sv-cursor" aria-hidden="true"></span></div>
+      <p class="color-sv-hint" id="colorSvHint">Arraste o dedo no quadrado para ajustar o tom claro, vivo ou escuro.</p>
+      <div class="color-hue-row"><label for="colorHue">Tonalidade</label><input id="colorHue" type="range" min="0" max="360" step="1" value="0" aria-label="Tonalidade, de vermelho a violeta"><output id="colorHueValue" for="colorHue">0°</output></div>
+    </div>
+    <div class="color-precision">
+      <div class="field"><label for="hexColor">Cor HEX</label><input id="hexColor" type="text" maxlength="7" placeholder="#0055FF" autocapitalize="characters" spellcheck="false" inputmode="text" autocomplete="off"></div>
+      <div class="color-rgb-fields"><div><label for="colorR">R</label><input id="colorR" type="number" min="0" max="255" step="1" inputmode="numeric"></div><div><label for="colorG">G</label><input id="colorG" type="number" min="0" max="255" step="1" inputmode="numeric"></div><div><label for="colorB">B</label><input id="colorB" type="number" min="0" max="255" step="1" inputmode="numeric"></div></div>
+    </div>
+    <div class="color-preview-bar"><span id="selectedColorChip" aria-hidden="true"></span><div><small>Cor selecionada</small><strong id="selectedColorLabel">#0797AD</strong></div><div class="color-preview-old"><small>Anterior</small><span id="originalColorChip" aria-hidden="true"></span></div></div>
+    <details class="color-palettes" open><summary>Cores prontas <span>48 tons</span></summary><div class="swatch-grid" id="colorSwatches"></div></details>
+    <div class="swatch-title">Usadas recentemente</div><div class="swatch-grid recent" id="recentSwatches"></div>
+    <div class="color-studio-actions"><button class="btn ghost" id="cancelColor" type="button">Cancelar</button><button class="btn primary" id="applyColor" type="button">✓ Aplicar cor</button></div>
+  </section>
+</div>
  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>

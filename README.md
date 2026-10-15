@@ -1,15 +1,18 @@
-# Tio Urso Studio — Alpha 0.9.7
+# Tio Urso Studio — Alpha 0.9.8 — Seletor de Cores Mobile
 
-Atualização pontual da camiseta Meshy 3D, baseada no print da Alpha 0.9.6.
+Pacote completo para publicar na raiz do repositório GitHub Pages.
 
-## O que mudou
-- O formato da gola agora acompanha um perfil curvo obtido das medidas da malha Meshy, não uma simples faixa horizontal.
-- O interior do decote recebe uma sombra de forro para não aparecer como mancha azul na abertura.
-- As mangas e o corpo mantêm cores independentes com limite mais definido; a iluminação do tecido continua ativa.
-- Os outros produtos, zoom, rotação, modo retrato e controles de estampa permanecem iguais à Alpha 0.9.6.
+## Novidade
+- Seletor de cores criado dentro do aplicativo, com área para arrastar o dedo e ajustar saturação e brilho, tonalidade com controle deslizante, códigos HEX e RGB, paleta de 48 cores e histórico das 12 últimas.
+- Mesma experiência no Android e no computador; sem depender da janela de cores limitada do aparelho.
+- Integrado às cores da camiseta (corpo, mangas, gola), texto, segunda cor, contorno, sombra, fundo e acabamento da caneca tradicional.
+- Cancelar não altera nada; Aplicar confirma, atualiza o mockup e salva a cor no histórico.
+- **O modelo 3D da gola, a separação de cores, a rotação e o zoom foram mantidos exatamente como na Alpha 0.9.7.**
 
-## Publicação no GitHub Pages
+## Instalação
+1. Extraia este ZIP.
+2. Envie o conteúdo diretamente para a raiz do repositório GitHub, substituindo os arquivos anteriores.
+3. Aguarde publicar e atualize o navegador (se necessário, limpe cache).
+4. Confira o identificador Alpha 0.9.8.
 
-Extraia este ZIP e envie os **13 arquivos** diretamente para a **raiz do repositório**, substituindo os antigos; não envie a pasta externa. Confirme que o selo da tela mostra **ALPHA 0.9.7**. Se o navegador exibir a versão antiga, atualize a página sem cache.
-
-**Atenção:** o corte da camiseta ainda é um mapeamento experimental sobre um modelo Meshy sem peças separadas por material. Antes de produzir, confira a prévia real no aparelho e os limites de impressão.
+A Alpha é experimental. Cores de tela não substituem prova de impressão para sublimação.
