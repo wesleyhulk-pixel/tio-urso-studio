@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.6 — caneca Meshy preservada, camiseta com mangas sólidas e gola independente.
+/* Tio Urso Studio Alpha 0.9.7 — caneca Meshy preservada, camiseta com mangas sólidas e gola independente.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -102,24 +102,35 @@ function createTioMock3D(canvas){
    vec3 n=normalize(normalView);
    float diff=max(dot(n,normalize(vec3(-.45,.8,1.0))),0.0);
    float soft=max(dot(n,normalize(vec3(.6,.25,-.8))),0.0);
-   // Raglan: a linha acompanha o ombro, mas NÃO invade as laterais do tronco.
-   // Na 0.9.5 a faixa era estreita demais no peito e formava um "avental".
-   // As mangas terminam junto à axila; a máscara é binária, não degradê.
-   float reach=smoothstep(.60,.945,posLocal.y);
-   float seamX=mix(.515,.213,reach);
-   float sleeve=(1.0-step(abs(posLocal.x),seamX))*step(.09,posLocal.y);
-   // Gola real: filete curvo seguindo o decote. Não tingir uma faixa
-   // horizontal no pescoço (o retângulo vermelho da versão anterior).
-   // A abertura fica mais baixa no centro e sobe em direção aos ombros.
-   float nx=abs(posLocal.x);
-   float roundNeck=.833+.11*smoothstep(.0,.23,nx);
-   float neckBand=1.0-smoothstep(.012,.025,abs(posLocal.y-roundNeck));
-   float collarSide=1.0-smoothstep(.216,.243,nx);
-   float collarFacing=smoothstep(-.245,-.085,posLocal.z);
-   float collar=neckBand*collarSide*collarFacing;
-   // Cor chapada na manga e no corpo; iluminação natural é aplicada DEPOIS
-   // da separação de materiais, sem misturar as duas cores.
+   // O Meshy tem decote 3D e forro interno: altura isolada nao e uma mascara de gola.
+   // Separa cores do raglan ao longo do ombro, sem tingir faixas da barriga.
+   float ax=abs(posLocal.x);
+   float reach=smoothstep(.48,.945,posLocal.y);
+   float seamX=mix(.47,.21,pow(reach,1.2));
+   float sleeve=smoothstep(seamX-.004,seamX+.004,ax)*step(-.12,posLocal.y);
+
+   // Perfil do decote MEDIDO na propria malha Meshy:
+   // frente: y=0.785 no centro, subindo ate y~0.93 junto aos ombros.
+   // A gola ganha acabamento curvo na frente e na borda traseira.
+   vec3 nLocal=normalize(normalLocal);
+   float frontRim=.785+.147*pow(clamp(ax/.208,0.0,1.0),3.25);
+   float rimFront=(1.0-smoothstep(.019,.031,abs(posLocal.y-frontRim)))
+       *(1.0-smoothstep(.208,.225,ax))
+       *step(-.128,posLocal.z)*step(.05,nLocal.y)*step(.06,nLocal.z);
+   float rimBack=(1.0-smoothstep(.013,.025,abs(posLocal.y-.94)))
+       *(1.0-smoothstep(.19,.211,ax))
+       *(1.0-step(-.11,posLocal.z));
+   float collar=max(rimFront,rimBack);
+
+   // Na abertura se ve a parte INTERNA da camiseta, que nao deve receber
+   // a cor viva do peito. Usa sombra de forro, preservando profundidade.
+   float inner=step(.785,posLocal.y)
+       *(1.0-smoothstep(.195,.217,ax))
+       *(1.0-step(-.17,posLocal.z))
+       *step(.30,nLocal.z)
+       *(1.0-step(.1,nLocal.y));
    vec3 fabric=mix(mainColor,accentColor,sleeve);
+   fabric=mix(fabric,mainColor*.22+vec3(.098),inner);
    fabric=mix(fabric,collarColor,collar);
    // Valor ambiental suficiente para conservar cores escuras, mantendo
    // dobras, luz e volume naturais sobre o tecido.
@@ -159,7 +170,7 @@ function createTioMock3D(canvas){
  async function loadMeshyShirt(){
    if(!shirtProgram)return;
    try{
-     const response=await fetch('meshy-camiseta-webgl.bin?v=0960',{cache:'no-store'});
+     const response=await fetch('meshy-camiseta-webgl.bin?v=0970',{cache:'no-store'});
      if(!response.ok)throw new Error('Malha 3D indisponível '+response.status);
      const data=await response.arrayBuffer();
      const sig=String.fromCharCode(...new Uint8Array(data,0,4));

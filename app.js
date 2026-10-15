@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.6 — camiseta com mangas sólidas e gola independente. */
+/* Tio Urso Studio Alpha 0.9.7 — camiseta com mangas sólidas e gola independente. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);

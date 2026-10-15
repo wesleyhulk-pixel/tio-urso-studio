@@ -1,16 +1,15 @@
-# Tio Urso Studio — Alpha 0.9.6
+# Tio Urso Studio — Alpha 0.9.7
 
-Ajuste pontual da camiseta Meshy 3D. Canecas, caneca de chopp, squeeze, zoom, giro e modo retrato preservados.
+Atualização pontual da camiseta Meshy 3D, baseada no print da Alpha 0.9.6.
 
-## Correções
+## O que mudou
+- O formato da gola agora acompanha um perfil curvo obtido das medidas da malha Meshy, não uma simples faixa horizontal.
+- O interior do decote recebe uma sombra de forro para não aparecer como mancha azul na abertura.
+- As mangas e o corpo mantêm cores independentes com limite mais definido; a iluminação do tecido continua ativa.
+- Os outros produtos, zoom, rotação, modo retrato e controles de estampa permanecem iguais à Alpha 0.9.6.
 
-- Mangas com recorte raglan sem degradê e com separação mais fiel ao tronco — sem formato de avental.
-- Gola independente em faixa **curva** acompanhando o decote, sem barra vermelha horizontal.
-- Sombreamento do modelo 3D recuperado para mostrar melhor as dobras, preservando cores sólidas.
-- Versão 0.9.6 em todos os identificadores e parâmetros de cache.
+## Publicação no GitHub Pages
 
-## Instalação no GitHub Pages
+Extraia este ZIP e envie os **13 arquivos** diretamente para a **raiz do repositório**, substituindo os antigos; não envie a pasta externa. Confirme que o selo da tela mostra **ALPHA 0.9.7**. Se o navegador exibir a versão antiga, atualize a página sem cache.
 
-Extraia o ZIP e faça upload dos **13 arquivos diretamente para a raiz** do repositório, substituindo os arquivos antigos (sem criar pasta adicional). Aguarde a publicação e confirme o selo `ALPHA 0.9.6`.
-
-**Prévia experimental:** confira visualmente o recorte das mangas e a gola no celular. Exportação e áreas de impressão continuam sujeitas a conferência antes da produção.
+**Atenção:** o corte da camiseta ainda é um mapeamento experimental sobre um modelo Meshy sem peças separadas por material. Antes de produzir, confira a prévia real no aparelho e os limites de impressão.
