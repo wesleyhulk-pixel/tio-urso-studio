@@ -4,18 +4,18 @@
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
  <meta name="theme-color" content="#071d37">
- <meta name="description" content="Tio Urso Studio Alpha 0.9.9 — editor de estampas, mockups e orçamentos para personalizados.">
- <title>Tio Urso Studio · Alpha 0.9.9</title>
+ <meta name="description" content="Tio Urso Studio Alpha 1.0.0 — editor de estampas, mockups e orçamentos para personalizados.">
+ <title>Tio Urso Studio · Alpha 1.0.0</title>
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Montserrat:wght@700&family=Poppins:wght@700&family=Righteous&family=Bangers&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Great+Vibes&family=Permanent+Marker&family=Cinzel:wght@700&family=Playfair+Display:wght@700&family=Fredoka:wght@700&family=Satisfy&family=Kalam:wght@700&family=Abril+Fatface&family=Russo+One&family=Caveat:wght@700&family=Indie+Flower&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="style.css?v=0980">
- <script src="mock3d.js?v=0990" defer></script>
- <script src="app.js?v=0990" defer></script>
+ <link rel="stylesheet" href="style.css?v=1000">
+ <script src="mock3d.js?v=1000" defer></script>
+ <script src="app.js?v=1000" defer></script>
 </head>
 <body>
  <header class="topbar">
-   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote.png" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 0.9.9</span></div>
+   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote.png" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 1.0.0</span></div>
  </header>
  <div class="app-layout">
   <nav class="tabs" aria-label="Navegação principal">
@@ -68,6 +68,7 @@
      </section>
      <section class="card design-card"><div class="card-head"><div><h2>Sua estampa</h2><p>O tamanho exibido é uma prévia proporcional.</p></div><span class="tag">ARTE</span></div>
        <div class="guide-toolbar"><label class="guide-toggle"><input id="smartGuidesToggle" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span>Alinhamento inteligente</span></label><span class="guide-legend"><i class="guide-dot center"></i> Centro <i class="guide-dot edge"></i> Borda</span></div>
+       <div class="editor-history-bar" role="group" aria-label="Histórico de edição"><button class="history-button" id="undoBtn" type="button" disabled aria-label="Desfazer última alteração" title="Desfazer (Ctrl+Z)">↶ <span>Desfazer</span></button><button class="history-button" id="redoBtn" type="button" disabled aria-label="Refazer última alteração" title="Refazer (Ctrl+Y)">↷ <span>Refazer</span></button><small id="historyStatus" aria-live="polite">Tudo em ordem</small></div>
        <div class="canvas-surround"><canvas id="artCanvas" width="1000" height="462" aria-label="Área de edição. Arraste imagens ou textos para alinhar usando linhas centrais azuis e limites vermelhos."></canvas></div>
        <p class="guide-tip">Arraste a imagem ou o texto: as linhas <strong>azuis</strong> indicam o centro da arte e as <strong>vermelhas</strong> indicam quando a borda do elemento encontra os limites da estampa. O elemento encaixa suavemente nas guias.</p>
        <div class="action-row tool-row"><button id="addText" class="btn primary" type="button">＋ Texto</button><button id="addImage" class="btn" type="button">▧ Imagem</button><button id="removeSelected" class="btn danger" type="button">⌫ Excluir</button><input id="imagePicker" type="file" accept="image/png,image/jpeg,image/webp" hidden></div>
@@ -86,6 +87,10 @@
 </div>
 <div class="action-row"><button id="layerDown" class="btn ghost" type="button">↓ Para trás</button><button id="layerUp" class="btn ghost" type="button">↑ Para frente</button></div>
        </div>
+       <section class="layers-panel" aria-labelledby="layersTitle"><div class="layers-heading"><div><h3 id="layersTitle">▤ Camadas da arte</h3><p>Toque na camada para selecionar. A primeira fica por cima.</p></div><span class="layers-count" id="layerTotal">0 camadas</span></div>
+         <div id="layersList" class="layers-list" aria-label="Lista de camadas, da frente para trás"></div>
+         <div class="layers-actions"><button type="button" id="layerMoveUp" title="Mover para cima" disabled>↑ Subir</button><button type="button" id="layerMoveDown" title="Mover para baixo" disabled>↓ Descer</button><button type="button" id="layerDuplicate" title="Duplicar camada" disabled>▣ Duplicar</button><button type="button" id="layerRename" title="Renomear camada" disabled>✎ Nome</button><button type="button" id="layerDelete" title="Excluir camada" disabled>⌫ Excluir</button></div>
+         <p class="layers-help">👁 Ocultar/mostrar · 🔒 Bloquear/desbloquear · As mudanças entram no histórico.</p></section>
        <div class="bg-picker"><div><strong>Fundo da estampa</strong><small>Escolha uma cor de fundo</small></div><button id="chooseBgColor" type="button" class="bg-preview" aria-label="Selecionar cor do fundo"><span id="bgColorSample"></span>Alterar ›</button><input id="backgroundColor" type="color" value="#ffffff" hidden></div>
      </section>
      <section class="card"><div class="card-head"><div><h2>Meu projeto</h2><p>Guarde seu trabalho para continuar depois.</p></div></div><div class="action-row"><button class="btn" type="button" id="saveProject">⇩ Salvar projeto</button><button class="btn" type="button" id="openProject">↥ Abrir projeto</button><button class="btn ghost" type="button" id="resetProject">↺ Novo</button><input id="projectPicker" type="file" accept="application/json,.json" hidden></div></section>
@@ -149,13 +154,13 @@
        <div class="action-row"><button id="downloadPng" class="btn primary" type="button">⇩ Exportar PNG</button><button id="downloadPdf" class="btn" type="button">⇩ Exportar PDF</button></div><div class="notice"><strong>Para sublimação:</strong> espelhe apenas quando necessário e desative o espelhamento adicional no software de impressão. Esta Alpha não aplica perfil ICC e não garante as cores finais. Para imprimir no tamanho certo, desative “ajustar à página” no diálogo de impressão.</div>
      </section><button type="button" class="btn ghost full-cta" data-goto="editor">← Voltar ao editor</button>
    </section>
-   <footer>🐻 Tio Urso Studio • Alpha 0.9.9 experimental • Teste de impressão obrigatório</footer>
+   <footer>🐻 Tio Urso Studio • Alpha 1.0.0 experimental • Teste de impressão obrigatório</footer>
   </main>
  </div>
  <div class="sheet-overlay" id="fontOverlay" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Galeria de fontes"><div class="sheet-head"><div><small>PERSONALIZE SEU TEXTO</small><h2>Escolher fonte</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar fontes">✕</button></div><input id="fontSearch" class="search-input" type="search" placeholder="Buscar fonte pelo nome…"><div class="font-categories"><button type="button" class="font-category active" data-font-category="Todas">Todas</button><button type="button" class="font-category" data-font-category="Divertidas">Divertidas</button><button type="button" class="font-category" data-font-category="Elegantes">Elegantes</button><button type="button" class="font-category" data-font-category="Manuscritas">Manuscritas</button><button type="button" class="font-category" data-font-category="Fortes">Fortes</button></div><div id="fontGallery" class="font-gallery"></div><button type="button" class="btn full-cta" id="fontImportAction">＋ Importar fonte TTF/OTF</button><p class="sheet-note">Fontes online precisam de internet ao carregar. Para uso comercial, confira a licença das fontes importadas.</p></section></div>
  <div class="sheet-overlay" id="colorOverlay" hidden>
   <section class="sheet color-sheet" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle">
-    <div class="sheet-head"><div><small>ESTÚDIO DE CORES · ALPHA 0.9.9</small><h2 id="colorModalTitle">Escolher cor</h2><p class="color-subtitle" id="colorTargetLabel">Personalize qualquer tonalidade</p></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar sem aplicar">✕</button></div>
+    <div class="sheet-head"><div><small>ESTÚDIO DE CORES · ALPHA 1.0.0</small><h2 id="colorModalTitle">Escolher cor</h2><p class="color-subtitle" id="colorTargetLabel">Personalize qualquer tonalidade</p></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar sem aplicar">✕</button></div>
     <div class="color-studio-main">
       <div class="color-sv" id="colorSvPlane" role="group" tabindex="0" aria-label="Área de cor: deslize para os lados para mudar a saturação e para cima ou baixo para ajustar a luminosidade" aria-describedby="colorSvHint"><span id="colorSvCursor" class="color-sv-cursor" aria-hidden="true"></span></div>
       <p class="color-sv-hint" id="colorSvHint">Arraste o dedo no quadrado para ajustar o tom claro, vivo ou escuro.</p>
