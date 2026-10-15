@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.2 — camiseta raglan refinada, fundo transparente, A4 proporcional. */
+/* Tio Urso Studio Alpha 0.9.3 — camiseta raglan refinada, fundo transparente, A4 proporcional. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -30,12 +30,12 @@ const sceneImagePicker=$('sceneImagePicker');
 const mock3dCanvas=$('mock3dCanvas');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
 window.addEventListener('tio-meshy-ready',()=>{
- if(state.product==='caneca')renderMockup();
+ if(['caneca','camiseta'].includes(state.product))renderMockup();
 });
 window.addEventListener('tio-meshy-failed',()=>{
  console.warn('O modelo Meshy não carregou. Mantendo a prévia ilustrativa.');
 });
-const rotaryProducts=new Set(['caneca','chopp','squeeze']);
+const rotaryProducts=new Set(['caneca','chopp','squeeze','camiseta']);
 let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira',shirtZone:'frente',shirtColor:'#ffffff',shirtTrimColor:'#d9dee4'};
 let customSceneImage=null;
 const imageCache = new Map();
@@ -154,8 +154,8 @@ function openScenePicker(){
  sceneImagePicker.click();
 }
 async function addImage(file){if(!file)return;try{const src=await loadFileAsImage(file),img=await decodeImage(src);const w=Math.min(480,img.naturalWidth),h=w*img.naturalHeight/img.naturalWidth;const it={id:'e'+(++seq),kind:'image',src,baseW:w,baseH:h,x:500,y:artH()/2,scale:1,rotation:0};imageCache.set(it.id,img);state.items.push(it);state.selected=it.id;render();toast('Imagem adicionada! Arraste para mover.');}catch(e){toast(e.message);}}
-function setProduct(key){if(!PRODUCTS[key])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
-function setShirtZone(zone){if(!SHIRT_AREAS[zone])return;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.shirtZone=zone;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
+function setProduct(key){if(!PRODUCTS[key])return;if(key==='camiseta')mockAngle=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[state.shirtZone]??0;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
+function setShirtZone(zone){if(!SHIRT_AREAS[zone])return;mockAngle=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[zone]??0;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.shirtZone=zone;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
 function pointerCoord(ev){const r=art.getBoundingClientRect();return {x:(ev.clientX-r.left)/r.width*1000,y:(ev.clientY-r.top)/r.height*artH()};}
 function itemAt(pt){for(let i=state.items.length-1;i>=0;i--){const it=state.items[i],{w,h}=itemDimensions(it),r=-(it.rotation||0)*Math.PI/180,dx=pt.x-it.x,dy=pt.y-it.y,s=it.scale||1;const lx=(dx*Math.cos(r)-dy*Math.sin(r))/s,ly=(dx*Math.sin(r)+dy*Math.cos(r))/s;if(Math.abs(lx)<=w/2+13&&Math.abs(ly)<=h/2+13)return it;}return null;}
 // Referências do Canva: centro da página e as quatro bordas da arte.
@@ -452,15 +452,16 @@ function drawShirtArtwork(g,source,zone){
 }
 
 function renderMockup(){
+ const label=$('mockRotateLabel');if(label)label.textContent=state.product==='camiseta'?'Arraste a camiseta com o dedo ou use o controle para girar':'Arraste o produto com o dedo ou use o controle para girar';
  const finishControls=$('mugFinishControl');
  if(finishControls)finishControls.hidden=state.product!=='caneca';
  const three=rotaryProducts.has(state.product)&&mock3d?.supported;
  mock3dCanvas.hidden=!three;mock.hidden=three;mockSceneCanvas.hidden=!three;
- $('mockTypeTag').textContent=three?((state.product==='caneca'||state.product==='squeeze'||state.product==='chopp')?'3D MESHY BETA':'3D BETA'):'2D';
+ $('mockTypeTag').textContent=three?'3D MESHY BETA':'2D';
  if(three){
    let drawn=false;
    try{
-     drawn=mock3d.render(state.product,artworkCanvas(1000,artH()),mockAngle,state.mugFinishColor)!==false;
+     drawn=mock3d.render(state.product,artworkCanvas(1000,artH(),false,state.product==='camiseta'),mockAngle,state.mugFinishColor,state.product==='camiseta'?{zone:state.shirtZone,bodyColor:state.shirtColor,trimColor:state.shirtTrimColor}:null)!==false;
    }catch(err){
      console.error('Falha no mockup 3D, usando prévia de segurança:',err);
    }

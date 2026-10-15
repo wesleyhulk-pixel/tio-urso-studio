@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.8.4 — caneca real do Meshy — correção da geometria da caneca tradicional.
+/* Tio Urso Studio Alpha 0.9.3 — caneca Meshy preservada e camiseta Meshy real renderizada.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -78,6 +78,119 @@ function createTioMock3D(canvas){
  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
  gl.uniform1i(gl.getUniformLocation(program,'tex'),0);
  gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE);
+
+
+ // Camiseta real (Meshy) — renderizador independente, sem alterar a lógica das canecas.
+ let shirtProgram=null, meshyShirt=null;
+ const shirtVS=`attribute vec3 aPos;attribute vec3 aNorm;
+ uniform float yaw;uniform float aspect;varying vec3 posLocal;varying vec3 normalLocal;varying vec3 normalView;
+ void main(){
+   vec3 p=aPos*1.32;
+   float c=cos(yaw),s=sin(yaw);
+   vec3 wp=vec3(c*p.x+s*p.z,p.y,-s*p.x+c*p.z);
+   vec3 wn=normalize(vec3(c*aNorm.x+s*aNorm.z,aNorm.y,-s*aNorm.x+c*aNorm.z));
+   float py=wp.y*.958-wp.z*.286;
+   float pz=wp.z*.958+wp.y*.286;
+   float depth=5.7-pz;
+   gl_Position=vec4(wp.x*2.48/aspect,py*2.48,(depth*1.003-.201),depth);
+   posLocal=aPos;normalLocal=aNorm;normalView=wn;
+ }`;
+ const shirtFS=`precision mediump float;
+ varying vec3 posLocal;varying vec3 normalLocal;varying vec3 normalView;
+ uniform vec3 mainColor;uniform vec3 accentColor;uniform float zone;uniform sampler2D artwork;
+ void main(){
+   vec3 n=normalize(normalView);
+   float diff=max(dot(n,normalize(vec3(-.45,.8,1.0))),0.0);
+   float soft=max(dot(n,normalize(vec3(.6,.25,-.8))),0.0);
+   // Sleeve panel and collar get the matching accent tone.
+   float sleeve=smoothstep(.43,.59,abs(posLocal.x))*smoothstep(.05,.32,posLocal.y);
+   vec3 fabric=mix(mainColor,accentColor,sleeve*.92);
+   // Gentle diffuse fabric lighting, preserving the details sculpted by Meshy.
+   float illumination=.66+.30*diff+.085*soft;
+   fabric*=illumination;
+   // Slight edge depth makes folds look like fabric, not a flat drawing.
+   fabric+=vec3(.045)*pow(max(dot(n,vec3(0.0,0.4,1.0)),0.0),3.0);
+   float mirrored=zone>0.5 && zone<1.5 ? -1.0 : 1.0;
+   vec2 uv;
+   float face=0.0;
+   if(zone<2.5){
+     float xmin=zone>1.5 ? .12 : -.31;
+     float bottom=zone>1.5 ? .27 : -.26;
+     float width=zone>1.5 ? .22 : .62;
+     float height=zone>1.5 ? .22 : .88;
+     uv=vec2((mirrored*posLocal.x-xmin)/width,(posLocal.y-bottom)/height);
+     face=(zone>.5 && zone<1.5) ? step(.05,-posLocal.z) : step(.05,posLocal.z);
+   } else {
+     float signX=zone<3.5?-1.0:1.0;
+     uv=vec2((signX*posLocal.x-.49)/.32,(posLocal.y-.20)/.43);
+     face=step(.25,signX*posLocal.x);
+   }
+   float inbounds=step(0.0,uv.x)*step(uv.x,1.0)*step(0.0,uv.y)*step(uv.y,1.0);
+   if(inbounds*face>.5){
+      vec4 ink=texture2D(artwork,uv);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a);
+   }
+   gl_FragColor=vec4(clamp(fabric,0.0,1.0),1.0);
+ }`;
+ try{
+   shirtProgram=gl.createProgram();
+   gl.attachShader(shirtProgram,compile(gl.VERTEX_SHADER,shirtVS));
+   gl.attachShader(shirtProgram,compile(gl.FRAGMENT_SHADER,shirtFS));
+   gl.linkProgram(shirtProgram);
+   if(!gl.getProgramParameter(shirtProgram,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(shirtProgram));
+ }catch(err){console.warn('Renderizador de camiseta Meshy:',err);shirtProgram=null;}
+ async function loadMeshyShirt(){
+   if(!shirtProgram)return;
+   try{
+     const response=await fetch('meshy-camiseta-webgl.bin?v=0930',{cache:'no-store'});
+     if(!response.ok)throw new Error('Malha 3D indisponível '+response.status);
+     const data=await response.arrayBuffer();
+     const sig=String.fromCharCode(...new Uint8Array(data,0,4));
+     if(sig!=='TUSH')throw new Error('Arquivo de camiseta incompatível');
+     const vertices=new DataView(data).getUint32(4,true);
+     if(vertices>800000||vertices<100||data.byteLength!==8+vertices*24)throw new Error('Geometria incompleta');
+     const buffer=gl.createBuffer();
+     gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+     gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data,8),gl.STATIC_DRAW);
+     meshyShirt={buffer,count:vertices};
+     window.dispatchEvent(new Event('tio-meshy-ready'));
+   }catch(err){console.warn('Camiseta Meshy:',err);window.dispatchEvent(new Event('tio-meshy-failed'));}
+ }
+ function renderShirt(art,angle,shirtOptions){
+   if(!shirtProgram||!meshyShirt||wasLost)return false;
+   const col=hex=>[1,3,5].map(i=>parseInt((/^#[0-9a-f]{6}$/i.test(hex)?hex:'#ffffff').slice(i,i+2),16)/255);
+   const options=shirtOptions||{};
+   const orientation=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[options.zone] ?? 0;
+   const angles=Number.isFinite(angle) ? angle : orientation;
+   const zones={frente:0,costas:1,peito:2,manga_d:3,manga_e:4};
+   gl.viewport(0,0,canvas.width,canvas.height);
+   gl.clearColor(0,0,0,0);
+   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+   gl.useProgram(shirtProgram);
+   gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.disable(gl.BLEND);
+   gl.bindBuffer(gl.ARRAY_BUFFER,meshyShirt.buffer);
+   const apS=gl.getAttribLocation(shirtProgram,'aPos');
+   const anS=gl.getAttribLocation(shirtProgram,'aNorm');
+   gl.enableVertexAttribArray(apS);gl.vertexAttribPointer(apS,3,gl.FLOAT,false,24,0);
+   gl.enableVertexAttribArray(anS);gl.vertexAttribPointer(anS,3,gl.FLOAT,false,24,12);
+   gl.uniform1f(gl.getUniformLocation(shirtProgram,'yaw'),angles*Math.PI/180);
+   gl.uniform1f(gl.getUniformLocation(shirtProgram,'aspect'),canvas.width/canvas.height);
+   gl.uniform1f(gl.getUniformLocation(shirtProgram,'zone'),zones[options.zone]??0);
+   gl.uniform3fv(gl.getUniformLocation(shirtProgram,'mainColor'),new Float32Array(col(options.bodyColor||'#ffffff')));
+   gl.uniform3fv(gl.getUniformLocation(shirtProgram,'accentColor'),new Float32Array(col(options.trimColor||'#ffffff')));
+   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
+   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,art);
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+   gl.uniform1i(gl.getUniformLocation(shirtProgram,'artwork'),0);
+   gl.drawArrays(gl.TRIANGLES,0,meshyShirt.count);
+   const e=gl.getError();
+   // Restore the original shader; approved mug/squeeze/chopp use it unchanged.
+   gl.useProgram(program);
+   if(e!==gl.NO_ERROR){console.warn('Renderização camiseta WebGL',e);return false;}
+   return true;
+ }
 
  const meshCache=new Map();
  let meshyMug=null;
@@ -500,7 +613,8 @@ function createTioMock3D(canvas){
    if(typeof hex!=='string'||!/^#[0-9a-fA-F]{6}$/.test(hex))return [1,1,1];
    return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);
  }
- function render(kind, art, angle, mugFinishColor='#ffffff'){
+ function render(kind, art, angle, mugFinishColor='#ffffff',shirtOptions=null){
+   if(kind==='camiseta')return renderShirt(art,angle,shirtOptions);
    if(wasLost) return false;
    if(kind==='caneca' && !meshyMug)return false;
    if(kind==='squeeze' && !meshySqueeze)return false;
@@ -578,6 +692,7 @@ function createTioMock3D(canvas){
    return centerPixel[3] > 0;
  }
 
+ loadMeshyShirt();
  loadMeshyMug();
  loadMeshySqueeze();
  loadMeshyChopp();
