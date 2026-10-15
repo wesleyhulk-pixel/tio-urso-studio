@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.0 — camiseta parte 1 com posições de impressão e mockup dedicado. */
+/* Tio Urso Studio Alpha 0.9.1 — camiseta Meshy base com mockup mais realista e área transparente. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -264,9 +264,15 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>swit
 $('backToEditor').addEventListener('click',()=>switchView('editor'));
 document.querySelectorAll('[data-goto]').forEach(btn=>btn.addEventListener('click',()=>switchView(btn.dataset.goto)));
 document.querySelectorAll('[data-product]').forEach(btn=>btn.addEventListener('click',()=>{$('product').value=btn.dataset.product;setProduct(btn.dataset.product);switchView('editor');}));
-function artworkCanvas(w,h,mirror=false){
+function artworkCanvas(w,h,mirror=false,transparentBg=false){
  const off=document.createElement('canvas');off.width=w;off.height=h;const g=off.getContext('2d');
- g.save();if(mirror){g.translate(w,0);g.scale(-1,1);}g.scale(w/1000,h/artH());g.fillStyle=state.bg;g.fillRect(0,0,1000,artH());for(const it of state.items)drawElement(g,it,false);g.restore();return off;
+ g.save();
+ if(mirror){g.translate(w,0);g.scale(-1,1);}
+ g.scale(w/1000,h/artH());
+ if(!transparentBg){g.fillStyle=state.bg;g.fillRect(0,0,1000,artH());}
+ for(const it of state.items)drawElement(g,it,false);
+ g.restore();
+ return off;
 }
 // Simulação 2D de uma estampa em uma superfície cilíndrica, não geometria 3D real.
 // Alpha 0.4: prévia 2D de canecas com curvatura por coluna e vista parcial ajustável.
@@ -351,58 +357,84 @@ function shadeColor(hex,amount){
  const r=clamp((num>>16)+amount),g=clamp(((num>>8)&255)+amount),b=clamp((num&255)+amount);
  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
 }
+
 function drawShirtSilhouette(g,backView=false){
- const shirt=state.shirtColor||'#ffffff';
- const trim=state.shirtTrimColor||'#d9dee4';
+ const shirt=state.shirtColor||'#e7ebef';
+ const trim=state.shirtTrimColor||'#3a4048';
  const shadow='rgba(22,52,76,.18)';
- const bodyGrad=g.createLinearGradient(0,130,0,570);
- bodyGrad.addColorStop(0,shadeColor(shirt,8));
- bodyGrad.addColorStop(.45,shirt);
- bodyGrad.addColorStop(1,shadeColor(shirt,-18));
+ const bodyGrad=g.createLinearGradient(0,136,0,586);
+ bodyGrad.addColorStop(0,shadeColor(shirt,10));
+ bodyGrad.addColorStop(.42,shirt);
+ bodyGrad.addColorStop(1,shadeColor(shirt,-22));
+ const sleeveGrad=g.createLinearGradient(300,170,805,340);
+ sleeveGrad.addColorStop(0,shadeColor(trim,10));
+ sleeveGrad.addColorStop(.55,trim);
+ sleeveGrad.addColorStop(1,shadeColor(trim,-18));
  g.save();
- g.shadowColor=shadow;g.shadowBlur=22;g.shadowOffsetY=15;
+ g.shadowColor=shadow;g.shadowBlur=22;g.shadowOffsetY=17;
+ // sleeves first
  g.beginPath();
- g.moveTo(432,138);
- g.lineTo(492,111);
- g.quadraticCurveTo(551,141,610,111);
- g.lineTo(670,138);
- g.lineTo(758,220);
- g.lineTo(721,319);
- g.lineTo(663,289);
- g.lineTo(663,551);
- g.quadraticCurveTo(552,575,439,551);
- g.lineTo(439,289);
- g.lineTo(381,319);
- g.lineTo(344,220);
- g.closePath();
- g.fillStyle=bodyGrad;g.fill();g.restore();
+ g.moveTo(420,174);g.lineTo(335,214);g.lineTo(286,305);g.lineTo(366,344);g.lineTo(441,240);g.closePath();
+ g.fillStyle=sleeveGrad;g.fill();
+ g.beginPath();
+ g.moveTo(682,174);g.lineTo(767,214);g.lineTo(816,305);g.lineTo(736,344);g.lineTo(661,240);g.closePath();
+ g.fillStyle=sleeveGrad;g.fill();
+ // torso
+ g.beginPath();
+ g.moveTo(441,173);g.quadraticCurveTo(490,143,551,143);g.quadraticCurveTo(612,143,661,173);
+ g.lineTo(686,212);g.lineTo(686,571);g.quadraticCurveTo(552,590,416,571);g.lineTo(416,212);g.closePath();
+ g.fillStyle=bodyGrad;g.fill();
+ g.restore();
+ // seams and borders
  g.save();
- g.lineWidth=8;g.strokeStyle=trim;
- g.beginPath();g.moveTo(432,138);g.lineTo(492,111);g.quadraticCurveTo(551,141,610,111);g.lineTo(670,138);g.lineTo(758,220);g.lineTo(721,319);g.lineTo(663,289);g.lineTo(663,551);g.quadraticCurveTo(552,575,439,551);g.lineTo(439,289);g.lineTo(381,319);g.lineTo(344,220);g.closePath();g.stroke();
- g.lineWidth=10;g.strokeStyle=shadeColor(trim,8);
- g.beginPath();g.moveTo(344,220);g.lineTo(381,319);g.moveTo(758,220);g.lineTo(721,319);g.stroke();
- g.lineWidth=12;g.strokeStyle=trim;
- if(backView){g.beginPath();g.arc(551,131,44,Math.PI*.08,Math.PI*.92,true);g.stroke();}
- else{g.beginPath();g.arc(551,131,52,Math.PI*.12,Math.PI*.88,true);g.stroke();}
- g.lineWidth=6;g.strokeStyle='rgba(0,0,0,.07)';
- g.beginPath();g.moveTo(551,182);g.lineTo(551,540);g.stroke();
+ g.lineWidth=7;g.strokeStyle=shadeColor(trim,10);
+ g.beginPath();g.moveTo(441,174);g.lineTo(335,214);g.lineTo(286,305);g.lineTo(366,344);g.lineTo(441,240);g.stroke();
+ g.beginPath();g.moveTo(661,174);g.lineTo(767,214);g.lineTo(816,305);g.lineTo(736,344);g.lineTo(661,240);g.stroke();
+ g.lineWidth=6;g.strokeStyle='rgba(255,255,255,.2)';
+ g.beginPath();g.moveTo(441,176);g.quadraticCurveTo(496,226,511,258);g.stroke();
+ g.beginPath();g.moveTo(661,176);g.quadraticCurveTo(606,226,591,258);g.stroke();
+ g.lineWidth=8;g.strokeStyle='rgba(18,40,57,.18)';
+ g.beginPath();g.moveTo(441,173);g.quadraticCurveTo(490,143,551,143);g.quadraticCurveTo(612,143,661,173);g.lineTo(686,212);g.lineTo(686,571);g.quadraticCurveTo(552,590,416,571);g.lineTo(416,212);g.closePath();g.stroke();
+ // collar
+ g.fillStyle=sleeveGrad;
+ g.beginPath();g.ellipse(551,158,54,24,0,0,Math.PI*2);g.fill();
+ g.fillStyle='#eef2f5';
+ g.beginPath();g.ellipse(551,160,38,14,0,0,Math.PI*2);g.fill();
+ if(backView){
+   g.strokeStyle='rgba(18,40,57,.12)';g.lineWidth=4;
+   g.beginPath();g.moveTo(551,192);g.lineTo(551,555);g.stroke();
+ }else{
+   g.strokeStyle='rgba(255,255,255,.22)';g.lineWidth=3;
+   g.beginPath();g.moveTo(463,214);g.quadraticCurveTo(551,198,639,214);g.stroke();
+ }
+ g.strokeStyle='rgba(255,255,255,.14)';g.lineWidth=3;
+ g.beginPath();g.moveTo(435,245);g.lineTo(435,553);g.stroke();
+ g.beginPath();g.moveTo(667,245);g.lineTo(667,553);g.stroke();
  g.restore();
 }
 function drawShirtArtwork(g,source,zone){
  const areas={
-  frente:{x:446,y:205,w:210,h:297,r:16,back:false},
-  costas:{x:446,y:198,w:210,h:297,r:16,back:true},
-  peito:{x:550,y:228,w:120,h:120,r:14,back:false},
-  manga_d:{x:312,y:216,w:90,h:90,r:12,back:false},
-  manga_e:{x:700,y:216,w:90,h:90,r:12,back:false}
+  frente:{x:470,y:208,w:168,h:238,r:14,back:false},
+  costas:{x:470,y:202,w:168,h:238,r:14,back:true},
+  peito:{x:553,y:236,w:92,h:92,r:12,back:false},
+  manga_d:{x:308,y:233,w:78,h:78,r:10,back:false},
+  manga_e:{x:716,y:233,w:78,h:78,r:10,back:false}
  };
  const cfg=areas[zone]||areas.frente;
  drawShirtSilhouette(g,cfg.back);
  g.save();
+ g.globalAlpha=.12;
+ g.fillStyle='rgba(18,40,57,.55)';
+ roundPath(g,cfg.x+3,cfg.y+6,cfg.w,cfg.h,cfg.r);g.fill();
+ g.restore();
+ g.save();
  roundPath(g,cfg.x,cfg.y,cfg.w,cfg.h,cfg.r);g.clip();
  g.drawImage(source,cfg.x,cfg.y,cfg.w,cfg.h);
  g.restore();
- g.save();g.lineWidth=2.2;g.strokeStyle='rgba(70,109,132,.18)';roundPath(g,cfg.x,cfg.y,cfg.w,cfg.h,cfg.r);g.stroke();g.restore();
+ g.save();
+ g.lineWidth=1.5;g.strokeStyle='rgba(70,109,132,.14)';
+ roundPath(g,cfg.x,cfg.y,cfg.w,cfg.h,cfg.r);g.stroke();
+ g.restore();
 }
 
 function renderMockup(){
@@ -430,7 +462,7 @@ function renderMockup(){
  // A escolha de foto não elimina a mesa em aparelhos sem WebGL.
  if(window.paintTioScene)window.paintTioScene(mock,state.mockSceneChoice,customSceneImage,state.mockTableStyle);
  else stageGradient(g);
- const source=artworkCanvas(1000,artH());
+ const source=artworkCanvas(1000,artH(),false,state.product==='camiseta');
  if(state.product==='camiseta'){
    drawShirtArtwork(g,source,state.shirtZone);
    return;
