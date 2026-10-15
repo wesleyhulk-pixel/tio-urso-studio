@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.3 — confirmação segura de novo projeto, mantendo editor e mockups aprovados. */
+/* Tio Urso Studio Alpha 1.0.4 — confirmação segura de novo projeto, mantendo editor e mockups aprovados. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);

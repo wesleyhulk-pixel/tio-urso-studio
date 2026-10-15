@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 1.0.3
+# Tio Urso Studio — Alpha 1.0.4
 
 ## Ajustes desta versão
 - O aviso de **Novo projeto** agora exibe a **arte “ATENÇÃO!!!” do Tio Urso** fornecida pelo usuário, com transparência, no lugar do emoji pequeno.
@@ -10,7 +10,7 @@
 - Todos os recursos da **1.0.2**, incluindo gestos por pinça, camadas e modelos Meshy, foram preservados. `mock3d.js` e todos os modelos 3D estão intactos.
 
 ## Publicação
-Extraia o ZIP. Envie **todos os arquivos da pasta** (agora 14, incluindo `aviso-urso.webp`) diretamente à raiz do repositório GitHub, substituindo os antigos. A versão visível deverá indicar **ALPHA 1.0.3**.
+Extraia o ZIP. Envie **todos os arquivos da pasta** (agora 16, incluindo `aviso-urso.webp`, `mascote-header.png` e `mascote-home.png`) diretamente à raiz do repositório GitHub, substituindo os antigos. A versão visível deverá indicar **ALPHA 1.0.4**.
 
 ## Teste rápido
 1. Abra o Editor e acrescente uma imagem ou texto.
@@ -18,3 +18,10 @@ Extraia o ZIP. Envie **todos os arquivos da pasta** (agora 14, incluindo `aviso-
 3. Confira a arte **ATENÇÃO!!!** no aviso.
 4. Toque em **Cancelar**. O editor reaparece com a arte original intacta.
 5. Repita e toque em **Confirmar**. O Editor abre com projeto vazio.
+
+
+## Ajustes desta versão
+
+- Cabeçalho atualizado com o mascote mais inteiro, sem objetos nas mãos.
+- Card principal da home atualizado com o mascote segurando caneca e pincel.
+- Cache busting atualizado para facilitar a publicação da nova versão.
