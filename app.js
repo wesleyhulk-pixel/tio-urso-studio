@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.2 — confirmação segura de novo projeto, mantendo editor e mockups aprovados. */
+/* Tio Urso Studio Alpha 1.0.3 — confirmação segura de novo projeto, mantendo editor e mockups aprovados. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -900,11 +900,17 @@ function hasCurrentProject(){
   || state.mugFinishColor.toLowerCase()!=='#ffffff' || state.mockSceneChoice!=='madeira'
   || Boolean(state.mockSceneImage) || Object.keys(state.customFonts||{}).length>0;
 }
-function closeNewProjectDialog(){
+function closeNewProjectDialog(restoreFocus=true){
  newProjectOverlay.hidden=true;
  document.body.classList.remove('new-project-dialog-open');
- if(newProjectSource?.isConnected)newProjectSource.focus();
+ if(restoreFocus&&newProjectSource?.isConnected)newProjectSource.focus();
  newProjectSource=null;
+}
+// Cancelar nunca altera elementos, cores, histórico ou seleção: apenas retorna ao Editor.
+function cancelNewProjectDialog(){
+ closeNewProjectDialog(false);
+ switchView('editor');
+ document.querySelector('.tab[data-view="editor"]')?.focus({preventScroll:true});
 }
 function clearCurrentProject(){
  state.product='caneca';state.items=[];state.selected=null;state.bg='#ffffff';
@@ -929,11 +935,11 @@ function askForNewProject(event){
 }
 $('newProjectHome').addEventListener('click',askForNewProject);
 $('resetProject').addEventListener('click',askForNewProject);
-newProjectCancel.addEventListener('click',closeNewProjectDialog);
+newProjectCancel.addEventListener('click',cancelNewProjectDialog);
 newProjectConfirm.addEventListener('click',()=>{closeNewProjectDialog();clearCurrentProject();});
-newProjectOverlay.addEventListener('click',event=>{if(event.target===newProjectOverlay)closeNewProjectDialog();});
+newProjectOverlay.addEventListener('click',event=>{if(event.target===newProjectOverlay)cancelNewProjectDialog();});
 newProjectOverlay.addEventListener('keydown',event=>{
- if(event.key==='Escape'){event.preventDefault();closeNewProjectDialog();return;}
+ if(event.key==='Escape'){event.preventDefault();cancelNewProjectDialog();return;}
  if(event.key==='Tab'){
   const first=newProjectCancel,last=newProjectConfirm;
   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}

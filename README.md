@@ -1,22 +1,20 @@
-# Tio Urso Studio — Alpha 1.0.2
+# Tio Urso Studio — Alpha 1.0.3
 
-## Melhorias desta versão
-- O botão **Início** do rodapé agora, como antes, **apenas navega** e mantém a arte.
-- O botão **＋ Novo projeto** da página inicial verifica se existe projeto em andamento.
-- Com uma arte existente, abre um **aviso de confirmação** com botões **Cancelar** (preserva tudo) e **Confirmar** (apaga o projeto atual e abre o editor vazio).
-- Sem projeto em andamento, **Novo projeto** abre diretamente o editor vazio, sem alertas desnecessários.
-- O botão **↺ Novo** dentro do editor usa a mesma confirmação.
-- Na confirmação, informações do projeto (camadas, cores, seleção, produto, cenários e histórico de desfazer/refazer) são reiniciadas. Para recuperar depois, **salve um arquivo de projeto antes de confirmar**.
-- Diálogo próprio, legível no celular, fechado por Cancelar, tecla Escape ou toque fora do cartão.
-- **Desfazer, refazer, camadas, gestos na área da arte, modelos Meshy, giro livre e zoom por pinça nos mockups** foram mantidos.
+## Ajustes desta versão
+- O aviso de **Novo projeto** agora exibe a **arte “ATENÇÃO!!!” do Tio Urso** fornecida pelo usuário, com transparência, no lugar do emoji pequeno.
+- Ao clicar em **Cancelar**, o aviso se fecha e a tela volta **automaticamente ao Editor**, preservando a arte, as camadas, a seleção, as cores e o histórico de desfazer/refazer.
+- Cancelar pelo toque fora do aviso ou pela tecla Escape também retorna ao Editor sem apagar nada.
+- **Confirmar** continua apagando o projeto anterior e abrindo o editor limpo.
+- **Início** continua apenas navegando: não apaga o projeto.
+- A arte do aviso é armazenada como `aviso-urso.webp` para carregar rápido no celular.
+- Todos os recursos da **1.0.2**, incluindo gestos por pinça, camadas e modelos Meshy, foram preservados. `mock3d.js` e todos os modelos 3D estão intactos.
 
-## Como publicar
-Descompacte o ZIP e envie os **13 arquivos dentro dele** para a raiz do GitHub, substituindo os arquivos antigos. Atualize o navegador e verifique `ALPHA 1.0.2`.
+## Publicação
+Extraia o ZIP. Envie **todos os arquivos da pasta** (agora 14, incluindo `aviso-urso.webp`) diretamente à raiz do repositório GitHub, substituindo os antigos. A versão visível deverá indicar **ALPHA 1.0.3**.
 
 ## Teste rápido
-1. Crie um texto ou importe uma imagem no editor.
-2. Toque em **Início**: a arte deve continuar existindo.
-3. Toque em **Novo projeto**: o aviso aparece.
-4. **Cancelar**: o projeto permanece.
-5. Volte em **Novo projeto** e toque **Confirmar**: o editor abre vazio.
-6. Toque **Novo projeto** de novo, sem arte: a tela do editor abre sem confirmação.
+1. Abra o Editor e acrescente uma imagem ou texto.
+2. Toque em **Início** e depois em **Novo projeto**.
+3. Confira a arte **ATENÇÃO!!!** no aviso.
+4. Toque em **Cancelar**. O editor reaparece com a arte original intacta.
+5. Repita e toque em **Confirmar**. O Editor abre com projeto vazio.

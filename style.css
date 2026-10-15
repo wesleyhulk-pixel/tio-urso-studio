@@ -268,11 +268,11 @@
 .design-card .selection-controls { margin-top:12px; }
 @media (max-width:520px){.design-card .layers-panel{padding:11px 9px}.canvas-gesture-hint{font-size:10px!important}}
 
-/* Alpha 1.0.2 — confirmação de novo projeto, acessível no celular. */
+/* Alpha 1.0.3 — aviso personalizado + retorno seguro ao editor. */
 .new-project-overlay{position:fixed;inset:0;z-index:170;background:rgba(3,22,37,.72);display:flex;align-items:center;justify-content:center;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}
 .new-project-dialog-open{overflow:hidden}
 .new-project-dialog{width:min(100%,440px);background:#fff;border-radius:24px;padding:27px 23px 23px;text-align:center;box-shadow:0 16px 60px #001b2e55;color:#17384b;outline:0}
-.new-project-icon{display:grid;place-items:center;width:60px;height:60px;border-radius:20px;background:#edf8fb;margin:0 auto 12px;font-size:29px}
+.new-project-icon{display:block;width:min(168px,48vw);height:auto;aspect-ratio:1;object-fit:contain;margin:0 auto 8px;max-width:100%;background:transparent;pointer-events:none}
 .new-project-dialog h2{font-size:clamp(20px,4.7vw,25px);line-height:1.23;margin:8px 0 12px;font-weight:850;letter-spacing:-.45px}
 .new-project-dialog p{font-size:15px;line-height:1.6;color:#4b6476;margin:0 0 21px}
 .new-project-dialog p strong{color:#b92a48}
@@ -281,3 +281,7 @@
 .new-project-cancel{background:#f1f6f8;color:#285269;border:1px solid #d1e1e8}
 .new-project-confirm{background:linear-gradient(110deg,#0789ad,#10b9bd);color:white;border:1px solid #098dab}
 @media(max-width:380px){.new-project-dialog{padding:22px 17px 18px}.new-project-dialog p{font-size:14px}}
+
+/* O aviso deve caber também em celulares menores, sem esconder as ações. */
+.new-project-dialog{max-height:min(90dvh,670px);overflow-y:auto;overscroll-behavior:contain}
+@media(max-height:620px){.new-project-icon{width:108px}.new-project-dialog{padding-top:14px;padding-bottom:14px}.new-project-dialog p{margin-bottom:12px}}
