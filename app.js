@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 0.9.3 — camiseta raglan refinada, fundo transparente, A4 proporcional. */
+/* Tio Urso Studio Alpha 0.9.4 — camiseta raglan refinada, fundo transparente, A4 proporcional. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -28,6 +28,7 @@ const sceneMenu=$('sceneMenu');
 const sceneTriggerLabel=$('sceneTriggerLabel');
 const sceneImagePicker=$('sceneImagePicker');
 const mock3dCanvas=$('mock3dCanvas');
+const mockStage=$('mockStage');
 const mock3d=window.createTioMock3D ? window.createTioMock3D(mock3dCanvas) : null;
 window.addEventListener('tio-meshy-ready',()=>{
  if(['caneca','camiseta'].includes(state.product))renderMockup();
@@ -277,6 +278,7 @@ function artworkCanvas(w,h,mirror=false,transparentBg=false){
 // Simulação 2D de uma estampa em uma superfície cilíndrica, não geometria 3D real.
 // Alpha 0.4: prévia 2D de canecas com curvatura por coluna e vista parcial ajustável.
 let mockAngle=0;
+let mockZoom=100;
 function stageGradient(g){
  const wall=g.createLinearGradient(0,0,0,660);
  wall.addColorStop(0,'#eff6fa');wall.addColorStop(.58,'#edf4f8');wall.addColorStop(.78,'#e6eef4');wall.addColorStop(1,'#d7e4ec');
@@ -629,7 +631,7 @@ finishPicker.addEventListener('input',event=>setMugFinish(event.target.value));
 mugFinishChoices.forEach(button=>button.addEventListener('click',()=>setMugFinish(button.dataset.finish)));
 setMugFinish(state.mugFinishColor,false);
 
-$('exportMockup').addEventListener('click',async()=>{try{renderMockup();let output=mock;if(!mock3dCanvas.hidden){output=document.createElement('canvas');output.width=1100;output.height=660;const g=output.getContext('2d');g.drawImage(mockSceneCanvas,0,0,1100,660);g.drawImage(mock3dCanvas,0,0,1100,660);}downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado.');}catch(e){toast(e.message);}});
+$('exportMockup').addEventListener('click',async()=>{try{renderMockup();updateMockZoom(mockZoom);const output=composePortraitMockupCanvas();downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado em retrato.');}catch(e){toast(e.message);}});
 function calculate(){const c=['productCost','printingCost','extraCost'].reduce((a,id)=>a+Math.max(0,Number($(id).value)||0),0);const rate=Math.max(0,Number($('margin').value)||0);const lucro=c*rate/100;$('salePrice').textContent=money(c+lucro);$('priceExplanation').textContent=`Custo ${money(c)} · Lucro ${money(lucro)}`;return{c,lucro,price:c+lucro};}
 ['productCost','printingCost','extraCost','margin'].forEach(id=>$(id).addEventListener('input',calculate));
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
@@ -750,12 +752,46 @@ function updateMockAngle(angle){
  document.querySelectorAll('[data-mock-angle]').forEach(el=>el.classList.toggle('active',Number(el.dataset.mockAngle)===mockAngle));
  renderMockup();
 }
+function updateMockZoom(value){
+ const input=$('mockZoom'), label=$('mockZoomLabel');
+ mockZoom=Math.max(70,Math.min(170,Math.round(Number(value)||100)));
+ if(input) input.value=String(mockZoom);
+ if(label) label.textContent=mockZoom+'%';
+ if(mockStage) mockStage.style.setProperty('--mock-scale', (mockZoom/100).toFixed(2));
+}
+function drawStageCover(g, layer, outW, outH){
+ if(!layer || layer.hidden) return;
+ const zoom=mockZoom/100;
+ const baseScale=Math.max(outW/layer.width, outH/layer.height);
+ const scale=baseScale*zoom;
+ const drawW=layer.width*scale;
+ const drawH=layer.height*scale;
+ const dx=(outW-drawW)/2;
+ const dy=(outH-drawH)/2;
+ g.drawImage(layer, dx, dy, drawW, drawH);
+}
+function composePortraitMockupCanvas(){
+ const out=document.createElement('canvas');
+ out.width=1080;
+ out.height=1512;
+ const g=out.getContext('2d');
+ drawStageCover(g, mockSceneCanvas, out.width, out.height);
+ if(!mock3dCanvas.hidden) drawStageCover(g, mock3dCanvas, out.width, out.height);
+ else drawStageCover(g, mock, out.width, out.height);
+ return out;
+}
 mockAngleInput.addEventListener('input',e=>updateMockAngle(e.target.value));
+const mockZoomInput=$('mockZoom');
+mockZoomInput?.addEventListener('input',e=>updateMockZoom(e.target.value));
+document.querySelectorAll('[data-zoom-step]').forEach(button=>button.addEventListener('click',()=>updateMockZoom(mockZoom+Number(button.dataset.zoomStep||0))));
+$('mockZoomReset')?.addEventListener('click',()=>updateMockZoom(100));
+mockStage?.addEventListener('wheel',ev=>{if(!ev.ctrlKey && Math.abs(ev.deltaY)<1)return;ev.preventDefault();updateMockZoom(mockZoom+(ev.deltaY<0?5:-5));},{passive:false});
 let spinDrag=null;
 mock3dCanvas.addEventListener('pointerdown',ev=>{if(mock3dCanvas.hidden)return;spinDrag={x:ev.clientX,angle:mockAngle,id:ev.pointerId};mock3dCanvas.setPointerCapture(ev.pointerId);});
 mock3dCanvas.addEventListener('pointermove',ev=>{if(!spinDrag||spinDrag.id!==ev.pointerId)return;updateMockAngle(spinDrag.angle+(ev.clientX-spinDrag.x)*.7);});
 for(const event of ['pointerup','pointercancel','lostpointercapture'])mock3dCanvas.addEventListener(event,()=>{spinDrag=null;});
 document.querySelectorAll('[data-mock-angle]').forEach(button=>button.addEventListener('click',()=>updateMockAngle(button.dataset.mockAngle)));
+updateMockZoom(100);
 
 // Inicialização. Sem salvamento remoto nem coleta de dados.
 updateMeasurements();updateProductSpecificUI();$('bgColorSample').style.backgroundColor=state.bg;updateSceneMenuUI();render();calculate();updateOrientationUI();

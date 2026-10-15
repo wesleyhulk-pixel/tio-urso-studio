@@ -1,18 +1,21 @@
-# Tio Urso Studio — Alpha 0.9.3
+# Tio Urso Studio — Alpha 0.9.4
 
-## Camiseta Meshy 3D de verdade
+Ajuste dos mockups com foco em visualização no celular.
 
-A camiseta agora usa a malha real do GLB Meshy e a renderiza no mockup WebGL, em vez de desenhar uma silhueta 2D.
+## Melhorias desta versão
 
-- Forma real da gola, mangas e dobras modeladas no Meshy.
-- Estampa projetada sobre o tecido com área A4 reduzida proporcionalmente.
-- Fundo transparente da arte acompanha a cor do tecido.
-- Frente, costas, peito, mangas direita e esquerda, cor do corpo e acabamentos.
-- Fallback 2D no navegador sem WebGL ou enquanto a malha carrega.
-- Caneca de café, caneca de chopp e squeeze preservados.
+- Prévia dos mockups em **modo retrato**.
+- Controle de **zoom/ampliação** no mockup.
+- Exportação do mockup em **PNG retrato** para acompanhar a nova visualização.
+- Mantida a rotação dos produtos 3D já existentes.
 
-**Observação:** o arquivo GLB gerado no Meshy não traz textura UV utilizável. As cores do tecido são aproximadas por iluminação no navegador; as áreas de impressão são uma projeção experimental, não um gabarito de sublimação.
+## Arquivos principais
 
-## GitHub Pages
+- `index.html`
+- `style.css`
+- `app.js`
+- `mock3d.js`
 
-Envie os arquivos na raiz do repositório (ao lado do `index.html`), substituindo os anteriores.
+## Observação
+
+Esta versão prioriza a experiência de visualização em tela vertical, com foco em celular.
