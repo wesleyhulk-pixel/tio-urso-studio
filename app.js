@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.1 — pinça/rotação no editor, camadas junto à arte e mockups preservados. */
+/* Tio Urso Studio Alpha 1.0.2 — confirmação segura de novo projeto, mantendo editor e mockups aprovados. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -886,7 +886,60 @@ $('projectPicker').addEventListener('change',async ev=>{const file=ev.target.fil
   try{await loadCustomFont(family,info.src);state.customFonts[family]={label:String(info.label||'Fonte personalizada').slice(0,90),src:info.src};}catch(_){}
  }
  refreshFontOptions();imageCache.clear();lastLayerSignature='';for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;updateMeasurements();render();resetHistory();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
-$('resetProject').addEventListener('click',()=>{if(!window.confirm('Começar nova arte? Salve o projeto atual antes de continuar.'))return;state.items=[];state.selected=null;state.bg='#ffffff';state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';state.shirtCollarColor='#d9dee4';imageCache.clear();$('backgroundColor').value='#ffffff';$('bgColorSample').style.backgroundColor='#ffffff';updateMeasurements();render();recordHistory();toast('Nova arte em branco.');});
+// A navegação pelo rodapé "Início" não altera o projeto.
+// Somente o comando "Novo projeto" solicita confirmação e inicia uma arte vazia.
+const newProjectOverlay=$('newProjectOverlay');
+const newProjectDialog=newProjectOverlay.querySelector('.new-project-dialog');
+const newProjectCancel=$('newProjectCancel');
+const newProjectConfirm=$('newProjectConfirm');
+let newProjectSource=null;
+function hasCurrentProject(){
+ return state.items.length>0 || state.product!=='caneca' || state.bg.toLowerCase()!=='#ffffff'
+  || state.shirtZone!=='frente' || state.shirtColor.toLowerCase()!=='#ffffff'
+  || state.shirtTrimColor.toLowerCase()!=='#d9dee4' || state.shirtCollarColor.toLowerCase()!=='#d9dee4'
+  || state.mugFinishColor.toLowerCase()!=='#ffffff' || state.mockSceneChoice!=='madeira'
+  || Boolean(state.mockSceneImage) || Object.keys(state.customFonts||{}).length>0;
+}
+function closeNewProjectDialog(){
+ newProjectOverlay.hidden=true;
+ document.body.classList.remove('new-project-dialog-open');
+ if(newProjectSource?.isConnected)newProjectSource.focus();
+ newProjectSource=null;
+}
+function clearCurrentProject(){
+ state.product='caneca';state.items=[];state.selected=null;state.bg='#ffffff';
+ state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';state.shirtCollarColor='#d9dee4';
+ state.mugFinishColor='#ffffff';state.mockSceneChoice='madeira';state.mockSceneImage=null;
+ state.mockTableStyle='madeira';state.customFonts={};customSceneImage=null;
+ imageCache.clear();drag=null;activeGuides=null;lastLayerSignature='';
+ $('product').value='caneca';$('backgroundColor').value='#ffffff';
+ $('bgColorSample').style.backgroundColor='#ffffff';
+ setMugFinish('#ffffff',false);updateSceneMenuUI();updateMeasurements();
+ updateMockAngle(0);updateMockZoom(100);
+ render();resetHistory();
+ switchView('editor');
+ toast('Novo projeto iniciado. Área da arte em branco.');
+}
+function askForNewProject(event){
+ newProjectSource=event?.currentTarget || document.activeElement;
+ if(!hasCurrentProject()){clearCurrentProject();newProjectSource=null;return;}
+ newProjectOverlay.hidden=false;
+ document.body.classList.add('new-project-dialog-open');
+ newProjectCancel.focus();
+}
+$('newProjectHome').addEventListener('click',askForNewProject);
+$('resetProject').addEventListener('click',askForNewProject);
+newProjectCancel.addEventListener('click',closeNewProjectDialog);
+newProjectConfirm.addEventListener('click',()=>{closeNewProjectDialog();clearCurrentProject();});
+newProjectOverlay.addEventListener('click',event=>{if(event.target===newProjectOverlay)closeNewProjectDialog();});
+newProjectOverlay.addEventListener('keydown',event=>{
+ if(event.key==='Escape'){event.preventDefault();closeNewProjectDialog();return;}
+ if(event.key==='Tab'){
+  const first=newProjectCancel,last=newProjectConfirm;
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ }
+});
 // Orientação explícita para a impressão e prévia fiel à exportação.
 function renderExportPreview(){
  if(!exportPreview)return;
