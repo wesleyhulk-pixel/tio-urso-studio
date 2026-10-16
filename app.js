@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.9 — novo projeto com escolha guiada de produto e variações. */
+/* Tio Urso Studio Alpha 1.1.0 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -873,80 +873,121 @@ setMugFinish(state.mugFinishColor,false);
 
 $('exportMockup').addEventListener('click',async()=>{try{renderMockup();updateMockZoom(mockZoom);const output=composePortraitMockupCanvas();downloadBlob(await toBlob(output),safeFilename('png','mockup'));toast('Mockup PNG exportado.');}catch(e){toast(e.message);}});
 
-// Alpha 1.0.8 — GIF 360° nativo, usando Worker local no mesmo domínio do GitHub Pages.
-// Evita o bloqueio de segurança causado pelo Worker remoto (CDN).
+// Alpha 1.1.0 — gravação MP4 H.264 local com WebCodecs e fallback MediaRecorder.
+// Nunca renomear WebM para MP4: somente salvar contêineres MP4 reais.
 function nextPaint(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}
 function setButtonBusy(button,busy,labelBusy='Processando…'){
  if(!button)return()=>{};
  const original=button.dataset.originalLabel||button.innerHTML;
- button.dataset.originalLabel=original;
- button.disabled=!!busy;
- if(busy)button.innerHTML=labelBusy;
- else button.innerHTML=original;
+ button.dataset.originalLabel=original;button.disabled=!!busy;
+ button.innerHTML=busy?labelBusy:original;
  return ()=>setButtonBusy(button,false,labelBusy);
 }
-async function exportMockupGif(){
- const button=$('exportMockupGif');
- if(!rotaryProducts.has(state.product)){toast('O GIF 360° está disponível para canecas, squeeze e camiseta.');return;}
- if(button.disabled)return;
- const release=setButtonBusy(button,true,'Preparando GIF…');
- const originalAngle=mockAngle;
- let worker=null,timeout=null;
+const MP4_SETTINGS={width:720,height:1008,fps:24,duration:6,bitrate:3800000};
+function mp4RecorderType(){
+ if(typeof MediaRecorder==='undefined'||typeof MediaRecorder.isTypeSupported!=='function')return null;
+ return ['video/mp4;codecs="avc1.42E01F"','video/mp4;codecs="avc1.42001F"','video/mp4;codecs=h264','video/mp4']
+  .find(type=>MediaRecorder.isTypeSupported(type))||null;
+}
+async function mp4EncoderConfig(){
+ if(typeof VideoEncoder==='undefined'||typeof VideoFrame==='undefined'||!window.TioMp4VideoMuxer)return null;
+ for(const codec of ['avc1.42E01F','avc1.4D401F']){
+  const config={codec,width:MP4_SETTINGS.width,height:MP4_SETTINGS.height,bitrate:MP4_SETTINGS.bitrate,framerate:MP4_SETTINGS.fps,latencyMode:'realtime',avc:{format:'avc'}};
+  try{if((await VideoEncoder.isConfigSupported(config)).supported)return config;}catch(_){}
+ }
+ return null;
+}
+function paintMp4Frame(canvas,g,startAngle,progress){
+ // Desenha o mockup já renderizado; só a posição do produto varia.
+ const angle=startAngle+360*progress;
+ updateMockAngle(angle);
+ const image=composePortraitMockupCanvas(MP4_SETTINGS.width,MP4_SETTINGS.height);
+ g.clearRect(0,0,canvas.width,canvas.height);
+ g.drawImage(image,0,0,canvas.width,canvas.height);
+}
+async function encodeMp4WithWebCodecs(config,button,startAngle){
+ const {width,height,fps,duration}=MP4_SETTINGS;
+ const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+ const g=canvas.getContext('2d',{alpha:false});
+ if(!g)throw new Error('Não foi possível preparar o vídeo.');
+ const muxer=new window.TioMp4VideoMuxer({width,height,fps});
+ let encoderError=null;
+ const encoder=new VideoEncoder({
+  output:(chunk,metadata)=>muxer.add(chunk,metadata),
+  error:(e)=>{encoderError=e;}
+ });
  try{
-   // 420x588 mantém a proporção retrato e o arquivo compacto para o Android.
-   // Giro um pouco mais lento e suave: mais quadros + intervalo maior.
-   const width=420,height=588,frames=24,delay=150;
-   const workerUrl=new URL('tio-gif-worker.js?v=1080',document.baseURI).href;
-   worker=new Worker(workerUrl);
-   let resolveReady,rejectReady;
-   let resolveResult,rejectResult;
-   const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});
-   const finished=new Promise((resolve,reject)=>{resolveResult=resolve;rejectResult=reject;});
-   worker.onerror=event=>{
-     const error=new Error('Não foi possível executar o exportador GIF local.');
-     rejectReady(error);rejectResult(error);
-   };
-   worker.onmessage=event=>{
-     const data=event.data||{};
-     if(data.type==='ready')resolveReady();
-     else if(data.type==='progress'){button.textContent=`Gerando GIF… ${Math.round(100*data.frame/frames)}%`;}
-     else if(data.type==='done')resolveResult(data.buffer);
-     else if(data.type==='error'){const error=new Error(data.message||'Erro ao codificar GIF.');rejectReady(error);rejectResult(error);}
-   };
-   worker.postMessage({type:'init',width,height});
-   await ready;
-   const capture=document.createElement('canvas');
-   capture.width=width;capture.height=height;
-   const context=capture.getContext('2d',{willReadFrequently:true});
-   if(!context)throw new Error('Canvas indisponível para exportação.');
-   // Cada imagem representa um passo do giro; o GIF repetirá a animação continuamente.
-   for(let i=0;i<frames;i++){
-     updateMockAngle(originalAngle+(i*360/frames));
-     await nextPaint();
-     const image=composePortraitMockupCanvas();
-     context.clearRect(0,0,width,height);
-     context.drawImage(image,0,0,width,height);
-     const rgba=context.getImageData(0,0,width,height).data;
-     worker.postMessage({type:'frame',buffer:rgba.buffer,delay},[rgba.buffer]);
-   }
-   button.textContent='Finalizando GIF…';
-   worker.postMessage({type:'finish'});
-   const buffer=await Promise.race([finished,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('O GIF demorou demais para ser finalizado.')),120000);})]);
-   const blob=new Blob([buffer],{type:'image/gif'});
-   if(blob.size<2000)throw new Error('O arquivo GIF saiu incompleto.');
-   downloadBlob(blob,safeFilename('gif','mockup-360'));
-   toast('GIF 360° salvo! O produto dá uma volta completa.');
- }catch(error){
-   console.error('Falha no GIF 360°:',error);
-   toast('Falha ao exportar GIF: '+error.message);
+  encoder.configure(config);
+  const count=fps*duration;
+  for(let i=0;i<count;i++){
+   if(encoderError)throw encoderError;
+   paintMp4Frame(canvas,g,startAngle,i/count);
+   await nextPaint();
+   const frame=new VideoFrame(canvas,{timestamp:Math.round(i*1e6/fps),duration:Math.round(1e6/fps)});
+   try{encoder.encode(frame,{keyFrame:i%48===0});}finally{frame.close();}
+   if(encoder.encodeQueueSize>8)await encoder.flush();
+   if(i%6===0)button.textContent=`Gerando MP4… ${Math.round(100*i/count)}%`;
+  }
+  button.textContent='Finalizando MP4…';
+  await encoder.flush();
+  if(encoderError)throw encoderError;
+  return muxer.finalize();
+ }finally{try{encoder.close();}catch(_){}}
+}
+async function encodeMp4WithMediaRecorder(mimeType,button,startAngle){
+ const {width,height,duration,bitrate}=MP4_SETTINGS;
+ const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+ const g=canvas.getContext('2d',{alpha:false});
+ if(!g||!canvas.captureStream)throw new Error('Gravação de canvas não disponível.');
+ paintMp4Frame(canvas,g,startAngle,0);
+ const stream=canvas.captureStream(MP4_SETTINGS.fps);
+ const parts=[];let recorder;
+ try{recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:bitrate});}
+ catch(error){stream.getTracks().forEach(t=>t.stop());throw error;}
+ try{
+  const finished=new Promise((resolve,reject)=>{
+   recorder.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data);};
+   recorder.onerror=e=>reject(e.error||new Error('Erro ao gravar MP4.'));
+   recorder.onstop=()=>resolve(new Blob(parts,{type:recorder.mimeType||'video/mp4'}));
+  });
+  recorder.start(500);
+  const started=performance.now(),length=duration*1000;
+  await new Promise((resolve,reject)=>{
+   function tick(now){
+    if(recorder.state==='inactive'){reject(new Error('A gravação foi interrompida.'));return;}
+    const elapsed=Math.min(length,now-started),position=elapsed/length;
+    paintMp4Frame(canvas,g,startAngle,position);
+    if(Math.round(elapsed)%350<18)button.textContent=`Gravando MP4… ${Math.min(99,Math.round(position*100))}%`;
+    if(elapsed<length)requestAnimationFrame(tick);else resolve();
+   }requestAnimationFrame(tick);
+  });
+  recorder.stop();
+  const blob=await finished;
+  if(!blob.size)throw new Error('O vídeo foi gerado vazio.');
+  return blob;
  }finally{
-   if(timeout!==null)clearTimeout(timeout);
-   if(worker)worker.terminate();
-   updateMockAngle(originalAngle);
-   release();
+  if(recorder.state!=='inactive')try{recorder.stop();}catch(_){}
+  stream.getTracks().forEach(track=>track.stop());
  }
 }
-$('exportMockupGif')?.addEventListener('click',exportMockupGif);
+async function exportMockupMp4(){
+ const button=$('exportMockupMp4');
+ if(button.disabled)return;
+ if(!rotaryProducts.has(state.product)){toast('MP4 360° disponível para canecas, squeeze e camiseta.');return;}
+ const release=setButtonBusy(button,true,'Verificando MP4…'),startAngle=mockAngle;
+ try{
+  const config=await mp4EncoderConfig(),type=mp4RecorderType();
+  if(!config&&!type)throw new Error('Seu navegador não oferece H.264/MP4. Atualize o Chrome ou tente em outro dispositivo.');
+  const blob=config?await encodeMp4WithWebCodecs(config,button,startAngle):await encodeMp4WithMediaRecorder(type,button,startAngle);
+  if(blob.size<2000)throw new Error('O arquivo MP4 parece incompleto.');
+  downloadBlob(blob,safeFilename('mp4','mockup-360'));
+  toast('MP4 360° salvo! Qualidade superior ao GIF.');
+ }catch(error){
+  console.error('Falha na exportação MP4:',error);
+  toast('Falha ao exportar MP4: '+error.message);
+ }finally{updateMockAngle(startAngle);release();}
+}
+$('exportMockupMp4')?.addEventListener('click',exportMockupMp4);
 $('clearArtwork')?.addEventListener('click',()=>{
  if(!state.items.length){toast('Nenhuma arte para excluir.');return;}
  if(!window.confirm('Excluir toda a arte atual? Esta ação remove os elementos do projeto atual.'))return;
@@ -1508,10 +1549,10 @@ function drawStageCover(g, layer, outW, outH){
  const dy=(outH-drawH)/2;
  g.drawImage(layer, dx, dy, drawW, drawH);
 }
-function composePortraitMockupCanvas(){
+function composePortraitMockupCanvas(outW=1080,outH=1512){
  const out=document.createElement('canvas');
- out.width=1080;
- out.height=1512;
+ out.width=outW;
+ out.height=outH;
  const g=out.getContext('2d');
  drawStageCover(g, mockSceneCanvas, out.width, out.height);
  if(!mock3dCanvas.hidden) drawStageCover(g, mock3dCanvas, out.width, out.height);

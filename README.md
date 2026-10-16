@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 1.0.9 | Início enxuto e orçamento por produto
+# Tio Urso Studio — Alpha 1.1.0 | Início enxuto e orçamento por produto
 
 ## Alterações
 - A página inicial mostra **Novo projeto** e **Minha galeria**; os quatro cartões "Meu estúdio" foram retirados.
@@ -19,3 +19,13 @@ Se a versão anterior à 1.0.8 não tinha o `tio-gif-worker.js`, mantenha/instal
 3. Ajuste os custos e/ou o preço de venda; volte ao Editor, inicie outro produto e confira o orçamento independente.
 4. Volte à Caneca tradicional e confirme que os valores anteriores foram preservados no mesmo navegador.
 5. Entre no Mockup e na Galeria para confirmar que continuam funcionando.
+
+
+## Alpha 1.1.0 — exportação MP4
+- Substitui **Salvar Mockup GIF** por **Salvar Mockup MP4**.
+- Vídeo 360° de 6 segundos, 24 quadros por segundo, 720 × 1008 pixels, H.264, aproximadamente 3,8 Mb/s.
+- Usa WebCodecs e um muxer MP4 local (`tio-mp4.js`) quando possível, com gravação MP4 nativa como alternativa.
+- Caso o navegador não suporte H.264, avisa claramente e não salva outro formato disfarçado de MP4.
+- Mantém o PNG, os gestos, o orçamento por produto, os modelos 3D e a galeria.
+
+**Como atualizar:** extraia o ZIP leve e envie `index.html`, `app.js`, `style.css`, `tio-mp4.js` para a raiz do GitHub Pages, substituindo os antigos. Não exclua os arquivos Meshy.
