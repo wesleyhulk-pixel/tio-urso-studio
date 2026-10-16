@@ -1,18 +1,15 @@
-# Tio Urso Studio — Alpha 1.1.13
+# Tio Urso Studio — Alpha 1.1.14
 
-## Correção: estampa centralizada nas duas mangas
+## Ajuste de acabamento nas mangas da camiseta
 
-- A estampa do braço direito e a do esquerdo ficam no **centro externo da manga**.
-- A aplicação do desenho é limitada a cada manga, sem transpassar pelo tecido, sem imagem espelhada do outro lado.
-- A janela de projeção foi dimensionada para manter o símbolo quadrado e visível, corrigindo a estampa pequena/cortada na versão anterior.
-- Frente, costas, peito, camadas independentes, cores, giro, PNG e MP4 continuam com os mesmos recursos.
-- **Não altera** os modelos Meshy nem o mapeamento da caneca, squeeze ou chopp.
+- Mantidas as cinco áreas de arte separadas (frente, costas, peito, braço direito e braço esquerdo).
+- Os logos dos braços continuam centrados nas laterais externas.
+- Novo filtro lateral/ângulo do mockup para evitar fragmentos de estampas nas vistas frontal e traseira e prevenir cópias espelhadas.
+- Suavização das extremidades da impressão das mangas para reduzir o contorno retangular visível.
+- Não altera as áreas de frente, costas, peito nem o mapeamento dos produtos caneca, chopp, squeeze e azulejo.
 
-## Instalar usando celular / GitHub
+## Atualização leve no GitHub
 
-1. Extraia o ZIP leve (não faça upload do próprio ZIP).
-2. Na raiz do repositório `tio-urso-studio`, substitua **index.html, mock3d.js e README.md** pelos três arquivos extraídos.
-3. **Não remova** `app.js`, `style.css`, as imagens ou os arquivos binários dos modelos 3D.
-4. Espere o GitHub Pages publicar a alteração e abra novamente a página. O cabeçalho deve mostrar **ALPHA 1.1.13**.
+Extraia o ZIP e substitua somente `index.html`, `mock3d.js` e `README.md` na raiz do repositório. **Não envie o ZIP diretamente**, não apague `app.js`, `style.css`, fotos, nem modelos Meshy já presentes.
 
-**Importante:** teste as estampas dos dois braços girando o mockup 360 graus no seu celular para validar o mapeamento no WebGL do Android.
+Aguarde a publicação e confira a indicação **ALPHA 1.1.14**. Teste os braços de perfil, frente e costas no navegador Android antes de usar o mockup para produção.
