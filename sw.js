@@ -1,5 +1,5 @@
-/* Tio Urso Studio - PWA 1.1.17. Cache seguro e isolado por versao. */
-const CACHE = 'tio-urso-studio-shell-1117a';
+/* Tio Urso Studio - PWA 1.1.18. Cache seguro e isolado por versao. */
+const CACHE = 'tio-urso-studio-shell-1118a';
 const PREFIX = 'tio-urso-studio-';
 const FILES = [
   './', './index.html', './manifest.webmanifest',

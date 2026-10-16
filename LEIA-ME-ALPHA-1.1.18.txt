@@ -1,0 +1,34 @@
+TIO URSO STUDIO — ALPHA 1.1.18 · AJUSTE DA ABERTURA PWA
+=========================================================
+
+CORREÇÃO
+- Corrige o problema em que apareciam somente as palavras TIO URSO OFICIAL STUDIO
+  no fundo azul, sem o urso nem a arte da splash.
+- Imagem real agora embutida em intro-pwa.js (não depende de pwa/splash.webp).
+- O tapão só inicia depois de carregar e decodificar a imagem.
+- Em caso de falha, pula a animação em vez de mostrar a tela incompleta.
+- Melhor enquadramento em celulares com tela comprida: sem cortar a marca.
+- Atualiza o cache do PWA e a versão de exibição para 1.1.18.
+
+INSTALAÇÃO (GITHUB PAGES)
+1. Faça backup da versão 1.1.17 e dos projetos JSON do Studio.
+2. Extraia o ZIP e envie para a RAIZ do repositório `tio-urso-studio`:
+   - index.html (substitua)
+   - intro-pwa.js (substitua)
+   - sw.js (substitua)
+   - manifest.webmanifest (mantenha/atualize)
+   - pwa/ (pasta com splash e ícones, mantenha a pasta)
+3. Aguarde a publicação no GitHub Pages.
+4. Abra o Studio conectado à internet e confira "ALPHA 1.1.18".
+5. Se a versão não atualizar, feche a aba e abra novamente, SEM limpar dados
+   do site/navegador. Evite perder a galeria salva localmente.
+6. Confira a abertura completa, tanto pelo site quanto pelo ícone do PWA.
+
+IMPORTANTE
+- Não mexemos em app.js, mock3d.js, tio-mp4.js, style.css ou arquivos Meshy.
+- NÃO apague nenhum desses arquivos. Este é um ZIP de atualização incremental.
+- Não limpe os dados do navegador: seus trabalhos podem estar armazenados lá.
+- O áudio/rugido continua DESATIVADO, conforme combinado.
+- O arquivo splash.webp separado continua no pacote como recurso visual/offline,
+  mas o tapão NÃO depende mais de sua disponibilidade externa.
+- O APK é um projeto separado; esta atualização continua sendo PWA.
