@@ -406,7 +406,7 @@
 @media(max-width:560px){.project-choice-card.has-product-photo{min-height:165px;padding:10px 10px 12px}.project-choice-card.has-product-photo .choice-photo{height:100px;margin-bottom:0}.project-choice-card.has-product-photo .choice-photo img{max-width:110px}}
 @media(max-width:390px){.project-choice-card.has-product-photo .choice-photo{height:105px}}
 
-/* Alpha 1.1.9 — cinco artes independentes para uma camiseta */
+/* Alpha 1.1.10 — cinco artes independentes para uma camiseta e mangas centralizadas no mockup */
 .shirt-areas-panel{background:linear-gradient(140deg,#f0fbfe,#f8fbfc);padding:16px;border:1px solid #d5e8ee;border-radius:20px;margin:4px 0 18px}
 .shirt-areas-panel>strong{font-size:17px;color:#214c60}.shirt-areas-panel>p{font-size:13px;color:#617888;line-height:1.5;margin:6px 0 14px}
 .shirt-areas-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}

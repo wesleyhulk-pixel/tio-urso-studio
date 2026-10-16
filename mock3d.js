@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.9 — ajuste fino do topo da caneca e atualização do submenu realista da caneca de chopp.
+/* Tio Urso Studio Alpha 1.1.11 — correção do posicionamento das artes nos braços da camiseta e refinamentos anteriores.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -146,13 +146,21 @@ function createTioMock3D(canvas){
    // não apaga a estampa do peito: o peito é composto por cima dela.
    float front=step(.05,posLocal.z);
    float back=step(.05,-posLocal.z);
-   float rightSide=step(.25,-posLocal.x);
-   float leftSide=step(.25,posLocal.x);
+   // As mangas agora usam um "patch" lateral com dupla proteção:
+   // 1) faixa estreita no eixo Z e altura controlada;
+   // 2) a face precisa apontar para fora da manga (normalLocal.x),
+   // evitando que a mesma arte atravesse e apareça espelhada do outro lado.
+   float rightBand=step(.33,-posLocal.x) * step(.18,-nLocal.x);
+   float leftBand=step(.33,posLocal.x) * step(.18,nLocal.x);
+   float sleeveCenter=(1.0-smoothstep(.075,.128,abs(posLocal.z)));
+   float sleeveHeight=smoothstep(-.06,.02,posLocal.y) * (1.0-smoothstep(.60,.70,posLocal.y));
+   float rightSide=rightBand * sleeveCenter * sleeveHeight;
+   float leftSide=leftBand * sleeveCenter * sleeveHeight;
    vec2 uvFront=vec2((posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvBack=vec2((-posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvChest=vec2((posLocal.x-.12)/.22,(posLocal.y-.27)/.22);
-   vec2 uvRight=vec2((-posLocal.x-.49)/.32,(posLocal.y-.20)/.43);
-   vec2 uvLeft=vec2((posLocal.x-.49)/.32,(posLocal.y-.20)/.43);
+   vec2 uvRight=vec2((posLocal.z+.075)/.15,(posLocal.y+.02)/.62);
+   vec2 uvLeft=vec2((.075-posLocal.z)/.15,(posLocal.y+.02)/.62);
    if(front>.5 && uvFront.x>=0.0 && uvFront.x<=1.0 && uvFront.y>=0.0 && uvFront.y<=1.0){
       vec4 ink=texture2D(artFront,uvFront);
       fabric=mix(fabric,ink.rgb*illumination,ink.a);

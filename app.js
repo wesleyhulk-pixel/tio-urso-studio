@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.9 — ajuste fino do topo da caneca no mockup e atualização da foto realista da caneca de chopp. */
+/* Tio Urso Studio Alpha 1.1.11 — correção do posicionamento das estampas nos braços da camiseta e melhorias acumuladas das versões anteriores. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);

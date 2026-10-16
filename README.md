@@ -1,12 +1,13 @@
-# Tio Urso Studio — Alpha 1.1.9
+# Tio Urso Studio — Alpha 1.1.11
 
-## Camiseta com cinco áreas independentes
+## Camiseta com cinco áreas independentes + correção dos braços no mockup
 
 - Frente (A4), costas (A4), peito (12 × 12 cm), braço direito (9 × 9 cm) e braço esquerdo (9 × 9 cm).
 - Cada área mantém seu próprio conjunto de camadas, mesmo depois de trocar a posição de edição.
 - O campo “Produto e medida”, durante a edição da camiseta, lista somente essas cinco posições; o painel visual de áreas também permite alternar entre elas.
 - Indicadores mostram quais áreas já possuem arte e qual está sendo editada.
-- O mockup 3D foi adaptado para aplicar as cinco texturas numa única camiseta, com a área do peito sobreposta à frente quando ambas têm estampa.
+- O mockup 3D aplica as cinco texturas numa única camiseta, com a área do peito sobreposta à frente quando ambas têm estampa.
+- Os braços foram corrigidos: a arte lateral agora fica centralizada na manga, sem atravessar para o outro lado e sem duplicação espelhada.
 - Desfazer/refazer, JSON do projeto e Galeria incluem as cinco áreas.
 - Salvar a estampa PNG/PDF continua exportando **a área selecionada**, na medida correspondente. Para obter todas as estampas de produção, alterne entre as cinco posições e exporte cada uma separadamente.
 - Projetos antigos de camiseta continuam compatíveis: a arte antiga é tratada como a estampa da posição que estava selecionada.
