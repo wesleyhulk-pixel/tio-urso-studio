@@ -1,13 +1,15 @@
-# Tio Urso Studio — Alpha 1.1.5
+# Tio Urso Studio — Alpha 1.1.6
 
-## Novidades
-- Correção da aparência irregular na base da caneca tradicional: faixa de geometria regularizada no exterior inferior (sem redimensionar ou deformar a arte no editor).
-- Menu **O que vamos criar hoje?** com fotos reais enviadas pelo usuário: caneca, camiseta, squeeze e azulejo.
-- Etapas de escolha para canecas e tamanhos de azulejo preservadas.
-- Editor 1.1.3: pinça, alça de rotação, quatro pontos de redimensionamento e controles rápidos preservados.
-- Mockups 3D, MP4, galeria e orçamentos por produto mantidos.
+## O que mudou
+- **Caneca tradicional:** removida a faixa/cilindro extra de geometria adicionada na versão 1.1.5. Ela era maior que o corpo original e criava uma segunda base visível. O acabamento inferior usa exclusivamente a superfície do modelo Meshy, com cor amostrada da extremidade da estampa.
+- **Caneca de chopp:** foto realista fornecida pelo usuário, incluída no submenu de canecas em **O que vamos criar hoje?**
+- Cabeçalho e versão do aplicativo atualizados para **Alpha 1.1.6**.
 
-## Atualização leve para GitHub Pages
-Descompacte o ZIP leve e carregue **somente os 4 arquivos atualizados** (`index.html`, `app.js`, `style.css`, `mock3d.js`), mais as **4 imagens** `produto-*.webp`. Envie-os extraídos para a raiz do repositório. Não altere os modelos Meshy. O README é opcional.
+## Como instalar no GitHub pelo celular
+1. Extraia o ZIP de atualização leve.
+2. Envie os arquivos **diretamente à raiz** do repositório `tio-urso-studio` (sem a pasta do ZIP).
+3. Substitua os arquivos com os mesmos nomes.
+4. Não reenvie os arquivos `meshy-*.bin` ou `meshy-camiseta.glb`; continuam intactos.
 
-Teste a base visualmente em vários ângulos antes de produzir um item real.
+## Observação
+Esta é uma correção de visualização do mockup, não uma medida de área sublimável garantida. Confira o resultado visual no celular e sempre faça testes físicos de impressão antes de produzir.

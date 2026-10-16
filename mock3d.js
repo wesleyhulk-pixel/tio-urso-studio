@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.5 — ajuste de borda inferior da caneca, preservando a camiseta e os demais Meshy.
+/* Tio Urso Studio Alpha 1.1.6 — ajuste de borda inferior da caneca, preservando a camiseta e os demais Meshy.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -323,6 +323,16 @@ function createTioMock3D(canvas){
      // sem aumentar ou deformar a imagem inteira.
      const originalTrim=normalized[3], upperTrim=[], lowerTrim=[];
      const halfArc=Math.PI*.80;
+     // Mesma janela vertical UV do corpo Meshy: continuidade da estampa
+     // na parte de baixo, sem criar uma segunda faixa monocromática.
+     let bodyMinY=Infinity,bodyMaxY=-Infinity;
+     for(let k=1;k<raw[0].length;k+=8){
+       bodyMinY=Math.min(bodyMinY,raw[0][k]);
+       bodyMaxY=Math.max(bodyMaxY,raw[0][k]);
+     }
+     const bodyCenterY=(bodyMinY+bodyMaxY)*.5;
+     const bottomUV=bodyMinY+(bodyMaxY-bodyMinY)*.012;
+     const heightUV=(bodyMaxY-bodyMinY)*.976;
      for(let i=0;i<originalTrim.length;i+=24){
        const y=(originalTrim[i+1]+originalTrim[i+9]+originalTrim[i+17])/3;
        if(y>=-.94){
@@ -343,51 +353,22 @@ function createTioMock3D(canvas){
          // Mesma projeção horizontal do corpo cerâmico; a textura não
          // invade a região traseira, onde ficam a emenda e a alça.
          lowerTrim[lowerTrim.length-2]=(a+halfArc)/(2*halfArc);
-         // Usa apenas os pixels extremos da arte para cobrir a pequena
-         // faixa física de acabamento. Não estica rostos nem letras.
-         lowerTrim[lowerTrim.length-1]=.001;
+         // Acompanha o UV do corpo, inclusive no rodapé. Isso evita
+         // aquela banda de cor repetida na borda e não estica letras.
+         const localY=originalTrim[off+1];
+         const v=(localY+bodyCenterY-bottomUV)/heightUV;
+         lowerTrim[lowerTrim.length-1]=Math.max(.001,Math.min(.999,v));
        }
      }
-     // A camada de acabamento irregular do Meshy nao cobre perfeitamente
-     // o exterior na extremidade inferior. Criamos somente um pequeno
-     // cilindro de transicao regular para cobrir dentes e manchas da malha.
-     // Os UV seguem a MESMA formula de projecao do corpo: nao esticamos
-     // elementos da arte e nao tocamos na abertura ou na alca.
-     const baseBandVertices=[];
-     const minY=-1.111,maxY=-.928;
-     const rings=[
-       {y:minY,r:1.014},
-       {y:-1.078,r:1.016},
-       {y:-1.007,r:1.016},
-       {y:maxY,r:1.012}
-     ];
-     const nSegments=192;
-     const centerMin=raw[0].reduce((m,_,i)=>i%8===1?Math.min(m,raw[0][i]):m,Infinity);
-     const centerMax=raw[0].reduce((m,_,i)=>i%8===1?Math.max(m,raw[0][i]):m,-Infinity);
-     const textureBottom=centerMin+(centerMax-centerMin)*.012;
-     const textureHeight=(centerMax-centerMin)*.976;
-     // normalizeMeshyGeometry recentra o eixo Y no meio da malha.
-     const centerY=(centerMin+centerMax)*.5;
-     const vFor=y=>Math.max(.001,Math.min(.999,(y+centerY-textureBottom)/textureHeight));
-     for(let k=0;k<nSegments;k++){
-       const a=-Math.PI+2*Math.PI*k/nSegments;
-       const b=-Math.PI+2*Math.PI*(k+1)/nSegments;
-       function put(ring,theta){
-         const s=Math.sin(theta),c=Math.cos(theta);
-         vertex(baseBandVertices,[ring.r*s,ring.y,ring.r*c],[s,0,c],
-           (theta+halfArc)/(2*halfArc),vFor(ring.y));
-       }
-       for(let row=0;row<rings.length-1;row++){
-         const low=rings[row],high=rings[row+1];
-         put(low,a);put(low,b);put(high,b);
-         put(low,a);put(high,b);put(high,a);
-       }
-     }
+     // Alpha 1.1.6: removida a faixa cilíndrica artificial criada na
+     // versão anterior. O raio fixo dessa faixa ultrapassava o corpo do
+     // Meshy e aparecia como uma segunda base/"saia" sobreposta.
+     // Usamos somente os triângulos originais de acabamento inferiores,
+     // com UV preso à última linha da estampa, sem adicionar geometria.
      meshyMug={
        body:upload(normalized[0]),inside:upload(normalized[1]),handle:upload(normalized[2]),
        trim:upload(new Float32Array(upperTrim)),
-       basePrinted:upload(new Float32Array(lowerTrim)),
-       baseBand:upload(new Float32Array(baseBandVertices)),insideFloor:null
+       basePrinted:upload(new Float32Array(lowerTrim)),insideFloor:null
      };
      window.dispatchEvent(new Event('tio-meshy-ready'));
    }catch(error){
@@ -798,8 +779,6 @@ function createTioMock3D(canvas){
    // Caneca tradicional apenas: colore a borda inferior Meshy com o último
    // pixel da estampa para impedir a faixa branca irregular sobre a arte.
    if(isCoffee && config.basePrinted)draw(config.basePrinted,[1,1,1],true);
-   // Regulariza a base por cima dos triangulos irregulares do modelo.
-   if(isCoffee && config.baseBand)draw(config.baseBand,[1,1,1],true);
    draw(config.handle,isCoffee?finish:(kind==='chopp'?[.97,.98,1]:[.975,.985,1]),false);
    gl.flush();
    // Confirma que o renderizador desenhou algo; evita mockup vazio em falhas de WebGL.

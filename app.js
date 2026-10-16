@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.5 — novo projeto com escolha guiada de produto e variações. */
+/* Tio Urso Studio Alpha 1.1.6 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -1299,7 +1299,7 @@ const PROJECT_CHOICE_STEPS={
  ]},
  caneca:{title:'Qual caneca você quer criar?',description:'Escolha o modelo de caneca para montar a arte.',overline:'CANECAS',parent:'root',items:[
   {product:'caneca',label:'Caneca tradicional',detail:'Medida 21 × 9,7 cm',icon:'☕',photo:'produto-caneca.webp',tone:'is-purple',arrow:'✓'},
-  {product:'chopp',label:'Caneca de chopp',detail:'Medida 20,5 × 14,5 cm',icon:'🍺',tone:'is-teal',arrow:'✓'}
+  {product:'chopp',label:'Caneca de chopp',detail:'Medida 20,5 × 14,5 cm',icon:'🍺',photo:'produto-chopp.webp',tone:'is-teal',arrow:'✓'}
  ]},
  azulejo:{title:'Qual tamanho de azulejo?',description:'Selecione a medida do azulejo para começar o layout.',overline:'AZULEJOS',parent:'root',items:[
   {product:'azulejo20',label:'20 × 20 cm',detail:'Área quadrada maior',icon:'▦',photo:'produto-azulejo.webp',tone:'is-green',arrow:'✓'},
