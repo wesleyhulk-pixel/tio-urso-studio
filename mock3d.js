@@ -262,7 +262,14 @@ function createTioMock3D(canvas){
        if(partIndex===0){
          const theta=Math.atan2(x,z);
          copy[i+6]=(theta+halfArc)/(2*halfArc);
-         copy[i+7]=(source[i+1]-printBottom)/printHeight;
+         // A malha Meshy tem bordas ligeiramente onduladas: alguns vértices
+         // ultrapassam a janela UV e apareciam brancos, formando "dentinhos"
+         // irregulares na base e uma faixa sem tinta próxima da borda superior.
+         // Reaproveita o último pixel vertical da própria arte nesses pontos,
+         // sem alterar os vértices do produto ou redimensionar a arte do editor.
+         // Somente o corpo da caneca tradicional (partIndex===0) é afetado.
+         const v=(source[i+1]-printBottom)/printHeight;
+         copy[i+7]=Math.max(0.001,Math.min(0.999,v));
        }
      }
      if(partIndex===0){
