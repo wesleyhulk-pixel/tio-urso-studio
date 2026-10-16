@@ -1,15 +1,12 @@
-# Tio Urso Studio — Alpha 1.1.14
+# Tio Urso Studio — Alpha 1.1.15 (resgate seguro do 3D)
 
-## Ajuste de acabamento nas mangas da camiseta
+**Objetivo: restaurar o mockup 3D da camiseta que girava na Alpha 1.1.13**, removendo o shader de mangas introduzido na 1.1.14 que provocou o retorno à prévia 2D. Não muda os produtos, os modelos Meshy, as camadas independentes ou o editor.
 
-- Mantidas as cinco áreas de arte separadas (frente, costas, peito, braço direito e braço esquerdo).
-- Os logos dos braços continuam centrados nas laterais externas.
-- Novo filtro lateral/ângulo do mockup para evitar fragmentos de estampas nas vistas frontal e traseira e prevenir cópias espelhadas.
-- Suavização das extremidades da impressão das mangas para reduzir o contorno retangular visível.
-- Não altera as áreas de frente, costas, peito nem o mapeamento dos produtos caneca, chopp, squeeze e azulejo.
+## Instalação pelo celular
+1. Extraia este ZIP (não envie o ZIP diretamente ao GitHub).
+2. Substitua `index.html` e `mock3d.js` na raiz do repositório; o `README.md` é opcional, apenas documentação.
+3. Reabra o site e confirme `ALPHA 1.1.15` no cabeçalho.
 
-## Atualização leve no GitHub
+**Importante:** não limpe o armazenamento/dados do site. A galeria e os projetos podem depender dos dados locais do navegador.
 
-Extraia o ZIP e substitua somente `index.html`, `mock3d.js` e `README.md` na raiz do repositório. **Não envie o ZIP diretamente**, não apague `app.js`, `style.css`, fotos, nem modelos Meshy já presentes.
-
-Aguarde a publicação e confira a indicação **ALPHA 1.1.14**. Teste os braços de perfil, frente e costas no navegador Android antes de usar o mockup para produção.
+O mapeamento das mangas volta ao estado da 1.1.13, em que o 3D estava funcionando mas havia arte parcialmente visível nas vistas de frente/costas. Melhor priorizar a recuperação do 3D e refinar as mangas depois de confirmar a volta do giro.

@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.14 — correção do posicionamento das artes nos braços da camiseta e refinamentos anteriores.
+/* Tio Urso Studio Alpha 1.1.15 — correção do posicionamento das artes nos braços da camiseta e refinamentos anteriores.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -100,7 +100,7 @@ function createTioMock3D(canvas){
  }`;
  const shirtFS=`precision mediump float;
  varying vec3 posLocal;varying vec3 normalLocal;varying vec3 normalView;
- uniform vec3 mainColor;uniform vec3 accentColor;uniform vec3 collarColor;uniform float yaw;
+ uniform vec3 mainColor;uniform vec3 accentColor;uniform vec3 collarColor;
  uniform sampler2D artFront;uniform sampler2D artBack;uniform sampler2D artChest;uniform sampler2D artRight;uniform sampler2D artLeft;
  void main(){
    vec3 n=normalize(normalView);
@@ -146,13 +146,14 @@ function createTioMock3D(canvas){
    // não apaga a estampa do peito: o peito é composto por cima dela.
    float front=step(.05,posLocal.z);
    float back=step(.05,-posLocal.z);
-   // Alpha 1.1.14: decal lateral de manga centralizado em Z=-.06.
-   // O filtro pela normal externa impede que a estampa contorne a manga.
-   // A visibilidade angular evita as "tiras" do decal nas vistas de
-   // frente/costas; de perfil a estampa aparece inteira e sem espelho.
-   float sideProfile=smoothstep(.20,.61,abs(sin(yaw)));
-   float rightSide=smoothstep(.56,.68,-posLocal.x) * smoothstep(.43,.76,-nLocal.x) * sideProfile;
-   float leftSide=smoothstep(.56,.68,posLocal.x) * smoothstep(.43,.76,nLocal.x) * sideProfile;
+   // Alpha 1.1.13 - centro REAL das mangas na malha Meshy:
+   // Z=-0.06 e Y=0.33 na face lateral externa de cada manga.
+   // O patch 9x9 usa uma janela quase quadrada (0.30 x 0.30):
+   // evita encolher/deslocar a logo como no mapeamento 0.15 x 0.62.
+   // O normal voltado PARA FORA evita copiar a arte na face de tras
+   // ou no avesso e os sinais opostos de X separam os dois bracos.
+   float rightSide=smoothstep(.49,.59,-posLocal.x) * smoothstep(.07,.30,-nLocal.x);
+   float leftSide=smoothstep(.49,.59,posLocal.x) * smoothstep(.07,.30,nLocal.x);
    vec2 uvFront=vec2((posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvBack=vec2((-posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvChest=vec2((posLocal.x-.12)/.22,(posLocal.y-.27)/.22);
@@ -173,16 +174,11 @@ function createTioMock3D(canvas){
    }
    if(rightSide>.001 && uvRight.x>=0.0 && uvRight.x<=1.0 && uvRight.y>=0.0 && uvRight.y<=1.0){
       vec4 ink=texture2D(artRight,uvRight);
-      // Borda suave para evitar a marca retangular ao redor da estampa.
-      float feather=smoothstep(.0,.08,uvRight.x)*(1.0-smoothstep(.92,1.0,uvRight.x))
-                   *smoothstep(.0,.08,uvRight.y)*(1.0-smoothstep(.92,1.0,uvRight.y));
-      fabric=mix(fabric,ink.rgb*illumination,ink.a*rightSide*feather);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a*rightSide);
    }
    if(leftSide>.001 && uvLeft.x>=0.0 && uvLeft.x<=1.0 && uvLeft.y>=0.0 && uvLeft.y<=1.0){
       vec4 ink=texture2D(artLeft,uvLeft);
-      float feather=smoothstep(.0,.08,uvLeft.x)*(1.0-smoothstep(.92,1.0,uvLeft.x))
-                   *smoothstep(.0,.08,uvLeft.y)*(1.0-smoothstep(.92,1.0,uvLeft.y));
-      fabric=mix(fabric,ink.rgb*illumination,ink.a*leftSide*feather);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a*leftSide);
    }
    gl_FragColor=vec4(clamp(fabric,0.0,1.0),1.0);
  }`;
