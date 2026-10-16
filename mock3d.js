@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.6 — ajuste de borda inferior da caneca, preservando a camiseta e os demais Meshy.
+/* Tio Urso Studio Alpha 1.1.7 — ajuste fino do topo da caneca e atualização do submenu realista da caneca de chopp.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -247,8 +247,8 @@ function createTioMock3D(canvas){
    // ampliamos a janela vertical útil sem deformar a arte no editor.
    // Assim o mockup ocupa melhor a altura do corpo cerâmico e reduz
    // as bordas brancas superior e inferior vistas no preview.
-   const printBottom=bmin[1]+height*.012;
-   const printHeight=height*.976;
+   const printBottom=bmin[1]+height*.010;
+   const printHeight=height*.985;
    // 80% da circunferência; área branca atrás da caneca e sob a alça.
    // Diferente do antigo UV automático, não repete nem estica a arte na emenda.
    const halfArc=Math.PI*.80;
@@ -331,8 +331,8 @@ function createTioMock3D(canvas){
        bodyMaxY=Math.max(bodyMaxY,raw[0][k]);
      }
      const bodyCenterY=(bodyMinY+bodyMaxY)*.5;
-     const bottomUV=bodyMinY+(bodyMaxY-bodyMinY)*.012;
-     const heightUV=(bodyMaxY-bodyMinY)*.976;
+     const bottomUV=bodyMinY+(bodyMaxY-bodyMinY)*.010;
+     const heightUV=(bodyMaxY-bodyMinY)*.985;
      for(let i=0;i<originalTrim.length;i+=24){
        const y=(originalTrim[i+1]+originalTrim[i+9]+originalTrim[i+17])/3;
        if(y>=-.94){
@@ -360,7 +360,7 @@ function createTioMock3D(canvas){
          lowerTrim[lowerTrim.length-1]=Math.max(.001,Math.min(.999,v));
        }
      }
-     // Alpha 1.1.6: removida a faixa cilíndrica artificial criada na
+     // Alpha 1.1.7: removida a faixa cilíndrica artificial criada na
      // versão anterior. O raio fixo dessa faixa ultrapassava o corpo do
      // Meshy e aparecia como uma segunda base/"saia" sobreposta.
      // Usamos somente os triângulos originais de acabamento inferiores,
