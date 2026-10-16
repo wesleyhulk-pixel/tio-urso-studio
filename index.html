@@ -4,19 +4,42 @@
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
  <meta name="theme-color" content="#071d37">
- <meta name="description" content="Tio Urso Studio Alpha 1.1.16 — editor de estampas, mockups e orçamentos para personalizados.">
- <title>Tio Urso Studio · Alpha 1.1.16</title>
+ <meta name="application-name" content="Tio Urso Studio">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ <meta name="apple-mobile-web-app-title" content="Tio Urso">
+ <link rel="manifest" href="manifest.webmanifest?v=1117">
+ <link rel="apple-touch-icon" href="pwa/apple-touch-icon.png?v=1117">
+ <link rel="icon" href="pwa/icon-192.png?v=1117" type="image/png" sizes="192x192">
+ <link rel="preload" href="pwa/splash.webp?v=1117" as="image" type="image/webp">
+ <meta name="description" content="Tio Urso Studio Alpha 1.1.17 — editor de estampas, mockups e orçamentos para personalizados.">
+ <title>Tio Urso Studio · Alpha 1.1.17</title>
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Montserrat:wght@700&family=Poppins:wght@700&family=Righteous&family=Bangers&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Great+Vibes&family=Permanent+Marker&family=Cinzel:wght@700&family=Playfair+Display:wght@700&family=Fredoka:wght@700&family=Satisfy&family=Kalam:wght@700&family=Abril+Fatface&family=Russo+One&family=Caveat:wght@700&family=Indie+Flower&display=swap" rel="stylesheet">
  <link rel="stylesheet" href="style.css?v=1115">
+ <script src="intro-pwa.js?v=1117" defer></script>
  <script src="mock3d.js?v=1116" defer></script>
  <script src="tio-mp4.js?v=1180" defer></script>
  <script src="app.js?v=1115" defer></script>
+
+<style id="pwa-intro-style">
+ #pwaIntro{position:fixed;inset:0;z-index:2147483000;background:#030b18;color:white;overflow:hidden;isolation:isolate;touch-action:pan-y;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+ #pwaIntro canvas{display:block;width:100%;height:100%;object-fit:cover}
+ #pwaIntroSkip{position:absolute;right:max(17px,env(safe-area-inset-right));top:max(20px,env(safe-area-inset-top));border:1px solid #91dce866;background:#041c34c9;color:#f2faff;padding:10px 18px;border-radius:999px;font:600 13px system-ui;min-height:43px;z-index:2;cursor:pointer}
+ #pwaIntro[aria-hidden="true"]{opacity:0;pointer-events:none;transition:opacity .38s ease}
+ @media(prefers-reduced-motion:reduce){#pwaIntro[aria-hidden="true"]{transition:none}}
+</style>
 </head>
 <body>
+ <div id="pwaIntro" role="dialog" aria-modal="true" aria-label="Abertura do Tio Urso Studio">
+   <canvas id="pwaIntroCanvas" width="540" height="960" role="img" aria-label="Um tapão diagonal de urso rasga a tela e revela Tio Urso Oficial Studio"></canvas>
+   <button id="pwaIntroSkip" type="button" aria-label="Pular animação de abertura">Pular ›</button>
+ </div>
+ <script>setTimeout(function(){var x=document.getElementById('pwaIntro');if(x)x.remove()},8000)</script>
+
  <header class="topbar">
-   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote-header.png?v=1180" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 1.1.16</span></div>
+   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote-header.png?v=1180" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 1.1.17</span></div>
  </header>
  <div class="app-layout">
   <main class="shell">
@@ -200,13 +223,13 @@
        <div class="action-row"><button id="downloadPng" class="btn primary" type="button">⇩ Exportar PNG</button><button id="downloadPdf" class="btn" type="button">⇩ Exportar PDF</button></div><div class="notice"><strong>Para sublimação:</strong> espelhe apenas quando necessário e desative o espelhamento adicional no software de impressão. Esta Alpha não aplica perfil ICC e não garante as cores finais. Para imprimir no tamanho certo, desative “ajustar à página” no diálogo de impressão.</div>
      </section><button type="button" class="btn ghost full-cta" data-goto="editor">← Voltar ao editor</button>
    </section>
-   <footer>🐻 Tio Urso Studio • Alpha 1.1.16 experimental • Teste de impressão obrigatório</footer>
+   <footer>🐻 Tio Urso Studio • Alpha 1.1.17 experimental • Teste de impressão obrigatório</footer>
   </main>
  </div>
  <div class="sheet-overlay" id="fontOverlay" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Galeria de fontes"><div class="sheet-head"><div><small>PERSONALIZE SEU TEXTO</small><h2>Escolher fonte</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar fontes">✕</button></div><input id="fontSearch" class="search-input" type="search" placeholder="Buscar fonte pelo nome…"><div class="font-categories"><button type="button" class="font-category active" data-font-category="Todas">Todas</button><button type="button" class="font-category" data-font-category="Divertidas">Divertidas</button><button type="button" class="font-category" data-font-category="Elegantes">Elegantes</button><button type="button" class="font-category" data-font-category="Manuscritas">Manuscritas</button><button type="button" class="font-category" data-font-category="Fortes">Fortes</button></div><div id="fontGallery" class="font-gallery"></div><button type="button" class="btn full-cta" id="fontImportAction">＋ Importar fonte TTF/OTF</button><p class="sheet-note">Fontes online precisam de internet ao carregar. Para uso comercial, confira a licença das fontes importadas.</p></section></div>
  <div class="sheet-overlay" id="colorOverlay" hidden>
   <section class="sheet color-sheet" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle">
-    <div class="sheet-head"><div><small>ESTÚDIO DE CORES · ALPHA 1.1.16</small><h2 id="colorModalTitle">Escolher cor</h2><p class="color-subtitle" id="colorTargetLabel">Personalize qualquer tonalidade</p></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar sem aplicar">✕</button></div>
+    <div class="sheet-head"><div><small>ESTÚDIO DE CORES · ALPHA 1.1.17</small><h2 id="colorModalTitle">Escolher cor</h2><p class="color-subtitle" id="colorTargetLabel">Personalize qualquer tonalidade</p></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar sem aplicar">✕</button></div>
     <div class="color-studio-main">
       <div class="color-sv" id="colorSvPlane" role="group" tabindex="0" aria-label="Área de cor: deslize para os lados para mudar a saturação e para cima ou baixo para ajustar a luminosidade" aria-describedby="colorSvHint"><span id="colorSvCursor" class="color-sv-cursor" aria-hidden="true"></span></div>
       <p class="color-sv-hint" id="colorSvHint">Arraste o dedo no quadrado para ajustar o tom claro, vivo ou escuro.</p>

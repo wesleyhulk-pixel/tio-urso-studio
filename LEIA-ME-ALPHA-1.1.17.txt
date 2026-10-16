@@ -1,0 +1,53 @@
+TIO URSO STUDIO — ALPHA 1.1.17 · PWA EDITION
+===========================================
+Atualização incremental para o GitHub Pages (wesleyhulk-pixel.github.io/tio-urso-studio/).
+
+ANTES DE PUBLICAR
+- Guarde a versão 1.1.16 como backup e mantenha seus arquivos JSON de projetos.
+- NÃO apague o repositório para instalar essa atualização.
+- NÃO remova os arquivos meshy-*.bin / meshy-camiseta-webgl.bin, os modelos GLB,
+  app.js, style.css, mock3d.js e outros recursos do seu Studio.
+
+COMO INSTALAR
+1. Extraia o ZIP no computador/celular.
+2. Copie os arquivos e a pasta pwa/ para A RAIZ do repositório tio-urso-studio no GitHub:
+     index.html             (substituir o existente)
+     intro-pwa.js           (novo)
+     manifest.webmanifest   (novo)
+     sw.js                  (novo)
+     pwa/                   (nova pasta, com os 5 arquivos)
+3. Confirme que os arquivos da pasta pwa/ ficaram dentro da pasta pwa/,
+   e nao direto na raiz.
+4. Aguarde a publicacao e abra https://wesleyhulk-pixel.github.io/tio-urso-studio/
+5. Verifique "ALPHA 1.1.17" no cabecalho.
+
+INSTALAR NO ANDROID (CHROME)
+- Abra o site no Chrome.
+- Toque em ⋮ (tres pontos) > "Instalar app" (ou "Adicionar à tela inicial",
+  conforme a versao do navegador) > confirmar.
+- Abra pelo novo icone de urso. A abertura animada aparece depois da splash nativa.
+- Se "Instalar" nao aparecer de imediato, aguarde, recarregue uma vez e tente novamente.
+
+O QUE MUDOU
+- Icones 192/512/maskable, splash vertical Tio Urso Oficial, cores do sistema.
+- Animacao silenciosa de tapao diagonal do urso com 4 garras, efeito de rasgo,
+  logo revelada e indicador visual de inicializacao. Dura em geral 3 a 4 segundos.
+- Botao Pular; respeita a preferencia "reduzir animacoes" do aparelho.
+- Manifesto de instalacao PWA e service worker para funcionamento offline parcial.
+- A animacao roda em canvas 2D separado; NAO altera o canvas Meshy/WebGL.
+
+IMPORTANTE
+- O novo ZIP NAO inclui arquivos da versao anterior (app.js, mock3d.js, etc.).
+  Eles devem PERMANECER no repositorio exatamente como estavam na 1.1.16.
+- O cache offline so fica completo depois que os recursos sao carregados online;
+  fontes externas e arquivos ainda nao usados podem depender de conexao.
+- Nao limpe os dados do Chrome: a galeria pode estar salva no armazenamento do navegador.
+- A galeria do navegador pode nao ser automaticamente compartilhada com o PWA
+  instalado em todos os navegadores/sistemas. Salve o JSON do projeto por seguranca.
+- A animacao esta sem rugido (como combinado).
+- Foi feita a validacao do visual da cutscene e dos scripts em navegador local
+  isolado, mas instalacao real no Android / Github Pages precisa ser conferida.
+
+REVERTER
+Se houver qualquer falha, substitua index.html pelo da 1.1.16.
+O editor e os shaders dessa versao NAO foram modificados.
