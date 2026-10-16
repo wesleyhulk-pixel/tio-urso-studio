@@ -366,3 +366,33 @@
 /* Alpha 1.1.0 — exportação MP4 */
 .mp4-export-hint{font-size:12px;color:#6d8392;margin:10px 3px 0;line-height:1.45}
 .mockup-actions-grid .btn:disabled{opacity:.65;cursor:progress}
+
+/* Alpha 1.1.3 — barra de ações + alças sobre a arte; não aparecem na exportação */
+.design-card .canvas-surround{overflow:visible}
+.design-card .art-canvas-wrap{position:relative;width:100%;max-width:1000px;margin:0 auto;line-height:0}
+.design-card .art-canvas-wrap #artCanvas{width:100%;height:auto;display:block;position:relative}
+.quick-layer-tools{margin:0 auto 13px;width:max-content;max-width:100%;display:flex;flex-direction:column;align-items:center;gap:9px}
+.quick-layer-toolbar{display:flex;align-items:stretch;gap:2px;padding:5px;border:1px solid #dce4ec;border-radius:25px;background:#fff;box-shadow:0 6px 22px rgba(22,48,68,.12)}
+.quick-layer-toolbar button{min-width:70px;display:flex;align-items:center;flex-direction:column;gap:2px;justify-content:center;border:0;background:transparent;color:#203b55;border-radius:17px;padding:6px 9px;min-height:52px;touch-action:manipulation}
+.quick-layer-toolbar button span{font-size:23px;line-height:1.1}
+.quick-layer-toolbar button small{font-size:10px;font-weight:750;white-space:nowrap}
+.quick-layer-toolbar #quickDelete{color:#a43d52}
+.quick-layer-toolbar #quickLock[aria-pressed="true"]{background:#eaf8fb;color:#006f94}
+.quick-layer-toolbar #quickOpacity[aria-expanded="true"]{background:#eaf8fb;color:#006f94}
+.quick-opacity-panel{width:min(100%,360px);min-width:260px;display:flex;flex-direction:column;gap:9px;padding:13px 15px;border:1px solid #cde4ec;background:#f6fbfe;border-radius:16px}
+.quick-opacity-panel label{display:flex;justify-content:space-between;gap:12px;color:#335568;font-weight:750;font-size:12px}
+.quick-opacity-panel input{width:100%;accent-color:#089cb0;min-height:35px}
+.quick-opacity-panel button{border:1px solid #d1e0e8;border-radius:10px;color:#2d5c72;font-weight:750;background:white;min-height:38px}
+.selection-overlay{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:3}
+.selection-outline{position:absolute;border:2px solid #8c3dff;box-sizing:border-box;transform-origin:center center;pointer-events:none}
+.edit-handle{pointer-events:auto;position:absolute;box-sizing:border-box;border:2px solid #b7c2d3;background:white;color:#21354f;box-shadow:0 2px 6px #1b34543b;touch-action:none;user-select:none;-webkit-user-select:none}
+.edit-handle:active{background:#e9e5ff;border-color:#8241ff}
+.edit-handle[data-edit-handle="tl"]{left:0;top:0;transform:translate(-50%,-50%)}
+.edit-handle[data-edit-handle="tr"]{right:0;top:0;transform:translate(50%,-50%)}
+.edit-handle[data-edit-handle="bl"]{left:0;bottom:0;transform:translate(-50%,50%)}
+.edit-handle[data-edit-handle="br"]{right:0;bottom:0;transform:translate(50%,50%)}
+.edit-handle:not(.rotate-handle){width:22px;height:22px;border-radius:50%}
+.rotation-stem{position:absolute;left:50%;bottom:-32px;width:2px;height:30px;background:#8c3dff;transform:translateX(-50%);pointer-events:none}
+.rotate-handle{left:50%;bottom:-57px;transform:translateX(-50%);width:37px;height:37px;border-radius:50%;font-size:24px;display:grid;place-items:center;line-height:1}
+.design-card .layers-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:420px){.quick-layer-toolbar button{min-width:59px;padding:5px 6px}.quick-layer-toolbar button small{font-size:9px}.quick-layer-toolbar button span{font-size:22px}.edit-handle:not(.rotate-handle){width:24px;height:24px}}

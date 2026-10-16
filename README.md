@@ -1,20 +1,41 @@
-# Tio Urso Studio — Alpha 1.1.2
+# Tio Urso Studio — Alpha 1.1.3 | Início enxuto e orçamento por produto
 
-## Correção das bordas do mockup da caneca tradicional
+## Alterações
+- A página inicial mostra **Novo projeto** e **Minha galeria**; os quatro cartões "Meu estúdio" foram retirados.
+- Barra de navegação do rodapé removida. Nas telas internas, atalhos compactos levam a **Início**, **Editor**, **Mockup** e **Orçamento** sem apagar a arte em andamento.
+- **Novo projeto** continua abrindo o aviso de proteção e a escolha de produto da versão anterior.
+- Orçamento com dados e preço de venda **independentes por produto** (caneca tradicional, chopp, squeeze, camiseta e cada medida de azulejo).
+- Os valores são configurados pelo usuário, sem preços fictícios. Os valores de cada produto ficam salvos no armazenamento local do navegador, como a galeria (não na nuvem).
+- A criação de mockup PNG/GIF, os arquivos Meshy, camadas, editor, galeria, zoom, rotação e o worker GIF foram preservados.
 
-- Corrigido o mapeamento vertical da textura para evitar pontos brancos e falhas serrilhadas junto à base e ao topo da superfície externa da caneca.
-- O desenho não é esticado: nos pontos que ultrapassam a janela de impressão do modelo Meshy, o renderizador usa a cor dos pixels da borda da própria arte.
-- O filete cerâmico da boca e a base estrutural da caneca permanecem com o acabamento normal do modelo 3D.
-- Largura da estampa, alça, giro 360°, camiseta, squeeze, chopp, editor, galeria e exportações PNG/MP4 não foram alterados.
+## Para atualizar o GitHub
+A partir da Alpha 1.0.8 com exportação GIF 360 funcionando, extraia o **ZIP leve** e substitua `index.html`, `app.js`, `style.css` e `README.md` na raiz do repositório. Não apague os modelos 3D, o `tio-gif-worker.js` nem as imagens já publicadas.
 
-## Atualizar pelo celular no GitHub
+Se a versão anterior à 1.0.8 não tinha o `tio-gif-worker.js`, mantenha/instale esse arquivo da atualização 1.0.8 também.
 
-Este é um ZIP leve. Extraia e envie à **raiz do repositório** apenas:
+## Teste
+1. Veja a Home sem cartões "Meu estúdio" e sem barra inferior.
+2. Em **Novo projeto**, selecione **Caneca tradicional**, edite a arte e toque em **Orçamento**.
+3. Ajuste os custos e/ou o preço de venda; volte ao Editor, inicie outro produto e confira o orçamento independente.
+4. Volte à Caneca tradicional e confirme que os valores anteriores foram preservados no mesmo navegador.
+5. Entre no Mockup e na Galeria para confirmar que continuam funcionando.
 
-1. `mock3d.js` — correção da textura;
-2. `index.html` — número de versão 1.1.2 e atualização do cache;
-3. `README.md` — descrição da versão no GitHub.
 
-Substitua os existentes. **Não exclua** os modelos Meshy `.bin` / `.glb`, nem `app.js`, `style.css`, `tio-mp4.js` ou outros arquivos.
+## Alpha 1.1.3 — exportação MP4
+- Substitui **Salvar Mockup GIF** por **Salvar Mockup MP4**.
+- Vídeo 360° de 6 segundos, 24 quadros por segundo, 720 × 1008 pixels, H.264, aproximadamente 3,8 Mb/s.
+- Usa WebCodecs e um muxer MP4 local (`tio-mp4.js`) quando possível, com gravação MP4 nativa como alternativa.
+- Caso o navegador não suporte H.264, avisa claramente e não salva outro formato disfarçado de MP4.
+- Mantém o PNG, os gestos, o orçamento por produto, os modelos 3D e a galeria.
 
-**Teste visual**: abrir o mockup com arte escura preenchendo toda a estampa, girar e conferir borda inferior e superior. A aparência final precisa de conferência no Android.
+**Como atualizar:** extraia o ZIP leve e envie `index.html`, `app.js`, `style.css`, `tio-mp4.js` para a raiz do GitHub Pages, substituindo os antigos. Não exclua os arquivos Meshy.
+
+
+## Alpha 1.1.3 — ferramentas diretamente sobre a arte
+- Barra contextual de Duplicar, Excluir, Trancar/Destrancar e Transparência 0–100%.
+- Seleção com quatro alças para redimensionar proporcionalmente e alça inferior para girar.
+- Continua possível arrastar com um dedo ou usar pinça e rotação com dois dedos.
+- Lista de camadas simplificada: selecionar, subir, descer e renomear.
+- Opacidade aplicada também a mockups e exportações.
+- O contorno de seleção não aparece nos PNG, MP4 nem nos projetos exportados.
+- Modelo 3D preservado da Alpha 1.1.2.
