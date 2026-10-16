@@ -1,12 +1,20 @@
-# Tio Urso Studio — Alpha 1.1.15 (resgate seguro do 3D)
+# Tio Urso Studio — Alpha 1.1.16 (proporção das mangas)
 
-**Objetivo: restaurar o mockup 3D da camiseta que girava na Alpha 1.1.13**, removendo o shader de mangas introduzido na 1.1.14 que provocou o retorno à prévia 2D. Não muda os produtos, os modelos Meshy, as camadas independentes ou o editor.
+Esta atualização incremental parte da versão 1.1.15, na qual o Meshy 3D voltou a funcionar.
 
-## Instalação pelo celular
-1. Extraia este ZIP (não envie o ZIP diretamente ao GitHub).
-2. Substitua `index.html` e `mock3d.js` na raiz do repositório; o `README.md` é opcional, apenas documentação.
-3. Reabra o site e confirme `ALPHA 1.1.15` no cabeçalho.
+## O que foi alterado
+- Somente o UV horizontal das mangas direita e esquerda no arquivo `mock3d.js`.
+- Largura projetada das artes nas mangas reduzida de 0,30 para 0,26 (13,3%) para diminuir o aspecto esticado de logos horizontais, mantendo o centro de ambas as estampas e a altura original.
+- 3D Meshy, giro livre, zoom, canecas, squeeze, frente, costas, peito e cinco texturas independentes: sem alterações de código.
 
-**Importante:** não limpe o armazenamento/dados do site. A galeria e os projetos podem depender dos dados locais do navegador.
+## Como instalar no GitHub
+1. Faça uma cópia de segurança dos arquivos `index.html` e `mock3d.js` atuais (Alpha 1.1.15).
+2. Extraia este ZIP. Envie/substitua `index.html` e `mock3d.js` na **raiz do repositório**. Não apague nem substitua outros arquivos.
+3. Aguarde a publicação do GitHub Pages. Atualize a página e confirme **ALPHA 1.1.16** no cabeçalho.
+4. Teste com a mesma arte horizontal do Superman em ambos os braços; confira em diferentes ângulos.
 
-O mapeamento das mangas volta ao estado da 1.1.13, em que o 3D estava funcionando mas havia arte parcialmente visível nas vistas de frente/costas. Melhor priorizar a recuperação do 3D e refinar as mangas depois de confirmar a volta do giro.
+Se houver qualquer regressão, substitua esses dois arquivos novamente pelos da Alpha 1.1.15.
+
+**Atenção:** o pacote não modifica projetos locais, mas evite limpar o armazenamento/dados do navegador, onde a galeria pode estar guardada.
+
+**Verificação:** sintaxe JavaScript e integridade do ZIP conferidas; ainda não foi validado visualmente no navegador do seu celular.

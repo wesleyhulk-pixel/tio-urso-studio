@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.15 — correção do posicionamento das artes nos braços da camiseta e refinamentos anteriores.
+/* Tio Urso Studio Alpha 1.1.16 — correção do posicionamento das artes nos braços da camiseta e refinamentos anteriores.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -157,9 +157,13 @@ function createTioMock3D(canvas){
    vec2 uvFront=vec2((posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvBack=vec2((-posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvChest=vec2((posLocal.x-.12)/.22,(posLocal.y-.27)/.22);
-   // Mesmo centro fisico, U invertido para leitura correta em ambos os lados.
-   vec2 uvRight=vec2((posLocal.z+.21)/.30,(posLocal.y-.18)/.30);
-   vec2 uvLeft=vec2((.09-posLocal.z)/.30,(posLocal.y-.18)/.30);
+   // Alpha 1.1.16 — ajuste APENAS da escala horizontal das mangas.
+   // A malha Meshy curva alarga visualmente letras e logos longas.
+   // Reduz a largura projetada de 0.30 para 0.26 (cerca de 13%),
+   // preservando o centro Z=-0.06, a altura Y=0.18..0.48 e o espelhamento correto.
+   // Frente, costas, peito e os demais renderizadores ficam intocados.
+   vec2 uvRight=vec2((posLocal.z+.19)/.26,(posLocal.y-.18)/.30);
+   vec2 uvLeft=vec2((.07-posLocal.z)/.26,(posLocal.y-.18)/.30);
    if(front>.5 && uvFront.x>=0.0 && uvFront.x<=1.0 && uvFront.y>=0.0 && uvFront.y<=1.0){
       vec4 ink=texture2D(artFront,uvFront);
       fabric=mix(fabric,ink.rgb*illumination,ink.a);
