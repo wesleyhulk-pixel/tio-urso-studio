@@ -158,7 +158,7 @@
 
 /* Alpha 0.9.4 — mockup em retrato + zoom */
 .mockup-stage.portrait-preview{position:relative;max-width:430px;margin:0 auto;border-radius:26px;overflow:hidden;aspect-ratio:4/5.55;min-height:520px;background:#edf4f0;--mock-scale:1;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}
-.mockup-stage.portrait-preview canvas{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover;transform:scale(var(--mock-scale));transform-origin:center center;transition:transform .18s ease;will-change:transform}
+.mockup-stage.portrait-preview canvas{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:contain;transform:scale(var(--mock-scale));transform-origin:center center;transition:transform .18s ease;will-change:transform}
 .mockup-stage.portrait-preview canvas[hidden]{display:none!important}
 .mock-zoom-panel{display:grid;gap:10px;padding-top:4px;border-top:1px solid #dbe9ef}
 .zoom-buttons button{min-width:0}
@@ -346,3 +346,9 @@
 @media(max-width:700px){.gallery-saved-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gallery-card-preview{height:150px}}
 @media(max-width:520px){.gallery-home-layout{grid-template-columns:minmax(95px,.9fr) minmax(0,1.65fr);gap:7px}.gallery-mascot-display{border-radius:15px}.gallery-home-categories{gap:6px}.gallery-category{padding:10px 9px;border-radius:13px;min-height:82px;gap:4px}.gallery-category-icon{font-size:18px;width:32px;height:32px;border-radius:9px}.gallery-category strong{font-size:11px}.gallery-category.azulejo{grid-column:1/-1;min-height:72px;flex-direction:row;align-items:center;justify-content:flex-start}.gallery-card-preview{height:135px}.gallery-filter-bar button{font-size:11px;padding:8px 10px}.gallery-page-heading{align-items:start}}
 @media(max-width:360px){.gallery-card-preview{height:115px}.gallery-card-actions button{font-size:11px}.gallery-saved-card{padding:7px}}
+
+
+/* Alpha 1.0.7 — mockup com zoom expandido e quatro ações */
+.mockup-actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:15px}
+.mockup-actions-grid .btn{width:100%;margin:0;flex:none;min-width:0}
+@media (max-width:420px){.mockup-actions-grid{grid-template-columns:1fr 1fr}}

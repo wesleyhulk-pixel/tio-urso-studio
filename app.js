@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.6 — novo projeto com escolha guiada de produto e variações. */
+/* Tio Urso Studio Alpha 1.0.7 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -871,7 +871,85 @@ finishPicker.addEventListener('input',event=>setMugFinish(event.target.value));
 mugFinishChoices.forEach(button=>button.addEventListener('click',()=>setMugFinish(button.dataset.finish)));
 setMugFinish(state.mugFinishColor,false);
 
-$('exportMockup').addEventListener('click',async()=>{try{renderMockup();updateMockZoom(mockZoom);const output=composePortraitMockupCanvas();downloadBlob(await toBlob(output),safeFilename('mockup.png'));toast('Mockup exportado em retrato.');}catch(e){toast(e.message);}});
+$('exportMockup').addEventListener('click',async()=>{try{renderMockup();updateMockZoom(mockZoom);const output=composePortraitMockupCanvas();downloadBlob(await toBlob(output),safeFilename('png','mockup'));toast('Mockup PNG exportado.');}catch(e){toast(e.message);}});
+
+function nextPaint(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}
+let gifLibPromise=null;
+function loadGifLib(){
+ if(window.GIF)return Promise.resolve(window.GIF);
+ if(gifLibPromise)return gifLibPromise;
+ gifLibPromise=new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js';
+   script.onload=()=>window.GIF?resolve(window.GIF):reject(new Error('Biblioteca de GIF indisponível.'));
+   script.onerror=()=>reject(new Error('Não foi possível carregar o exportador GIF.'));
+   document.head.appendChild(script);
+ });
+ return gifLibPromise;
+}
+function setButtonBusy(button,busy,labelBusy='Processando…'){
+ if(!button)return()=>{};
+ const original=button.dataset.originalLabel||button.innerHTML;
+ button.dataset.originalLabel=original;
+ button.disabled=!!busy;
+ if(busy)button.innerHTML=labelBusy;
+ else button.innerHTML=original;
+ return ()=>setButtonBusy(button,false,labelBusy);
+}
+async function exportMockupGif(){
+ const button=$('exportMockupGif');
+ const release=setButtonBusy(button,true,'Gerando GIF…');
+ const originalAngle=mockAngle;
+ try{
+   const GIF=await loadGifLib();
+   renderMockup();
+   updateMockZoom(mockZoom);
+   await nextPaint();
+   const preview=composePortraitMockupCanvas();
+   const gif=new GIF({
+     workers:2,
+     quality:10,
+     width:preview.width,
+     height:preview.height,
+     workerScript:'https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.worker.js',
+     background:'#eef4f7'
+   });
+   const steps=12;
+   for(let i=0;i<steps;i++){
+     updateMockAngle(originalAngle+(360/steps)*i);
+     renderMockup();
+     await nextPaint();
+     gif.addFrame(composePortraitMockupCanvas(),{copy:true,delay:110});
+   }
+   updateMockAngle(originalAngle);
+   renderMockup();
+   await nextPaint();
+   const blob=await new Promise((resolve,reject)=>{
+     gif.on('finished',resolve);
+     gif.on('abort',()=>reject(new Error('Exportação GIF cancelada.')));
+     gif.on('error',reject);
+     gif.render();
+   });
+   downloadBlob(blob,safeFilename('gif','mockup'));
+   toast('Mockup GIF exportado.');
+ }catch(error){
+   updateMockAngle(originalAngle);
+   renderMockup();
+   toast('Falha ao exportar GIF: '+error.message);
+ }finally{
+   release();
+ }
+}
+$('exportMockupGif')?.addEventListener('click',exportMockupGif);
+$('clearArtwork')?.addEventListener('click',()=>{
+ if(!state.items.length){toast('Nenhuma arte para excluir.');return;}
+ if(!window.confirm('Excluir toda a arte atual? Esta ação remove os elementos do projeto atual.'))return;
+ state.items=[];state.selected=null;drag=null;activeGuides=null;lastLayerSignature='';
+ render();
+ if($('view-mockup').classList.contains('active'))renderMockup();
+ recordHistory('clearArtwork');
+ toast('Arte excluída do projeto.');
+});
 function calculate(){const c=['productCost','printingCost','extraCost'].reduce((a,id)=>a+Math.max(0,Number($(id).value)||0),0);const rate=Math.max(0,Number($('margin').value)||0);const lucro=c*rate/100;$('salePrice').textContent=money(c+lucro);$('priceExplanation').textContent=`Custo ${money(c)} · Lucro ${money(lucro)}`;return{c,lucro,price:c+lucro};}
 ['productCost','printingCost','extraCost','margin'].forEach(id=>$(id).addEventListener('input',calculate));
 $('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
@@ -1338,7 +1416,7 @@ refreshColorTriggers();
 // O ângulo é normalizado apenas para manter precisão no WebGL após muitas voltas.
 // A interação segue livre: ao completar 360°, a próxima volta começa imediatamente.
 const mockAngleInput=$('mockAngle');
-const MIN_MOCK_ZOOM=70;
+const MIN_MOCK_ZOOM=55;
 const MAX_MOCK_ZOOM=300;
 function normalizeMockAngle(angle){
  const n=Number(angle);
@@ -1369,7 +1447,7 @@ function updateMockZoom(value){
 function drawStageCover(g, layer, outW, outH){
  if(!layer || layer.hidden) return;
  const zoom=mockZoom/100;
- const baseScale=Math.max(outW/layer.width, outH/layer.height);
+ const baseScale=Math.min(outW/layer.width, outH/layer.height);
  const scale=baseScale*zoom;
  const drawW=layer.width*scale;
  const drawH=layer.height*scale;

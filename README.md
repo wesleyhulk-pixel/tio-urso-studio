@@ -1,4 +1,4 @@
-# Tio Urso Studio — Alpha 1.0.6
+# Tio Urso Studio — Alpha 1.0.7
 
 Novidades: página inicial mais enxuta; removidos Produtos em destaque e quadro informativo; adicionada Minha galeria com mascote e cavalete, e cinco categorias: Caneca de café, Caneca de chopp, Camiseta, Squeeze, Azulejo.
 
