@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.7 — novo projeto com escolha guiada de produto e variações. */
+/* Tio Urso Studio Alpha 1.0.8 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -873,20 +873,9 @@ setMugFinish(state.mugFinishColor,false);
 
 $('exportMockup').addEventListener('click',async()=>{try{renderMockup();updateMockZoom(mockZoom);const output=composePortraitMockupCanvas();downloadBlob(await toBlob(output),safeFilename('png','mockup'));toast('Mockup PNG exportado.');}catch(e){toast(e.message);}});
 
+// Alpha 1.0.8 — GIF 360° nativo, usando Worker local no mesmo domínio do GitHub Pages.
+// Evita o bloqueio de segurança causado pelo Worker remoto (CDN).
 function nextPaint(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}
-let gifLibPromise=null;
-function loadGifLib(){
- if(window.GIF)return Promise.resolve(window.GIF);
- if(gifLibPromise)return gifLibPromise;
- gifLibPromise=new Promise((resolve,reject)=>{
-   const script=document.createElement('script');
-   script.src='https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.js';
-   script.onload=()=>window.GIF?resolve(window.GIF):reject(new Error('Biblioteca de GIF indisponível.'));
-   script.onerror=()=>reject(new Error('Não foi possível carregar o exportador GIF.'));
-   document.head.appendChild(script);
- });
- return gifLibPromise;
-}
 function setButtonBusy(button,busy,labelBusy='Processando…'){
  if(!button)return()=>{};
  const original=button.dataset.originalLabel||button.innerHTML;
@@ -898,45 +887,61 @@ function setButtonBusy(button,busy,labelBusy='Processando…'){
 }
 async function exportMockupGif(){
  const button=$('exportMockupGif');
- const release=setButtonBusy(button,true,'Gerando GIF…');
+ if(!rotaryProducts.has(state.product)){toast('O GIF 360° está disponível para canecas, squeeze e camiseta.');return;}
+ if(button.disabled)return;
+ const release=setButtonBusy(button,true,'Preparando GIF…');
  const originalAngle=mockAngle;
+ let worker=null,timeout=null;
  try{
-   const GIF=await loadGifLib();
-   renderMockup();
-   updateMockZoom(mockZoom);
-   await nextPaint();
-   const preview=composePortraitMockupCanvas();
-   const gif=new GIF({
-     workers:2,
-     quality:10,
-     width:preview.width,
-     height:preview.height,
-     workerScript:'https://cdn.jsdelivr.net/npm/gif.js.optimized@1.0.1/dist/gif.worker.js',
-     background:'#eef4f7'
-   });
-   const steps=12;
-   for(let i=0;i<steps;i++){
-     updateMockAngle(originalAngle+(360/steps)*i);
-     renderMockup();
+   // 420x588 mantém a proporção retrato e o arquivo compacto para o Android.
+   const width=420,height=588,frames=16,delay=125;
+   const workerUrl=new URL('tio-gif-worker.js?v=1080',document.baseURI).href;
+   worker=new Worker(workerUrl);
+   let resolveReady,rejectReady;
+   let resolveResult,rejectResult;
+   const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});
+   const finished=new Promise((resolve,reject)=>{resolveResult=resolve;rejectResult=reject;});
+   worker.onerror=event=>{
+     const error=new Error('Não foi possível executar o exportador GIF local.');
+     rejectReady(error);rejectResult(error);
+   };
+   worker.onmessage=event=>{
+     const data=event.data||{};
+     if(data.type==='ready')resolveReady();
+     else if(data.type==='progress'){button.textContent=`Gerando GIF… ${Math.round(100*data.frame/frames)}%`;}
+     else if(data.type==='done')resolveResult(data.buffer);
+     else if(data.type==='error'){const error=new Error(data.message||'Erro ao codificar GIF.');rejectReady(error);rejectResult(error);}
+   };
+   worker.postMessage({type:'init',width,height});
+   await ready;
+   const capture=document.createElement('canvas');
+   capture.width=width;capture.height=height;
+   const context=capture.getContext('2d',{willReadFrequently:true});
+   if(!context)throw new Error('Canvas indisponível para exportação.');
+   // Cada imagem representa um passo do giro; o GIF repetirá a animação continuamente.
+   for(let i=0;i<frames;i++){
+     updateMockAngle(originalAngle+(i*360/frames));
      await nextPaint();
-     gif.addFrame(composePortraitMockupCanvas(),{copy:true,delay:110});
+     const image=composePortraitMockupCanvas();
+     context.clearRect(0,0,width,height);
+     context.drawImage(image,0,0,width,height);
+     const rgba=context.getImageData(0,0,width,height).data;
+     worker.postMessage({type:'frame',buffer:rgba.buffer,delay},[rgba.buffer]);
    }
-   updateMockAngle(originalAngle);
-   renderMockup();
-   await nextPaint();
-   const blob=await new Promise((resolve,reject)=>{
-     gif.on('finished',resolve);
-     gif.on('abort',()=>reject(new Error('Exportação GIF cancelada.')));
-     gif.on('error',reject);
-     gif.render();
-   });
-   downloadBlob(blob,safeFilename('gif','mockup'));
-   toast('Mockup GIF exportado.');
+   button.textContent='Finalizando GIF…';
+   worker.postMessage({type:'finish'});
+   const buffer=await Promise.race([finished,new Promise((_,reject)=>{timeout=setTimeout(()=>reject(new Error('O GIF demorou demais para ser finalizado.')),120000);})]);
+   const blob=new Blob([buffer],{type:'image/gif'});
+   if(blob.size<2000)throw new Error('O arquivo GIF saiu incompleto.');
+   downloadBlob(blob,safeFilename('gif','mockup-360'));
+   toast('GIF 360° salvo! O produto dá uma volta completa.');
  }catch(error){
-   updateMockAngle(originalAngle);
-   renderMockup();
+   console.error('Falha no GIF 360°:',error);
    toast('Falha ao exportar GIF: '+error.message);
  }finally{
+   if(timeout!==null)clearTimeout(timeout);
+   if(worker)worker.terminate();
+   updateMockAngle(originalAngle);
    release();
  }
 }

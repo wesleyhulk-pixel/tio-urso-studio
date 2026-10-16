@@ -1,11 +1,19 @@
-# Tio Urso Studio — Alpha 1.0.7
+# Tio Urso Studio — Alpha 1.0.8 | GIF 360° corrigido
 
-Novidades: página inicial mais enxuta; removidos Produtos em destaque e quadro informativo; adicionada Minha galeria com mascote e cavalete, e cinco categorias: Caneca de café, Caneca de chopp, Camiseta, Squeeze, Azulejo.
+Esta é uma **atualização leve** sobre a Alpha 1.0.7. Nenhum modelo Meshy nem arquivo da galeria foi alterado.
 
-A galeria usa o armazenamento local do navegador (IndexedDB), **não é armazenamento na nuvem**. Para adicionar uma arte: no Editor, em Meu projeto, pressione **Guardar na galeria**. Ela aparecerá na categoria correspondente, com miniatura. Pode abrir para editar, salvar outra cópia e excluir. Os projetos antigos NÃO aparecem automaticamente, mas podem ser abertos a partir do arquivo JSON e guardados na galeria.
+## Correção
+- O botão **Salvar Mockup GIF** gera 16 quadros de um giro completo de 360 graus.
+- A geração usa o arquivo local `tio-gif-worker.js`, sem `Worker` vindo de outro domínio (corrige o bloqueio de segurança do Chrome/Android).
+- Não precisa de biblioteca externa ou conexão com CDN para codificar o GIF.
+- O GIF é salvo em 420 × 588 pixels para reduzir memória e tamanho de arquivo no celular; o PNG continua com sua resolução anterior.
+- Ao final, o mockup retorna ao ângulo inicial que você estava visualizando.
+- Giro, pinça, zoom, galeria, modelos 3D e demais botões da 1.0.7 foram preservados.
 
-Continua disponível o botão **Salvar projeto** para baixar um arquivo JSON como backup. Dados guardados só neste navegador/aparelho podem ser apagados pelo sistema ou limpeza dos dados do site. Faça backups de trabalhos importantes.
+## Atualizar no GitHub
+1. **Não apague** os arquivos que já estão no repositório.
+2. Extraia o ZIP de atualização leve e envie **os 4 arquivos** para a raiz do repositório: `index.html`, `app.js`, `README.md`, **`tio-gif-worker.js`**.
+3. Substitua os anteriores quando solicitado. O novo `tio-gif-worker.js` é obrigatório: sem ele o GIF não funciona.
+4. Aguarde o GitHub Pages publicar. Deve aparecer **ALPHA 1.0.8** no cabeçalho.
 
-Os modelos 3D, a gola, o giro, o zoom por pinça, as camadas e a seleção de novos projetos da 1.0.5 foram preservados.
-
-Para publicar no GitHub Pages: extraia o ZIP e envie **todos os arquivos diretamente à raiz** do repositório, substituindo os anteriores. O cabeçalho mostrará ALPHA 1.0.6.
+O GIF é uma prévia promocional, não um arquivo de arte para sublimação.
