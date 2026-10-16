@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.18 - animacao de abertura independente do editor/WebGL. */
+/* Tio Urso Studio Alpha 1.1.19 - animacao de abertura independente do editor/WebGL. */
 (() => {
   'use strict';
   if('serviceWorker' in navigator) {

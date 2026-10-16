@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071d37"><title>Diagnóstico — Tio Urso Studio PWA</title>
+<style>*{box-sizing:border-box}body{background:#071d37;color:#f4faff;font:16px/1.5 system-ui,sans-serif;margin:0;padding:22px;max-width:700px;margin:auto}h1{font-size:25px;color:#5ce5ee}h2{font-size:18px;margin:22px 0 8px}p{color:#c3d5e2} .test{padding:10px 12px;border:1px solid #526f80;border-radius:9px;margin:7px 0;background:#132b44}.ok{border-color:#329f91}.fail{border-color:#ed8b8b}.pending{border-color:#526f80}small{display:block;color:#a7b8c9;overflow-wrap:anywhere}button,a.btn{background:#16c4d9;border:0;color:#03233b;font-weight:700;border-radius:10px;padding:12px 20px;display:inline-block;text-decoration:none} img{width:100px;height:100px;object-fit:contain;background:#1c3550;border-radius:14px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#091b2b;padding:10px;border-radius:8px} .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}</style></head><body>
+<h1>🐻 Diagnóstico do PWA — 1.1.19</h1><p>Esta página apenas verifica os arquivos publicados. Não apaga nem modifica seus projetos.</p>
+<button id="rerun">Verificar novamente</button> <a class="btn" href="./">Voltar ao Studio</a>
+<div id="checks"></div><h2>Prévia do ícone encontrado no site</h2><img id="icon" alt="Ícone do Tio Urso Studio"><p id="hint"></p>
+<script>
+(async function(){
+const c=document.querySelector('#checks');const ico=document.querySelector('#icon');const hint=document.querySelector('#hint');
+const BASE='/tio-urso-studio/';let stamp=0;
+function show(label,ok,extra){const n=document.createElement('div');n.className='test '+(ok?'ok':'fail'); const b=document.createElement('b');b.textContent=(ok?'✅ ':'❌ ')+label;n.append(b);if(extra){const s=document.createElement('small');s.textContent=extra;n.append(s)}c.append(n)}
+async function check(url,expectedType){try{const response=await fetch(url+'?diagnostico='+Date.now(),{cache:'no-store'});const ct=response.headers.get('content-type')||'';const ok=response.ok && ct.includes(expectedType);return {ok,desc:`HTTP ${response.status} · ${ct}`,response}}catch(e){return{ok:false,desc:String(e)}}}
+async function run(){c.innerHTML='';show('Conexão segura (HTTPS)',location.protocol==='https:',location.protocol);show('Endereço do aplicativo',location.pathname.startsWith(BASE),location.pathname);
+const mf=await check(BASE+'manifest.webmanifest','json');show('Manifesto publicado',mf.ok,mf.desc);if(mf.ok){try{const m=await mf.response.json();show('Modo aplicativo independente',m.display==='standalone',m.display||'(ausente)');show('ID e escopo corretos',m.scope===BASE && m.start_url===BASE,JSON.stringify({id:m.id,scope:m.scope,start_url:m.start_url}));}catch(e){show('Conteúdo do manifesto válido',false,String(e))}}
+for (const size of ['192','512']){let test=await check(BASE+'icon-'+size+'.png','image/png');show('Ícone '+size+' × '+size+' publicado',test.ok,test.desc)}
+const mask=await check(BASE+'icon-maskable-512.png','image/png');show('Ícone adaptativo',mask.ok,mask.desc);
+const sw=await check(BASE+'sw.js','javascript');show('Service Worker publicado',sw.ok,sw.desc);
+show('Service Worker permitido no navegador','serviceWorker' in navigator,'');
+let ctl=navigator.serviceWorker?.controller;show('Página controlada pelo Service Worker',!!ctl,ctl?.scriptURL||'Pode precisar fechar e abrir o site após a primeira visita');
+const allOk=[mf.ok,mask.ok,sw.ok].every(Boolean);hint.textContent=allOk?'Os arquivos essenciais responderam, mas o navegador ainda decide se permite instalar como aplicativo.':'Há arquivos indisponíveis ou incorretos. Tire uma captura desta página e mostre no chat.';
+ico.src=BASE+'icon-192.png?diagnostico='+Date.now();}
+document.querySelector('#rerun').addEventListener('click',run);run();
+})();
+</script></body></html>

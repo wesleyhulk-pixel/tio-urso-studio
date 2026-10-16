@@ -1,10 +1,10 @@
-/* Tio Urso Studio - PWA 1.1.18. Cache seguro e isolado por versao. */
-const CACHE = 'tio-urso-studio-shell-1118a';
+/* Tio Urso Studio - PWA 1.1.19. Cache seguro e isolado por versao. */
+const CACHE = 'tio-urso-studio-shell-1119a';
 const PREFIX = 'tio-urso-studio-';
 const FILES = [
   './', './index.html', './manifest.webmanifest',
-  './intro-pwa.js', './pwa/splash.webp',
-  './pwa/icon-192.png', './pwa/icon-512.png', './pwa/icon-maskable-512.png',
+  './intro-pwa.js', './icon-192.png', './icon-512.png',
+  './icon-maskable-512.png', './apple-touch-icon.png',
   './app.js', './style.css', './mock3d.js', './tio-mp4.js'
 ];
 self.addEventListener('install', event => {
@@ -27,6 +27,8 @@ self.addEventListener('fetch', event => {
   const url = new URL(req.url);
   const scope = new URL(self.registration.scope);
   if(url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
+  // A página de diagnóstico consulta a rede e não deve ser respondida pelo cache.
+  if(url.pathname.endsWith('/diagnostico-pwa.html')) return;
   const isAppShell = req.mode === 'navigate' || /\.(html|js|css)$/i.test(url.pathname);
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);

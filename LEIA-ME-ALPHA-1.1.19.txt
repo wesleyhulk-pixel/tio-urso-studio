@@ -1,0 +1,37 @@
+TIO URSO STUDIO — ALPHA 1.1.19 · ÍCONE DO PWA
+================================================
+
+OBJETIVO
+Corrigir a instalação que exibiu um ícone genérico cinza com um G e o símbolo do Chrome.
+Causa provável: pasta pwa/ ou seus ícones não ficaram acessíveis no GitHub Pages.
+A causa ainda precisa ser confirmada na instalação real no seu celular.
+
+MUDANÇAS
+- Ícones na RAIZ do repositório para facilitar upload pelo celular.
+- Manifesto com caminhos completos do GitHub Pages.
+- Links explícitos de ícones para Chrome e Android.
+- Nova versão do cache (não apaga projetos nem galeria).
+- Página independente de diagnóstico: diagnostico-pwa.html.
+- Tela de abertura, editor, Meshy e cinco estampas preservados.
+
+PASSO A PASSO NO GITHUB
+1. Faça backup dos arquivos atuais e, se possível, salve seus projetos em JSON.
+2. Extraia este ZIP no aparelho.
+3. Na RAIZ do repositório tio-urso-studio, envie os arquivos do ZIP.
+   Eles NÃO devem ficar dentro de uma pasta nova criada pelo extrator.
+4. Substitua: index.html, intro-pwa.js, sw.js, manifest.webmanifest.
+5. Adicione na raiz: icon-192.png, icon-512.png,
+   icon-maskable-512.png, apple-touch-icon.png e diagnostico-pwa.html.
+6. Aguarde o GitHub Pages publicar a 1.1.19.
+7. Abra:
+   https://wesleyhulk-pixel.github.io/tio-urso-studio/diagnostico-pwa.html
+   A página mostra os testes de acesso aos ícones e manifesto.
+8. Se estiver tudo verde, remova SÓ o atalho cinza existente da tela inicial.
+   NÃO limpe dados do Chrome nem do site.
+9. Reabra o Studio pelo Chrome e use a opção de instalação se disponível.
+
+IMPORTANTE
+- Não apague app.js, mock3d.js, style.css, arquivos Meshy nem outros arquivos do Studio.
+- O ZIP é incremental e NÃO inclui arquivos 3D para não substituir conquistas.
+- A splash está incorporada a intro-pwa.js (não precisa da pasta pwa/).
+- Não afirmamos que o Android exibirá a instalação até confirmar os testes no celular.
