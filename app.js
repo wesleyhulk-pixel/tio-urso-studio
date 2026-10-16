@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.5 — novo projeto com escolha guiada de produto e variações. */
+/* Tio Urso Studio Alpha 1.0.6 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -886,6 +886,124 @@ $('projectPicker').addEventListener('change',async ev=>{const file=ev.target.fil
   try{await loadCustomFont(family,info.src);state.customFonts[family]={label:String(info.label||'Fonte personalizada').slice(0,90),src:info.src};}catch(_){}
  }
  refreshFontOptions();imageCache.clear();lastLayerSignature='';for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;updateMeasurements();render();resetHistory();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
+// ALPHA 1.0.6 — Galeria real, local, por categoria. Não há projetos fictícios.
+const GALLERY_CATEGORIES={caneca:'Caneca de café',chopp:'Caneca de chopp',camiseta:'Camiseta',squeeze:'Squeeze',azulejo:'Azulejo'};
+let currentGalleryFilter='all';
+let galleryDbPromise=null;
+function galleryCategoryForProduct(key){return String(key||'').startsWith('azulejo')?'azulejo':key;}
+function openGalleryDb(){
+ if(galleryDbPromise)return galleryDbPromise;
+ galleryDbPromise=new Promise((resolve,reject)=>{
+  if(!('indexedDB' in window)){reject(new Error('Armazenamento do navegador indisponível.'));return;}
+  const request=indexedDB.open('TioUrsoStudioGallery',1);
+  request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains('projects'))db.createObjectStore('projects',{keyPath:'id'});};
+  request.onsuccess=()=>resolve(request.result);
+  request.onerror=()=>reject(request.error||new Error('Não foi possível acessar a galeria.'));
+ });
+ return galleryDbPromise.catch(error=>{galleryDbPromise=null;throw error;});
+}
+async function galleryPut(entry){
+ const db=await openGalleryDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction('projects','readwrite');
+  tx.objectStore('projects').put(entry);
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||new Error('Não foi possível salvar na galeria.'));
+  tx.onabort=()=>reject(tx.error||new Error('Falha ao gravar na galeria.'));
+ });
+}
+async function galleryDelete(id){
+ const db=await openGalleryDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction('projects','readwrite');tx.objectStore('projects').delete(id);
+  tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||new Error('Falha ao excluir projeto.'));
+ });
+}
+async function galleryGetAll(){
+ const db=await openGalleryDb();
+ return new Promise((resolve,reject)=>{
+  const tx=db.transaction('projects','readonly');const req=tx.objectStore('projects').getAll();
+  req.onsuccess=()=>resolve(req.result.sort((a,b)=>(b.savedAt||0)-(a.savedAt||0)));
+  req.onerror=()=>reject(req.error||new Error('Falha ao carregar projetos.'));
+ });
+}
+function galleryCategoryLabel(productKey){return GALLERY_CATEGORIES[galleryCategoryForProduct(productKey)]||'Arte';}
+async function gallerySaveCurrent(){
+ try{
+  if(!state.items.length&&!window.confirm('Sua arte ainda está em branco. Deseja guardá-la na galeria mesmo assim?'))return;
+  const category=galleryCategoryForProduct(state.product);
+  const thumb=artworkCanvas(380,Math.max(1,Math.round(380*product().h/product().w)),false,false).toDataURL('image/webp',.78);
+  const now=Date.now();
+  const id=window.crypto?.randomUUID?.()||`gallery-${now}-${Math.floor(Math.random()*99999)}`;
+  const project={version:1,...state,selected:null,items:state.items.map(it=>({...it})),customFonts:{...state.customFonts}};
+  await galleryPut({id,product:state.product,category,savedAt:now,thumbnail:thumb,project});
+  toast(`${galleryCategoryLabel(state.product)} guardada na galeria!`);
+  await refreshGallery();
+ }catch(e){toast('Não foi possível guardar: '+e.message);}
+}
+async function galleryRestore(entry){
+ if(hasCurrentProject()&&!window.confirm('Abrir esta arte da galeria? O projeto que está no Editor será substituído. Salve-o primeiro se desejar mantê-lo.'))return;
+ try{
+  const data=entry.project;
+  if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items))throw new Error('Projeto incompatível.');
+  const imgEntries=data.items.filter(it=>it.kind==='image');
+  const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));
+  state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items.map(it=>({...it})),selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4',shirtCollarColor:/^#[0-9a-f]{6}$/i.test(data.shirtCollarColor)?data.shirtCollarColor:(/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4')};
+  customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
+  updateSceneMenuUI();setMugFinish(state.mugFinishColor,false);
+  for(const [family,info] of Object.entries(data.customFonts||{})){
+   if(!/^TUS_[a-z0-9]+$/i.test(family)||typeof info?.src!=='string'||info.src.length>4000000)continue;
+   try{await loadCustomFont(family,info.src);state.customFonts[family]={label:String(info.label||'Fonte personalizada').slice(0,90),src:info.src};}catch(_){}
+  }
+  refreshFontOptions();imageCache.clear();lastLayerSignature='';
+  for(const [id,img] of pairs)imageCache.set(id,img);
+  seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;
+  updateMeasurements();render();resetHistory();switchView('editor');toast('Arte aberta da galeria.');
+ }catch(e){toast('Falha ao abrir arte: '+e.message);}
+}
+function addGalleryCard(entry){
+ const card=document.createElement('article');card.className='gallery-saved-card';
+ const preview=document.createElement('button');preview.className='gallery-card-preview';preview.type='button';preview.setAttribute('aria-label','Abrir '+galleryCategoryLabel(entry.product));
+ const img=document.createElement('img');img.alt='Miniatura de '+galleryCategoryLabel(entry.product);img.loading='lazy';img.src=entry.thumbnail||'';preview.appendChild(img);
+ preview.addEventListener('click',()=>galleryRestore(entry));
+ const footer=document.createElement('div');footer.className='gallery-card-footer';
+ const label=document.createElement('strong');label.textContent=galleryCategoryLabel(entry.product);
+ const actions=document.createElement('div');actions.className='gallery-card-actions';
+ const open=document.createElement('button');open.type='button';open.textContent='Abrir';open.setAttribute('aria-label','Abrir '+label.textContent);open.addEventListener('click',()=>galleryRestore(entry));
+ const remove=document.createElement('button');remove.type='button';remove.textContent='Excluir';remove.className='delete';remove.setAttribute('aria-label','Excluir '+label.textContent);
+ remove.addEventListener('click',async()=>{
+  if(!window.confirm('Excluir esta arte da galeria? Esta ação não pode ser desfeita.'))return;
+  try{await galleryDelete(entry.id);await refreshGallery();toast('Arte excluída da galeria.');}catch(e){toast('Falha ao excluir: '+e.message);}
+ });
+ actions.append(open,remove);footer.append(label,actions);card.append(preview,footer);
+ return card;
+}
+async function refreshGallery(){
+ const grid=$('gallerySavedGrid');const empty=$('galleryEmpty');
+ if(!grid||!empty)return;
+ grid.textContent='';empty.hidden=true;
+ document.querySelectorAll('[data-gallery-filter]').forEach(el=>el.classList.toggle('active',el.dataset.galleryFilter===currentGalleryFilter));
+ try{
+  const items=await galleryGetAll();
+  const filtered=items.filter(item=>currentGalleryFilter==='all'||item.category===currentGalleryFilter);
+  filtered.forEach(entry=>grid.appendChild(addGalleryCard(entry)));
+  empty.hidden=filtered.length!==0;
+ }catch(e){empty.hidden=false;empty.querySelector('p').textContent='O armazenamento do navegador não está disponível. Continue usando o botão Salvar projeto para baixar um arquivo JSON.';}
+}
+function showGallery(category='all'){
+ currentGalleryFilter=category;
+ switchView('gallery');
+ refreshGallery();
+}
+$('saveGalleryProject').addEventListener('click',gallerySaveCurrent);
+$('galleryShowAll').addEventListener('click',()=>showGallery());
+$('galleryBackHome').addEventListener('click',()=>switchView('home'));
+$('galleryGoEditor').addEventListener('click',()=>switchView('editor'));
+document.querySelectorAll('[data-gallery-category]').forEach(button=>button.addEventListener('click',()=>showGallery(button.dataset.galleryCategory)));
+document.querySelectorAll('[data-gallery-filter]').forEach(button=>button.addEventListener('click',()=>{currentGalleryFilter=button.dataset.galleryFilter;refreshGallery();}));
+// Fim da galeria ALPHA 1.0.6.
+
 // A navegação pelo rodapé "Início" não altera o projeto.
 // O comando "Novo projeto" mantém a confirmação de segurança e, em seguida, abre o seletor visual do produto.
 const newProjectOverlay=$('newProjectOverlay');

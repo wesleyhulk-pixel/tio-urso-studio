@@ -1,26 +1,11 @@
-# Tio Urso Studio — Alpha 1.0.5
+# Tio Urso Studio — Alpha 1.0.6
 
-## Ajustes desta versão
-- O botão **Novo projeto** agora abre um fluxo guiado para escolher **o que será criado**.
-- Após a confirmação de segurança (quando já existe projeto em andamento), é exibida uma janela com a arte **“O QUE VAMOS CRIAR HOJE?”**.
-- Na primeira etapa, o usuário pode escolher entre **Caneca**, **Camiseta**, **Squeeze** e **Azulejo**.
-- Ao tocar em **Caneca**, abre a seleção entre **Caneca tradicional** e **Caneca de chopp**.
-- Ao tocar em **Azulejo**, abre a seleção entre **20 × 20 cm**, **15 × 15 cm** e **10 × 10 cm**.
-- Ao escolher o produto, o editor é aberto já com um **novo projeto em branco** e com a medida correta selecionada.
-- O visual do seletor foi inspirado nos cards coloridos já usados na home, com foco em uso no celular.
+Novidades: página inicial mais enxuta; removidos Produtos em destaque e quadro informativo; adicionada Minha galeria com mascote e cavalete, e cinco categorias: Caneca de café, Caneca de chopp, Camiseta, Squeeze, Azulejo.
 
-## Publicação
-Extraia o ZIP. Envie **todos os arquivos da pasta** diretamente para a raiz do repositório GitHub, substituindo os antigos.
+A galeria usa o armazenamento local do navegador (IndexedDB), **não é armazenamento na nuvem**. Para adicionar uma arte: no Editor, em Meu projeto, pressione **Guardar na galeria**. Ela aparecerá na categoria correspondente, com miniatura. Pode abrir para editar, salvar outra cópia e excluir. Os projetos antigos NÃO aparecem automaticamente, mas podem ser abertos a partir do arquivo JSON e guardados na galeria.
 
-## Arquivos novos/destaque
-- `o_que_vamos_criar_hoje.png`
-- `index.html`
-- `app.js`
-- `style.css`
+Continua disponível o botão **Salvar projeto** para baixar um arquivo JSON como backup. Dados guardados só neste navegador/aparelho podem ser apagados pelo sistema ou limpeza dos dados do site. Faça backups de trabalhos importantes.
 
-## Teste rápido
-1. Abra a home e toque em **Novo projeto**.
-2. Se houver projeto em andamento, confirme o aviso.
-3. Na janela seguinte, selecione **Caneca**, **Camiseta**, **Squeeze** ou **Azulejo**.
-4. Teste os submenus de **Caneca** e **Azulejo**.
-5. Verifique se o Editor abre com o produto correto.
+Os modelos 3D, a gola, o giro, o zoom por pinça, as camadas e a seleção de novos projetos da 1.0.5 foram preservados.
+
+Para publicar no GitHub Pages: extraia o ZIP e envie **todos os arquivos diretamente à raiz** do repositório, substituindo os anteriores. O cabeçalho mostrará ALPHA 1.0.6.

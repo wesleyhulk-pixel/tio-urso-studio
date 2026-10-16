@@ -313,3 +313,36 @@
 @media(max-width:780px){.project-choice-dialog{grid-template-columns:1fr;padding:16px;gap:16px}.project-choice-media{min-height:0}.project-choice-art{max-width:360px}.project-choice-content h2{font-size:28px}}
 @media(max-width:560px){.project-choice-grid{grid-template-columns:1fr 1fr}.project-choice-card{min-height:126px;padding:16px 15px 14px;border-radius:20px}.project-choice-card .choice-icon{width:58px;height:58px;font-size:28px;border-radius:18px;margin-bottom:12px}.project-choice-card strong{font-size:16px}.project-choice-card small{font-size:11px}}
 @media(max-width:390px){.project-choice-grid{grid-template-columns:1fr}.project-choice-dialog{padding:14px}.project-choice-content h2{font-size:24px}}
+
+/* Alpha 1.0.6 — Galeria do Tio Urso */
+.gallery-section-heading{margin-top:24px}
+.gallery-section-heading .text-button{background:#dcf2fc;padding:11px 14px;border-radius:999px}
+.gallery-home-layout{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,1.4fr);gap:12px;align-items:stretch;margin:13px 0 8px}
+.gallery-mascot-display{display:flex;align-items:end;justify-content:center;overflow:hidden;border-radius:23px;background:linear-gradient(155deg,#edf5fb,#f6f9fc)}
+.gallery-mascot-display img{display:block;width:100%;height:100%;max-height:390px;object-fit:contain;object-position:bottom}
+.gallery-home-categories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-content:stretch}
+.gallery-category{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:9px;border:0;border-radius:17px;padding:14px 15px;min-height:102px;color:#143852;text-align:left;box-shadow:0 5px 17px #12496318;cursor:pointer}
+.gallery-category-icon{display:grid;place-items:center;font-size:24px;border-radius:12px;background:#ffffff88;width:42px;height:42px}
+.gallery-category strong{font-size:clamp(12px,1.5vw,16px);font-weight:800;line-height:1.18}
+.gallery-category.caneca{background:#dbf2ff}.gallery-category.chopp{background:#eee2ff}.gallery-category.camiseta{background:#deeeff}.gallery-category.squeeze{background:#dcf8ef}.gallery-category.azulejo{background:#fff0d9}
+.gallery-category:active{transform:translateY(1px)}
+.gallery-filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 19px}
+.gallery-filter-bar button{border:1px solid #d8e8ef;border-radius:999px;background:white;color:#29576e;font-size:13px;font-weight:800;min-height:41px;padding:10px 14px}
+.gallery-filter-bar button.active{background:#0a89aa;color:white;border-color:#0a89aa}
+.gallery-saved-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.gallery-saved-card{min-width:0;border:1px solid #e3ebf1;background:#fff;border-radius:17px;box-shadow:0 8px 22px #163a5614;padding:10px}
+.gallery-card-preview{display:flex;justify-content:center;align-items:center;overflow:hidden;border-radius:12px;background:#edf4f7;border:0;width:100%;height:185px;padding:9px;cursor:pointer}
+.gallery-card-preview img{display:block;max-width:100%;max-height:100%;object-fit:contain}
+.gallery-card-footer{padding:10px 4px 3px;display:flex;flex-direction:column;gap:11px}
+.gallery-card-footer strong{font-size:15px;color:#0d334b}
+.gallery-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.gallery-card-actions button{border-radius:9px;border:1px solid #cfe2eb;background:#f4fafc;color:#17627b;font-weight:800;font-size:12px;padding:9px 3px;min-height:38px}
+.gallery-card-actions button.delete{background:#fff4f6;color:#a63553;border-color:#f6dae1}
+.gallery-empty{border:1px dashed #bcdce7;background:#f4fafd;border-radius:19px;padding:25px 18px;text-align:center;color:#244b60}
+.gallery-empty>span{font-size:40px;display:block;margin:0 auto 8px}
+.gallery-empty h2{font-size:20px;margin:0 0 10px}
+.gallery-empty p{font-size:13px;line-height:1.6;max-width:400px;margin:0 auto 18px}
+.gallery-storage-note{font-size:12px;color:#627d8c;line-height:1.6;margin-top:16px}
+@media(max-width:700px){.gallery-saved-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gallery-card-preview{height:150px}}
+@media(max-width:520px){.gallery-home-layout{grid-template-columns:minmax(95px,.9fr) minmax(0,1.65fr);gap:7px}.gallery-mascot-display{border-radius:15px}.gallery-home-categories{gap:6px}.gallery-category{padding:10px 9px;border-radius:13px;min-height:82px;gap:4px}.gallery-category-icon{font-size:18px;width:32px;height:32px;border-radius:9px}.gallery-category strong{font-size:11px}.gallery-category.azulejo{grid-column:1/-1;min-height:72px;flex-direction:row;align-items:center;justify-content:flex-start}.gallery-card-preview{height:135px}.gallery-filter-bar button{font-size:11px;padding:8px 10px}.gallery-page-heading{align-items:start}}
+@media(max-width:360px){.gallery-card-preview{height:115px}.gallery-card-actions button{font-size:11px}.gallery-saved-card{padding:7px}}
