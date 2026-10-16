@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.7 — ajuste fino do topo da caneca e atualização do submenu realista da caneca de chopp.
+/* Tio Urso Studio Alpha 1.1.8 — ajuste fino do topo da caneca e atualização do submenu realista da caneca de chopp.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -321,7 +321,7 @@ function createTioMock3D(canvas){
      // Separamos SOMENTE a base; o aro superior e a geometria original
      // permanecem intocados. A base usa a cor da última linha da arte,
      // sem aumentar ou deformar a imagem inteira.
-     const originalTrim=normalized[3], upperTrim=[], lowerTrim=[];
+     const originalTrim=normalized[3], upperTrim=[], upperRimGlaze=[], outerRimPrinted=[], lowerTrim=[];
      const halfArc=Math.PI*.80;
      // Mesma janela vertical UV do corpo Meshy: continuidade da estampa
      // na parte de baixo, sem criar uma segunda faixa monocromática.
@@ -336,7 +336,43 @@ function createTioMock3D(canvas){
      for(let i=0;i<originalTrim.length;i+=24){
        const y=(originalTrim[i+1]+originalTrim[i+9]+originalTrim[i+17])/3;
        if(y>=-.94){
-         for(let j=0;j<24;j++)upperTrim.push(originalTrim[i+j]);
+         // O friso superior da caneca Meshy é uma peça separada: no modelo
+         // anterior ele era desenhado de branco sobre a estampa, criando
+         // a faixa branca visível quando o interior recebe outra cor.
+         // Pintar apenas sua face EXTERNA; deixar a superfície voltada
+         // para a boca da caneca com a mesma cor escolhida para o interior.
+         const px=(originalTrim[i]+originalTrim[i+8]+originalTrim[i+16])/3;
+         const pz=(originalTrim[i+2]+originalTrim[i+10]+originalTrim[i+18])/3;
+         const nx=(originalTrim[i+3]+originalTrim[i+11]+originalTrim[i+19])/3;
+         const nz=(originalTrim[i+5]+originalTrim[i+13]+originalTrim[i+21])/3;
+         const radial=Math.hypot(px,pz)||1;
+         const norm=Math.hypot(nx,nz)||1;
+         const outward=(px*nx+pz*nz)/(radial*norm);
+         if(y>.98 && outward>.36){
+           // UV idêntico ao corpo (última linha da arte, sem esticar)
+           // e correção de continuidade na junção traseira da caneca.
+           const theta=[];
+           for(let j=0;j<3;j++){
+             const off=i+j*8;
+             theta.push(Math.atan2(originalTrim[off],originalTrim[off+2]));
+           }
+           const seam=Math.max(...theta)-Math.min(...theta)>Math.PI;
+           for(let j=0;j<3;j++){
+             const off=i+j*8;
+             for(let k=0;k<8;k++)outerRimPrinted.push(originalTrim[off+k]);
+             let a=theta[j];if(seam&&a<0)a+=Math.PI*2;
+             outerRimPrinted[outerRimPrinted.length-2]=(a+halfArc)/(2*halfArc);
+             const v=(originalTrim[off+1]+bodyCenterY-bottomUV)/heightUV;
+             outerRimPrinted[outerRimPrinted.length-1]=Math.max(.001,Math.min(.999,v));
+           }
+         }else if(y>.98){
+           // Face voltada para o interior: mesma cor do acabamento escolhido.
+           for(let j=0;j<24;j++)upperRimGlaze.push(originalTrim[i+j]);
+         }else{
+           // Geometrias intermediárias não fazem parte do aro superior.
+           // Mantemos a cor cerâmica original para evitar novas faixas.
+           for(let j=0;j<24;j++)upperTrim.push(originalTrim[i+j]);
+         }
          continue;
        }
        const theta=[];
@@ -360,7 +396,7 @@ function createTioMock3D(canvas){
          lowerTrim[lowerTrim.length-1]=Math.max(.001,Math.min(.999,v));
        }
      }
-     // Alpha 1.1.7: removida a faixa cilíndrica artificial criada na
+     // Alpha 1.1.6: removida a faixa cilíndrica artificial criada na
      // versão anterior. O raio fixo dessa faixa ultrapassava o corpo do
      // Meshy e aparecia como uma segunda base/"saia" sobreposta.
      // Usamos somente os triângulos originais de acabamento inferiores,
@@ -368,6 +404,8 @@ function createTioMock3D(canvas){
      meshyMug={
        body:upload(normalized[0]),inside:upload(normalized[1]),handle:upload(normalized[2]),
        trim:upload(new Float32Array(upperTrim)),
+       upperRimGlaze:upload(new Float32Array(upperRimGlaze)),
+       outerRimPrinted:upload(new Float32Array(outerRimPrinted)),
        basePrinted:upload(new Float32Array(lowerTrim)),insideFloor:null
      };
      window.dispatchEvent(new Event('tio-meshy-ready'));
@@ -775,7 +813,13 @@ function createTioMock3D(canvas){
    draw(config.body,[1,1,1],true);
    if(kind!=='squeeze')draw(config.inside,isCoffee?finish:[.75,.80,.85],false);
    if(isCoffee)draw(config.insideFloor,finish,false);
-   draw(config.trim,kind==='squeeze'?[.17,.20,.24]:[.965,.978,.992],false);
+   // Parte superior da caneca: acabamento da boca com a mesma cor
+   // selecionada para o interior; nunca uma tira branca sobre a arte.
+   draw(config.trim,[.965,.978,.992],false);
+   if(isCoffee && config.upperRimGlaze)draw(config.upperRimGlaze,finish,false);
+   // A face exterior do aro acompanha a borda de cima da estampa.
+   // Sem qualquer cilindro ou camada nova sobreposta na caneca.
+   if(isCoffee && config.outerRimPrinted)draw(config.outerRimPrinted,[1,1,1],true);
    // Caneca tradicional apenas: colore a borda inferior Meshy com o último
    // pixel da estampa para impedir a faixa branca irregular sobre a arte.
    if(isCoffee && config.basePrinted)draw(config.basePrinted,[1,1,1],true);

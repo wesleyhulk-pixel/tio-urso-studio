@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.7 — ajuste fino do topo da caneca no mockup e atualização da foto realista da caneca de chopp. */
+/* Tio Urso Studio Alpha 1.1.8 — ajuste fino do topo da caneca no mockup e atualização da foto realista da caneca de chopp. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);

@@ -1,19 +1,17 @@
-# Tio Urso Studio — Alpha 1.1.7
+# Tio Urso Studio — Alpha 1.1.8
 
-## O que mudou
-- **Caneca tradicional:** removida a faixa/cilindro extra de geometria adicionada na versão 1.1.5. Ela era maior que o corpo original e criava uma segunda base visível. O acabamento inferior usa exclusivamente a superfície do modelo Meshy, com cor amostrada da extremidade da estampa.
-- **Caneca de chopp:** foto realista fornecida pelo usuário, incluída no submenu de canecas em **O que vamos criar hoje?**
-- Cabeçalho e versão do aplicativo atualizados para **Alpha 1.1.7**.
+## Ajuste fino do aro superior da caneca tradicional
 
-## Como instalar no GitHub pelo celular
-1. Extraia o ZIP de atualização leve.
-2. Envie os arquivos **diretamente à raiz** do repositório `tio-urso-studio` (sem a pasta do ZIP).
-3. Substitua os arquivos com os mesmos nomes.
-4. Não reenvie os arquivos `meshy-*.bin` ou `meshy-camiseta.glb`; continuam intactos.
+- A pequena faixa branca que aparecia entre a arte e o interior colorido era de uma peça separada de acabamento do modelo Meshy.
+- A face **externa** desse acabamento agora usa a última linha da própria estampa e o mesmo mapeamento do corpo, sem esticamento.
+- A parte **interna/superior** do acabamento agora acompanha a cor escolhida para a alça e o interior.
+- Preservadas a geometria e a correção já aprovada da **base inferior** da caneca.
+- Mantidos menus, galeria, editor e controles, demais produtos e exportação MP4.
 
-## Observação
-Esta é uma correção de visualização do mockup, não uma medida de área sublimável garantida. Confira o resultado visual no celular e sempre faça testes físicos de impressão antes de produzir.
+### Publicação GitHub
 
-- Ajuste fino da área útil vertical da caneca tradicional para reduzir a borda branca superior no mockup.
-- Mantida a correção da base da caneca, evitando a borda sobreposta/falhada na parte de baixo.
-- Atualizada a miniatura/foto da caneca de chopp no fluxo de “Novo projeto”.
+Extraia o ZIP leve e envie **somente os arquivos extraídos** `index.html`, `mock3d.js`, `app.js` e `README.md` à raiz do repositório, substituindo os antigos. **Não apague nem reenvie os modelos Meshy.**
+
+Se a borda não atualizar, feche e reabra a aba ou use uma guia anônima, porque o navegador pode manter a versão anterior em cache.
+
+**Observação:** A renderização WebGL precisa ser conferida no Android antes de considerar o acabamento aprovado.

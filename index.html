@@ -4,19 +4,19 @@
  <meta charset="utf-8">
  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
  <meta name="theme-color" content="#071d37">
- <meta name="description" content="Tio Urso Studio Alpha 1.1.7 — editor de estampas, mockups e orçamentos para personalizados.">
- <title>Tio Urso Studio · Alpha 1.1.7</title>
+ <meta name="description" content="Tio Urso Studio Alpha 1.1.8 — editor de estampas, mockups e orçamentos para personalizados.">
+ <title>Tio Urso Studio · Alpha 1.1.8</title>
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Oswald:wght@700&family=Montserrat:wght@700&family=Poppins:wght@700&family=Righteous&family=Bangers&family=Lobster&family=Pacifico&family=Dancing+Script:wght@700&family=Great+Vibes&family=Permanent+Marker&family=Cinzel:wght@700&family=Playfair+Display:wght@700&family=Fredoka:wght@700&family=Satisfy&family=Kalam:wght@700&family=Abril+Fatface&family=Russo+One&family=Caveat:wght@700&family=Indie+Flower&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="style.css?v=1160">
- <script src="mock3d.js?v=1160" defer></script>
- <script src="tio-mp4.js?v=1160" defer></script>
- <script src="app.js?v=1160" defer></script>
+ <link rel="stylesheet" href="style.css?v=1180">
+ <script src="mock3d.js?v=1180" defer></script>
+ <script src="tio-mp4.js?v=1180" defer></script>
+ <script src="app.js?v=1180" defer></script>
 </head>
 <body>
  <header class="topbar">
-   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote-header.png?v=1160" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 1.1.7</span></div>
+   <div class="header-inner"><div class="brand-symbol" aria-hidden="true"><img src="mascote-header.png?v=1180" alt=""></div><div class="brand-name"><strong>Tio Urso <span>Studio</span></strong><small>SEU ESTÚDIO CRIATIVO NO BOLSO</small></div><span class="alpha-pill">ALPHA 1.1.8</span></div>
  </header>
  <div class="app-layout">
   <main class="shell">
@@ -28,11 +28,11 @@
         <p>Artes, mockups e orçamentos para seus produtos personalizados, direto do celular.</p>
         <button class="btn btn-white hero-launch" type="button" id="newProjectHome">＋ Novo projeto <span>→</span></button>
       </div>
-      <img class="home-hero-mascot" src="mascote-home.png?v=1160" alt="Mascote Tio Urso Studio com caneca e pincel">
+      <img class="home-hero-mascot" src="mascote-home.png?v=1180" alt="Mascote Tio Urso Studio com caneca e pincel">
     </div>
     <div class="section-title gallery-section-heading"><h2>Minha galeria</h2><button class="text-button" id="galleryShowAll" type="button">Ver todos →</button></div>
     <div class="gallery-home-layout">
-      <div class="gallery-mascot-display"><img src="urso-cavalete.png?v=1160" alt="Tio Urso com um cavalete mostrando uma arte" loading="lazy" decoding="async"></div>
+      <div class="gallery-mascot-display"><img src="urso-cavalete.png?v=1180" alt="Tio Urso com um cavalete mostrando uma arte" loading="lazy" decoding="async"></div>
       <div class="gallery-home-categories" aria-label="Tipos de arte na galeria">
         <button class="gallery-category caneca" type="button" data-gallery-category="caneca"><span class="gallery-category-icon" aria-hidden="true">☕</span><strong>Caneca de café</strong></button>
         <button class="gallery-category chopp" type="button" data-gallery-category="chopp"><span class="gallery-category-icon" aria-hidden="true">🍺</span><strong>Caneca de chopp</strong></button>
@@ -188,13 +188,13 @@
        <div class="action-row"><button id="downloadPng" class="btn primary" type="button">⇩ Exportar PNG</button><button id="downloadPdf" class="btn" type="button">⇩ Exportar PDF</button></div><div class="notice"><strong>Para sublimação:</strong> espelhe apenas quando necessário e desative o espelhamento adicional no software de impressão. Esta Alpha não aplica perfil ICC e não garante as cores finais. Para imprimir no tamanho certo, desative “ajustar à página” no diálogo de impressão.</div>
      </section><button type="button" class="btn ghost full-cta" data-goto="editor">← Voltar ao editor</button>
    </section>
-   <footer>🐻 Tio Urso Studio • Alpha 1.1.7 experimental • Teste de impressão obrigatório</footer>
+   <footer>🐻 Tio Urso Studio • Alpha 1.1.8 experimental • Teste de impressão obrigatório</footer>
   </main>
  </div>
  <div class="sheet-overlay" id="fontOverlay" hidden><section class="sheet" role="dialog" aria-modal="true" aria-label="Galeria de fontes"><div class="sheet-head"><div><small>PERSONALIZE SEU TEXTO</small><h2>Escolher fonte</h2></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar fontes">✕</button></div><input id="fontSearch" class="search-input" type="search" placeholder="Buscar fonte pelo nome…"><div class="font-categories"><button type="button" class="font-category active" data-font-category="Todas">Todas</button><button type="button" class="font-category" data-font-category="Divertidas">Divertidas</button><button type="button" class="font-category" data-font-category="Elegantes">Elegantes</button><button type="button" class="font-category" data-font-category="Manuscritas">Manuscritas</button><button type="button" class="font-category" data-font-category="Fortes">Fortes</button></div><div id="fontGallery" class="font-gallery"></div><button type="button" class="btn full-cta" id="fontImportAction">＋ Importar fonte TTF/OTF</button><p class="sheet-note">Fontes online precisam de internet ao carregar. Para uso comercial, confira a licença das fontes importadas.</p></section></div>
  <div class="sheet-overlay" id="colorOverlay" hidden>
   <section class="sheet color-sheet" role="dialog" aria-modal="true" aria-labelledby="colorModalTitle">
-    <div class="sheet-head"><div><small>ESTÚDIO DE CORES · ALPHA 1.1.7</small><h2 id="colorModalTitle">Escolher cor</h2><p class="color-subtitle" id="colorTargetLabel">Personalize qualquer tonalidade</p></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar sem aplicar">✕</button></div>
+    <div class="sheet-head"><div><small>ESTÚDIO DE CORES · ALPHA 1.1.8</small><h2 id="colorModalTitle">Escolher cor</h2><p class="color-subtitle" id="colorTargetLabel">Personalize qualquer tonalidade</p></div><button class="close-sheet" data-close-sheet type="button" aria-label="Fechar sem aplicar">✕</button></div>
     <div class="color-studio-main">
       <div class="color-sv" id="colorSvPlane" role="group" tabindex="0" aria-label="Área de cor: deslize para os lados para mudar a saturação e para cima ou baixo para ajustar a luminosidade" aria-describedby="colorSvHint"><span id="colorSvCursor" class="color-sv-cursor" aria-hidden="true"></span></div>
       <p class="color-sv-hint" id="colorSvHint">Arraste o dedo no quadrado para ajustar o tom claro, vivo ou escuro.</p>
@@ -212,7 +212,7 @@
 </div>
  <div class="new-project-overlay" id="newProjectOverlay" hidden>
    <section class="new-project-dialog" role="alertdialog" aria-modal="true" aria-labelledby="newProjectTitle" aria-describedby="newProjectDescription" tabindex="-1">
-     <img class="new-project-icon" src="aviso-urso.webp?v=1160" alt="" width="800" height="800" decoding="async">
+     <img class="new-project-icon" src="aviso-urso.webp?v=1180" alt="" width="800" height="800" decoding="async">
      <h2 id="newProjectTitle">Você tem um projeto em andamento!</h2>
      <p id="newProjectDescription">Deseja realmente iniciar um novo projeto? <strong>O projeto atual será apagado.</strong> Salve sua arte antes de continuar, se quiser recuperá-la depois.</p>
      <div class="new-project-actions">
@@ -225,7 +225,7 @@
  <div class="project-choice-overlay" id="projectChoiceOverlay" hidden>
    <section class="project-choice-dialog" role="dialog" aria-modal="true" aria-labelledby="projectChoiceTitle" aria-describedby="projectChoiceDescription" tabindex="-1">
      <div class="project-choice-media">
-       <img class="project-choice-art" src="o_que_vamos_criar_hoje.png?v=1160" alt="Arte do mascote com a frase O QUE VAMOS CRIAR HOJE?" width="1200" height="1200" decoding="async">
+       <img class="project-choice-art" src="o_que_vamos_criar_hoje.png?v=1180" alt="Arte do mascote com a frase O QUE VAMOS CRIAR HOJE?" width="1200" height="1200" decoding="async">
      </div>
      <div class="project-choice-content">
        <small class="project-choice-overline" id="projectChoiceOverline">NOVO PROJETO</small>
