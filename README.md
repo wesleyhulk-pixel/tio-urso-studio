@@ -1,27 +1,26 @@
-# Tio Urso Studio — Alpha 1.0.4
+# Tio Urso Studio — Alpha 1.0.5
 
 ## Ajustes desta versão
-- O aviso de **Novo projeto** agora exibe a **arte “ATENÇÃO!!!” do Tio Urso** fornecida pelo usuário, com transparência, no lugar do emoji pequeno.
-- Ao clicar em **Cancelar**, o aviso se fecha e a tela volta **automaticamente ao Editor**, preservando a arte, as camadas, a seleção, as cores e o histórico de desfazer/refazer.
-- Cancelar pelo toque fora do aviso ou pela tecla Escape também retorna ao Editor sem apagar nada.
-- **Confirmar** continua apagando o projeto anterior e abrindo o editor limpo.
-- **Início** continua apenas navegando: não apaga o projeto.
-- A arte do aviso é armazenada como `aviso-urso.webp` para carregar rápido no celular.
-- Todos os recursos da **1.0.2**, incluindo gestos por pinça, camadas e modelos Meshy, foram preservados. `mock3d.js` e todos os modelos 3D estão intactos.
+- O botão **Novo projeto** agora abre um fluxo guiado para escolher **o que será criado**.
+- Após a confirmação de segurança (quando já existe projeto em andamento), é exibida uma janela com a arte **“O QUE VAMOS CRIAR HOJE?”**.
+- Na primeira etapa, o usuário pode escolher entre **Caneca**, **Camiseta**, **Squeeze** e **Azulejo**.
+- Ao tocar em **Caneca**, abre a seleção entre **Caneca tradicional** e **Caneca de chopp**.
+- Ao tocar em **Azulejo**, abre a seleção entre **20 × 20 cm**, **15 × 15 cm** e **10 × 10 cm**.
+- Ao escolher o produto, o editor é aberto já com um **novo projeto em branco** e com a medida correta selecionada.
+- O visual do seletor foi inspirado nos cards coloridos já usados na home, com foco em uso no celular.
 
 ## Publicação
-Extraia o ZIP. Envie **todos os arquivos da pasta** (agora 16, incluindo `aviso-urso.webp`, `mascote-header.png` e `mascote-home.png`) diretamente à raiz do repositório GitHub, substituindo os antigos. A versão visível deverá indicar **ALPHA 1.0.4**.
+Extraia o ZIP. Envie **todos os arquivos da pasta** diretamente para a raiz do repositório GitHub, substituindo os antigos.
+
+## Arquivos novos/destaque
+- `o_que_vamos_criar_hoje.png`
+- `index.html`
+- `app.js`
+- `style.css`
 
 ## Teste rápido
-1. Abra o Editor e acrescente uma imagem ou texto.
-2. Toque em **Início** e depois em **Novo projeto**.
-3. Confira a arte **ATENÇÃO!!!** no aviso.
-4. Toque em **Cancelar**. O editor reaparece com a arte original intacta.
-5. Repita e toque em **Confirmar**. O Editor abre com projeto vazio.
-
-
-## Ajustes desta versão
-
-- Cabeçalho atualizado com o mascote mais inteiro, sem objetos nas mãos.
-- Card principal da home atualizado com o mascote segurando caneca e pincel.
-- Cache busting atualizado para facilitar a publicação da nova versão.
+1. Abra a home e toque em **Novo projeto**.
+2. Se houver projeto em andamento, confirme o aviso.
+3. Na janela seguinte, selecione **Caneca**, **Camiseta**, **Squeeze** ou **Azulejo**.
+4. Teste os submenus de **Caneca** e **Azulejo**.
+5. Verifique se o Editor abre com o produto correto.

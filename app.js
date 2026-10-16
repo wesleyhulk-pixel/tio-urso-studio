@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.4 — confirmação segura de novo projeto, mantendo editor e mockups aprovados. */
+/* Tio Urso Studio Alpha 1.0.5 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -887,12 +887,40 @@ $('projectPicker').addEventListener('change',async ev=>{const file=ev.target.fil
  }
  refreshFontOptions();imageCache.clear();lastLayerSignature='';for(const [id,img] of pairs)imageCache.set(id,img);seq=Date.now();$('product').value=state.product;$('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;updateMeasurements();render();resetHistory();toast('Projeto carregado.');}catch(e){toast('Erro ao abrir projeto: '+e.message);}finally{ev.target.value='';}});
 // A navegação pelo rodapé "Início" não altera o projeto.
-// Somente o comando "Novo projeto" solicita confirmação e inicia uma arte vazia.
+// O comando "Novo projeto" mantém a confirmação de segurança e, em seguida, abre o seletor visual do produto.
 const newProjectOverlay=$('newProjectOverlay');
 const newProjectDialog=newProjectOverlay.querySelector('.new-project-dialog');
 const newProjectCancel=$('newProjectCancel');
 const newProjectConfirm=$('newProjectConfirm');
+const projectChoiceOverlay=$('projectChoiceOverlay');
+const projectChoiceDialog=$('projectChoiceOverlay').querySelector('.project-choice-dialog');
+const projectChoiceGrid=$('projectChoiceGrid');
+const projectChoiceTitle=$('projectChoiceTitle');
+const projectChoiceDescription=$('projectChoiceDescription');
+const projectChoiceOverline=$('projectChoiceOverline');
+const projectChoiceBack=$('projectChoiceBack');
+const projectChoiceCancel=$('projectChoiceCancel');
 let newProjectSource=null;
+let projectChoiceStep='root';
+let projectChoiceReturnView='home';
+const PROJECT_CHOICE_STEPS={
+ root:{title:'O que vamos criar hoje?',description:'Escolha o produto para abrir um projeto novo no Tio Urso Studio.',items:[
+  {key:'caneca',label:'Caneca',detail:'Escolha entre tradicional ou chopp',icon:'☕',tone:'is-purple',arrow:'→'},
+  {key:'camiseta',label:'Camiseta',detail:'Abra a base para frente, costas e mangas',icon:'👕',tone:'is-blue',arrow:'↗'},
+  {key:'squeeze',label:'Squeeze',detail:'Modelo 600 ml para sublimação',icon:'⚗',tone:'is-orange',arrow:'↗'},
+  {key:'azulejo',label:'Azulejo',detail:'Escolha 20×20, 15×15 ou 10×10',icon:'▦',tone:'is-green',arrow:'→'}
+ ]},
+ caneca:{title:'Qual caneca você quer criar?',description:'Escolha o modelo de caneca para montar a arte.',overline:'CANECAS',parent:'root',items:[
+  {product:'caneca',label:'Caneca tradicional',detail:'Medida 21 × 9,7 cm',icon:'☕',tone:'is-purple',arrow:'✓'},
+  {product:'chopp',label:'Caneca de chopp',detail:'Medida 20,5 × 14,5 cm',icon:'🍺',tone:'is-teal',arrow:'✓'}
+ ]},
+ azulejo:{title:'Qual tamanho de azulejo?',description:'Selecione a medida do azulejo para começar o layout.',overline:'AZULEJOS',parent:'root',items:[
+  {product:'azulejo20',label:'20 × 20 cm',detail:'Área quadrada maior',icon:'▦',tone:'is-green',arrow:'✓'},
+  {product:'azulejo15',label:'15 × 15 cm',detail:'Formato intermediário',icon:'▦',tone:'is-amber',arrow:'✓'},
+  {product:'azulejo10',label:'10 × 10 cm',detail:'Compacto e prático',icon:'▦',tone:'is-red',arrow:'✓'}
+ ]}
+};
+function activeViewKey(){return document.querySelector('.view.active')?.id?.replace('view-','')||'home';}
 function hasCurrentProject(){
  return state.items.length>0 || state.product!=='caneca' || state.bg.toLowerCase()!=='#ffffff'
   || state.shirtZone!=='frente' || state.shirtColor.toLowerCase()!=='#ffffff'
@@ -900,11 +928,31 @@ function hasCurrentProject(){
   || state.mugFinishColor.toLowerCase()!=='#ffffff' || state.mockSceneChoice!=='madeira'
   || Boolean(state.mockSceneImage) || Object.keys(state.customFonts||{}).length>0;
 }
+function setBlankProject(productKey='caneca'){
+ state.product=PRODUCTS[productKey]?productKey:'caneca';
+ state.items=[];state.selected=null;state.bg='#ffffff';
+ state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';state.shirtCollarColor='#d9dee4';
+ state.mugFinishColor='#ffffff';state.mockSceneChoice='madeira';state.mockSceneImage=null;
+ state.mockTableStyle='madeira';state.customFonts={};customSceneImage=null;
+ imageCache.clear();drag=null;activeGuides=null;lastLayerSignature='';
+ $('product').value=state.product;$('backgroundColor').value='#ffffff';
+ $('bgColorSample').style.backgroundColor='#ffffff';
+ setMugFinish('#ffffff',false);updateSceneMenuUI();updateMeasurements();updateProductSpecificUI();
+ updateMockAngle(state.product==='camiseta'?0:0);updateMockZoom(100);
+ render();resetHistory();
+ if($('view-mockup').classList.contains('active'))renderMockup();
+}
+function startNewProject(productKey){
+ closeProjectChoiceDialog(false);
+ closeNewProjectDialog(false);
+ setBlankProject(productKey);
+ switchView('editor');
+ toast(`Novo projeto: ${PRODUCTS[productKey]?.name||'Projeto'}.`);
+}
 function closeNewProjectDialog(restoreFocus=true){
  newProjectOverlay.hidden=true;
  document.body.classList.remove('new-project-dialog-open');
  if(restoreFocus&&newProjectSource?.isConnected)newProjectSource.focus();
- newProjectSource=null;
 }
 // Cancelar nunca altera elementos, cores, histórico ou seleção: apenas retorna ao Editor.
 function cancelNewProjectDialog(){
@@ -912,23 +960,49 @@ function cancelNewProjectDialog(){
  switchView('editor');
  document.querySelector('.tab[data-view="editor"]')?.focus({preventScroll:true});
 }
-function clearCurrentProject(){
- state.product='caneca';state.items=[];state.selected=null;state.bg='#ffffff';
- state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';state.shirtCollarColor='#d9dee4';
- state.mugFinishColor='#ffffff';state.mockSceneChoice='madeira';state.mockSceneImage=null;
- state.mockTableStyle='madeira';state.customFonts={};customSceneImage=null;
- imageCache.clear();drag=null;activeGuides=null;lastLayerSignature='';
- $('product').value='caneca';$('backgroundColor').value='#ffffff';
- $('bgColorSample').style.backgroundColor='#ffffff';
- setMugFinish('#ffffff',false);updateSceneMenuUI();updateMeasurements();
- updateMockAngle(0);updateMockZoom(100);
- render();resetHistory();
- switchView('editor');
- toast('Novo projeto iniciado. Área da arte em branco.');
+function renderProjectChoiceStep(step='root'){
+ const config=PROJECT_CHOICE_STEPS[step]||PROJECT_CHOICE_STEPS.root;
+ projectChoiceStep=step;
+ projectChoiceTitle.textContent=config.title;
+ projectChoiceDescription.textContent=config.description;
+ projectChoiceOverline.textContent=config.overline||'NOVO PROJETO';
+ projectChoiceBack.hidden=!config.parent;
+ projectChoiceGrid.innerHTML='';
+ config.items.forEach(item=>{
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.className=`project-choice-card ${item.tone||'is-slate'}`;
+  btn.innerHTML=`<span class="choice-icon" aria-hidden="true">${item.icon||'✦'}</span><strong>${item.label}</strong><small>${item.detail||''}</small><span class="choice-arrow" aria-hidden="true">${item.arrow||'↗'}</span>`;
+  btn.addEventListener('click',()=>{
+   if(item.key==='caneca')renderProjectChoiceStep('caneca');
+   else if(item.key==='azulejo')renderProjectChoiceStep('azulejo');
+   else if(item.product)startNewProject(item.product);
+   else if(item.key)startNewProject(item.key);
+  });
+  projectChoiceGrid.appendChild(btn);
+ });
+}
+function openProjectChoiceDialog(step='root'){
+ projectChoiceReturnView=activeViewKey();
+ renderProjectChoiceStep(step);
+ projectChoiceOverlay.hidden=false;
+ document.body.classList.add('project-choice-open');
+ projectChoiceDialog.focus();
+}
+function closeProjectChoiceDialog(restoreFocus=true){
+ projectChoiceOverlay.hidden=true;
+ document.body.classList.remove('project-choice-open');
+ renderProjectChoiceStep('root');
+ if(restoreFocus&&newProjectSource?.isConnected)newProjectSource.focus();
+}
+function cancelProjectChoiceDialog(){
+ closeProjectChoiceDialog(false);
+ switchView(projectChoiceReturnView||'home');
 }
 function askForNewProject(event){
  newProjectSource=event?.currentTarget || document.activeElement;
- if(!hasCurrentProject()){clearCurrentProject();newProjectSource=null;return;}
+ projectChoiceReturnView=activeViewKey();
+ if(!hasCurrentProject()){openProjectChoiceDialog('root');return;}
  newProjectOverlay.hidden=false;
  document.body.classList.add('new-project-dialog-open');
  newProjectCancel.focus();
@@ -936,12 +1010,25 @@ function askForNewProject(event){
 $('newProjectHome').addEventListener('click',askForNewProject);
 $('resetProject').addEventListener('click',askForNewProject);
 newProjectCancel.addEventListener('click',cancelNewProjectDialog);
-newProjectConfirm.addEventListener('click',()=>{closeNewProjectDialog();clearCurrentProject();});
+newProjectConfirm.addEventListener('click',()=>{closeNewProjectDialog(false);openProjectChoiceDialog('root');});
 newProjectOverlay.addEventListener('click',event=>{if(event.target===newProjectOverlay)cancelNewProjectDialog();});
 newProjectOverlay.addEventListener('keydown',event=>{
  if(event.key==='Escape'){event.preventDefault();cancelNewProjectDialog();return;}
  if(event.key==='Tab'){
   const first=newProjectCancel,last=newProjectConfirm;
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ }
+});
+projectChoiceBack.addEventListener('click',()=>{const parent=PROJECT_CHOICE_STEPS[projectChoiceStep]?.parent||'root';renderProjectChoiceStep(parent);});
+projectChoiceCancel.addEventListener('click',cancelProjectChoiceDialog);
+projectChoiceOverlay.addEventListener('click',event=>{if(event.target===projectChoiceOverlay)cancelProjectChoiceDialog();});
+projectChoiceOverlay.addEventListener('keydown',event=>{
+ if(event.key==='Escape'){event.preventDefault();cancelProjectChoiceDialog();return;}
+ if(event.key==='Tab'){
+  const focusables=[projectChoiceBack.hidden?null:projectChoiceBack,...projectChoiceGrid.querySelectorAll('button'),projectChoiceCancel].filter(Boolean);
+  if(!focusables.length)return;
+  const first=focusables[0],last=focusables[focusables.length-1];
   if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
   else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
  }

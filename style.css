@@ -269,8 +269,8 @@
 @media (max-width:520px){.design-card .layers-panel{padding:11px 9px}.canvas-gesture-hint{font-size:10px!important}}
 
 /* Alpha 1.0.4 — aviso personalizado + retorno seguro ao editor. */
-.new-project-overlay{position:fixed;inset:0;z-index:170;background:rgba(3,22,37,.72);display:flex;align-items:center;justify-content:center;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}
-.new-project-dialog-open{overflow:hidden}
+.new-project-overlay,.project-choice-overlay{position:fixed;inset:0;z-index:170;background:rgba(3,22,37,.72);display:flex;align-items:center;justify-content:center;padding:18px 16px calc(20px + env(safe-area-inset-bottom))}
+.new-project-dialog-open,.project-choice-open{overflow:hidden}
 .new-project-dialog{width:min(100%,440px);background:#fff;border-radius:24px;padding:27px 23px 23px;text-align:center;box-shadow:0 16px 60px #001b2e55;color:#17384b;outline:0}
 .new-project-icon{display:block;width:min(168px,48vw);height:auto;aspect-ratio:1;object-fit:contain;margin:0 auto 8px;max-width:100%;background:transparent;pointer-events:none}
 .new-project-dialog h2{font-size:clamp(20px,4.7vw,25px);line-height:1.23;margin:8px 0 12px;font-weight:850;letter-spacing:-.45px}
@@ -285,3 +285,31 @@
 /* O aviso deve caber também em celulares menores, sem esconder as ações. */
 .new-project-dialog{max-height:min(90dvh,670px);overflow-y:auto;overscroll-behavior:contain}
 @media(max-height:620px){.new-project-icon{width:108px}.new-project-dialog{padding-top:14px;padding-bottom:14px}.new-project-dialog p{margin-bottom:12px}}
+
+.project-choice-dialog{width:min(100%,930px);background:#fff;border-radius:28px;padding:18px;display:grid;grid-template-columns:minmax(260px,1.05fr) minmax(300px,.95fr);gap:20px;align-items:stretch;box-shadow:0 16px 60px rgba(0,27,46,.33);color:#17384b;outline:0;max-height:min(92dvh,760px);overflow:auto;overscroll-behavior:contain}
+.project-choice-media{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f7fbfd,#eaf5fb);border-radius:22px;padding:14px;min-height:280px}
+.project-choice-art{display:block;width:100%;height:auto;max-width:420px;object-fit:contain}
+.project-choice-content{display:flex;flex-direction:column;gap:12px;padding:4px 2px}
+.project-choice-overline{font-size:12px;font-weight:800;letter-spacing:.18em;color:#0789ad}
+.project-choice-content h2{margin:0;font-size:clamp(24px,4vw,34px);line-height:1.02;letter-spacing:-.8px;color:#123047}
+.project-choice-content p{margin:0;color:#597082;font-size:15px;line-height:1.55}
+.project-choice-back{align-self:flex-start;border:1px solid #cfe0e8;background:#f6fbfd;color:#21516a;border-radius:999px;padding:9px 14px;font-weight:800}
+.project-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.project-choice-card{position:relative;border:0;border-radius:24px;min-height:148px;padding:18px 18px 16px;color:#fff;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;gap:7px;box-shadow:0 14px 30px rgba(15,54,79,.18);overflow:hidden}
+.project-choice-card .choice-icon{width:72px;height:72px;border-radius:22px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:34px;margin-bottom:18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.project-choice-card strong{font-size:19px;line-height:1.05;letter-spacing:-.4px}
+.project-choice-card small{font-size:13px;color:rgba(255,255,255,.92);line-height:1.35;max-width:180px}
+.project-choice-card .choice-arrow{position:absolute;right:16px;top:16px;font-size:22px;color:rgba(255,255,255,.85)}
+.project-choice-card.is-blue{background:linear-gradient(135deg,#2f7ee8,#43a0f0)}
+.project-choice-card.is-purple{background:linear-gradient(135deg,#7c47eb,#b34bf4)}
+.project-choice-card.is-orange{background:linear-gradient(135deg,#ff9e11,#ffb41b)}
+.project-choice-card.is-green{background:linear-gradient(135deg,#18b7a8,#44d3bb)}
+.project-choice-card.is-teal{background:linear-gradient(135deg,#0f7ea2,#16b5c5)}
+.project-choice-card.is-amber{background:linear-gradient(135deg,#f59b0a,#f8c448)}
+.project-choice-card.is-red{background:linear-gradient(135deg,#de355f,#ef6464)}
+.project-choice-card.is-slate{background:linear-gradient(135deg,#4a6983,#6f89a0)}
+.project-choice-actions{display:flex;justify-content:flex-end;padding-top:4px}
+.project-choice-cancel{border-radius:14px;min-height:50px;padding:12px 22px;font-size:15px;font-weight:800;background:#f1f6f8;color:#285269;border:1px solid #d1e1e8}
+@media(max-width:780px){.project-choice-dialog{grid-template-columns:1fr;padding:16px;gap:16px}.project-choice-media{min-height:0}.project-choice-art{max-width:360px}.project-choice-content h2{font-size:28px}}
+@media(max-width:560px){.project-choice-grid{grid-template-columns:1fr 1fr}.project-choice-card{min-height:126px;padding:16px 15px 14px;border-radius:20px}.project-choice-card .choice-icon{width:58px;height:58px;font-size:28px;border-radius:18px;margin-bottom:12px}.project-choice-card strong{font-size:16px}.project-choice-card small{font-size:11px}}
+@media(max-width:390px){.project-choice-grid{grid-template-columns:1fr}.project-choice-dialog{padding:14px}.project-choice-content h2{font-size:24px}}
