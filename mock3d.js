@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.12 — projeção das estampas somente na face externa das mangas da camiseta.
+/* Tio Urso Studio Alpha 1.1.13 — correção do posicionamento das artes nos braços da camiseta e refinamentos anteriores.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -146,36 +146,20 @@ function createTioMock3D(canvas){
    // não apaga a estampa do peito: o peito é composto por cima dela.
    float front=step(.05,posLocal.z);
    float back=step(.05,-posLocal.z);
-   // ALPHA 1.1.12 — CORRECAO DAS DUAS MANGAS (Meshy).
-   // A manga do GLB possui uma casca visivel e um forro voltado para DENTRO
-   // do buraco do braco. A regra anterior dependia apenas de normal.x e Z:
-   // ela atingia ambas as cascas e imprimia a arte duplicada/espelhada.
-   // O produto escalar radial seleciona a face externa do tecido em relacao
-   // ao eixo curvo da manga; Z e normal.z evitam a abertura interna.
-   float sleeveAxis=.80-.47*posLocal.y;
-   float outsideRight=(posLocal.x+sleeveAxis)*nLocal.x+(posLocal.z+.08)*nLocal.z;
-   float outsideLeft=(posLocal.x-sleeveAxis)*nLocal.x+(posLocal.z+.08)*nLocal.z;
-   float printSide=step(.015,posLocal.z)*step(.12,nLocal.z);
-   float rightOuter=step(.43,-posLocal.x)*step(.02,outsideRight)*printSide;
-   float leftOuter=step(.43,posLocal.x)*step(.02,outsideLeft)*printSide;
-
-   // UV em coordenadas tangentes ao lado da manga, acompanhando a
-   // inclinacao do ombro ao punho. A esquerda tem sentido horizontal
-   // inverso para que nenhuma estampa fique espelhada na visualizacao.
-   float centerLine=.302-.238*posLocal.y;
-   float lateralRight=.45*(-posLocal.x)-.89*posLocal.z;
-   float lateralLeft=.45*(posLocal.x)-.89*posLocal.z;
-   vec2 uvRight=vec2(.5-(lateralRight-centerLine)/.22,(posLocal.y-.14)/.36);
-   vec2 uvLeft=vec2(.5+(lateralLeft-centerLine)/.22,(posLocal.y-.14)/.36);
-   float rightSide=rightOuter * step(0.0,uvRight.x)*step(uvRight.x,1.0)
-                              *step(0.0,uvRight.y)*step(uvRight.y,1.0);
-   float leftSide=leftOuter * step(0.0,uvLeft.x)*step(uvLeft.x,1.0)
-                            *step(0.0,uvLeft.y)*step(uvLeft.y,1.0);
-
-   // Mantem sem qualquer alteracao as areas ja validadas pelo usuario.
+   // Alpha 1.1.13 - centro REAL das mangas na malha Meshy:
+   // Z=-0.06 e Y=0.33 na face lateral externa de cada manga.
+   // O patch 9x9 usa uma janela quase quadrada (0.30 x 0.30):
+   // evita encolher/deslocar a logo como no mapeamento 0.15 x 0.62.
+   // O normal voltado PARA FORA evita copiar a arte na face de tras
+   // ou no avesso e os sinais opostos de X separam os dois bracos.
+   float rightSide=smoothstep(.49,.59,-posLocal.x) * smoothstep(.07,.30,-nLocal.x);
+   float leftSide=smoothstep(.49,.59,posLocal.x) * smoothstep(.07,.30,nLocal.x);
    vec2 uvFront=vec2((posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvBack=vec2((-posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvChest=vec2((posLocal.x-.12)/.22,(posLocal.y-.27)/.22);
+   // Mesmo centro fisico, U invertido para leitura correta em ambos os lados.
+   vec2 uvRight=vec2((posLocal.z+.21)/.30,(posLocal.y-.18)/.30);
+   vec2 uvLeft=vec2((.09-posLocal.z)/.30,(posLocal.y-.18)/.30);
    if(front>.5 && uvFront.x>=0.0 && uvFront.x<=1.0 && uvFront.y>=0.0 && uvFront.y<=1.0){
       vec4 ink=texture2D(artFront,uvFront);
       fabric=mix(fabric,ink.rgb*illumination,ink.a);
@@ -188,13 +172,13 @@ function createTioMock3D(canvas){
       vec4 ink=texture2D(artChest,uvChest);
       fabric=mix(fabric,ink.rgb*illumination,ink.a);
    }
-   if(rightSide>.5 && uvRight.x>=0.0 && uvRight.x<=1.0 && uvRight.y>=0.0 && uvRight.y<=1.0){
+   if(rightSide>.001 && uvRight.x>=0.0 && uvRight.x<=1.0 && uvRight.y>=0.0 && uvRight.y<=1.0){
       vec4 ink=texture2D(artRight,uvRight);
-      fabric=mix(fabric,ink.rgb*illumination,ink.a);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a*rightSide);
    }
-   if(leftSide>.5 && uvLeft.x>=0.0 && uvLeft.x<=1.0 && uvLeft.y>=0.0 && uvLeft.y<=1.0){
+   if(leftSide>.001 && uvLeft.x>=0.0 && uvLeft.x<=1.0 && uvLeft.y>=0.0 && uvLeft.y<=1.0){
       vec4 ink=texture2D(artLeft,uvLeft);
-      fabric=mix(fabric,ink.rgb*illumination,ink.a);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a*leftSide);
    }
    gl_FragColor=vec4(clamp(fabric,0.0,1.0),1.0);
  }`;

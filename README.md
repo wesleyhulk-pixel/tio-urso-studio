@@ -1,19 +1,18 @@
-# Tio Urso Studio — Alpha 1.1.12
+# Tio Urso Studio — Alpha 1.1.13
 
-## Atualização leve: estampa única na parte externa das mangas
+## Correção: estampa centralizada nas duas mangas
 
-**Problema:** a malha 3D Meshy da camiseta possui superfície externa e parte interna da abertura das mangas. A versão 1.1.11 ainda aplicava o desenho sobre as duas superfícies, resultando em estampas atravessadas ou espelhadas, especialmente durante o giro lateral.
+- A estampa do braço direito e a do esquerdo ficam no **centro externo da manga**.
+- A aplicação do desenho é limitada a cada manga, sem transpassar pelo tecido, sem imagem espelhada do outro lado.
+- A janela de projeção foi dimensionada para manter o símbolo quadrado e visível, corrigindo a estampa pequena/cortada na versão anterior.
+- Frente, costas, peito, camadas independentes, cores, giro, PNG e MP4 continuam com os mesmos recursos.
+- **Não altera** os modelos Meshy nem o mapeamento da caneca, squeeze ou chopp.
 
-**Alteração:** a pintura da manga direita e da manga esquerda agora usa mapeamento projetado na face externa, com máscara de orientação da superfície, janela vertical e coordenadas que acompanham a inclinação de cada braço. O sentido horizontal é invertido **somente nas coordenadas de projeção**, não na arte: assim, ela se mantém legível dos dois lados.
+## Instalar usando celular / GitHub
 
-Mantidos: áreas independentes de frente, costas, peito, manga direita e manga esquerda; exportação; toque, pinça e giro livre; cenário; demais mockups; e projetos gravados.
+1. Extraia o ZIP leve (não faça upload do próprio ZIP).
+2. Na raiz do repositório `tio-urso-studio`, substitua **index.html, mock3d.js e README.md** pelos três arquivos extraídos.
+3. **Não remova** `app.js`, `style.css`, as imagens ou os arquivos binários dos modelos 3D.
+4. Espere o GitHub Pages publicar a alteração e abra novamente a página. O cabeçalho deve mostrar **ALPHA 1.1.13**.
 
-## Como instalar no GitHub Pages
-
-Este ZIP contém **apenas os cinco arquivos atualizados**, sem arquivos pesados. Extraia e substitua na raiz do repositório `index.html`, `app.js`, `mock3d.js`, `style.css` e `README.md`. **Não apague** as imagens e os arquivos binários 3D Meshy já presentes no GitHub.
-
-A página passa a indicar **Alpha 1.1.12**. No celular, recarregue a página para obter o novo `mock3d.js` (versão do arquivo alterada para evitar cache antigo).
-
-## Limitação de validação
-
-O mapeamento e as regiões da malha 3D foram inspecionados geometricamente e uma prévia da distribuição da impressão foi conferida; porém o navegador de testes deste ambiente não disponibiliza WebGL. **Ainda é necessária validação visual no aparelho Android**; não é possível garantir o resultado final sem conferir o mockup no celular.
+**Importante:** teste as estampas dos dois braços girando o mockup 360 graus no seu celular para validar o mapeamento no WebGL do Android.
