@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.3 — novo projeto com escolha guiada de produto e variações. */
+/* Tio Urso Studio Alpha 1.1.5 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -1292,19 +1292,19 @@ let projectChoiceStep='root';
 let projectChoiceReturnView='home';
 const PROJECT_CHOICE_STEPS={
  root:{title:'O que vamos criar hoje?',description:'Escolha o produto para abrir um projeto novo no Tio Urso Studio.',items:[
-  {key:'caneca',label:'Caneca',detail:'Escolha entre tradicional ou chopp',icon:'☕',tone:'is-purple',arrow:'→'},
-  {key:'camiseta',label:'Camiseta',detail:'Abra a base para frente, costas e mangas',icon:'👕',tone:'is-blue',arrow:'↗'},
-  {key:'squeeze',label:'Squeeze',detail:'Modelo 600 ml para sublimação',icon:'⚗',tone:'is-orange',arrow:'↗'},
-  {key:'azulejo',label:'Azulejo',detail:'Escolha 20×20, 15×15 ou 10×10',icon:'▦',tone:'is-green',arrow:'→'}
+  {key:'caneca',label:'Caneca',detail:'Tradicional ou chopp',icon:'☕',photo:'produto-caneca.webp',tone:'is-purple',arrow:'→'},
+  {key:'camiseta',label:'Camiseta',detail:'Frente, costas e mangas',icon:'👕',photo:'produto-camiseta.webp',tone:'is-blue',arrow:'↗'},
+  {key:'squeeze',label:'Squeeze',detail:'Modelo 600 ml',icon:'⚗',photo:'produto-squeeze.webp',tone:'is-orange',arrow:'↗'},
+  {key:'azulejo',label:'Azulejo',detail:'20×20, 15×15 ou 10×10',icon:'▦',photo:'produto-azulejo.webp',tone:'is-green',arrow:'→'}
  ]},
  caneca:{title:'Qual caneca você quer criar?',description:'Escolha o modelo de caneca para montar a arte.',overline:'CANECAS',parent:'root',items:[
-  {product:'caneca',label:'Caneca tradicional',detail:'Medida 21 × 9,7 cm',icon:'☕',tone:'is-purple',arrow:'✓'},
+  {product:'caneca',label:'Caneca tradicional',detail:'Medida 21 × 9,7 cm',icon:'☕',photo:'produto-caneca.webp',tone:'is-purple',arrow:'✓'},
   {product:'chopp',label:'Caneca de chopp',detail:'Medida 20,5 × 14,5 cm',icon:'🍺',tone:'is-teal',arrow:'✓'}
  ]},
  azulejo:{title:'Qual tamanho de azulejo?',description:'Selecione a medida do azulejo para começar o layout.',overline:'AZULEJOS',parent:'root',items:[
-  {product:'azulejo20',label:'20 × 20 cm',detail:'Área quadrada maior',icon:'▦',tone:'is-green',arrow:'✓'},
-  {product:'azulejo15',label:'15 × 15 cm',detail:'Formato intermediário',icon:'▦',tone:'is-amber',arrow:'✓'},
-  {product:'azulejo10',label:'10 × 10 cm',detail:'Compacto e prático',icon:'▦',tone:'is-red',arrow:'✓'}
+  {product:'azulejo20',label:'20 × 20 cm',detail:'Área quadrada maior',icon:'▦',photo:'produto-azulejo.webp',tone:'is-green',arrow:'✓'},
+  {product:'azulejo15',label:'15 × 15 cm',detail:'Formato intermediário',icon:'▦',photo:'produto-azulejo.webp',tone:'is-amber',arrow:'✓'},
+  {product:'azulejo10',label:'10 × 10 cm',detail:'Compacto e prático',icon:'▦',photo:'produto-azulejo.webp',tone:'is-red',arrow:'✓'}
  ]}
 };
 function activeViewKey(){return document.querySelector('.view.active')?.id?.replace('view-','')||'home';}
@@ -1359,7 +1359,9 @@ function renderProjectChoiceStep(step='root'){
   const btn=document.createElement('button');
   btn.type='button';
   btn.className=`project-choice-card ${item.tone||'is-slate'}`;
-  btn.innerHTML=`<span class="choice-icon" aria-hidden="true">${item.icon||'✦'}</span><strong>${item.label}</strong><small>${item.detail||''}</small><span class="choice-arrow" aria-hidden="true">${item.arrow||'↗'}</span>`;
+  btn.classList.toggle('has-product-photo',!!item.photo);
+  const img=item.photo?`<span class="choice-photo"><img src="${item.photo}" alt="" loading="eager" draggable="false"></span>`:`<span class="choice-icon" aria-hidden="true">${item.icon||'✦'}</span>`;
+  btn.innerHTML=`${img}<strong>${item.label}</strong><small>${item.detail||''}</small><span class="choice-arrow" aria-hidden="true">${item.arrow||'↗'}</span>`;
   btn.addEventListener('click',()=>{
    if(item.key==='caneca')renderProjectChoiceStep('caneca');
    else if(item.key==='azulejo')renderProjectChoiceStep('azulejo');

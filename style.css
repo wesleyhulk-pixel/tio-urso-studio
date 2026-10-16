@@ -312,7 +312,7 @@
 .project-choice-cancel{border-radius:14px;min-height:50px;padding:12px 22px;font-size:15px;font-weight:800;background:#f1f6f8;color:#285269;border:1px solid #d1e1e8}
 @media(max-width:780px){.project-choice-dialog{grid-template-columns:1fr;padding:16px;gap:16px}.project-choice-media{min-height:0}.project-choice-art{max-width:360px}.project-choice-content h2{font-size:28px}}
 @media(max-width:560px){.project-choice-grid{grid-template-columns:1fr 1fr}.project-choice-card{min-height:126px;padding:16px 15px 14px;border-radius:20px}.project-choice-card .choice-icon{width:58px;height:58px;font-size:28px;border-radius:18px;margin-bottom:12px}.project-choice-card strong{font-size:16px}.project-choice-card small{font-size:11px}}
-@media(max-width:390px){.project-choice-grid{grid-template-columns:1fr}.project-choice-dialog{padding:14px}.project-choice-content h2{font-size:24px}}
+@media(max-width:330px){.project-choice-grid{grid-template-columns:1fr}.project-choice-dialog{padding:14px}.project-choice-content h2{font-size:24px}}
 
 /* Alpha 1.0.6 — Galeria do Tio Urso */
 .gallery-section-heading{margin-top:24px}
@@ -396,3 +396,12 @@
 .rotate-handle{left:50%;bottom:-57px;transform:translateX(-50%);width:37px;height:37px;border-radius:50%;font-size:24px;display:grid;place-items:center;line-height:1}
 .design-card .layers-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:420px){.quick-layer-toolbar button{min-width:59px;padding:5px 6px}.quick-layer-toolbar button small{font-size:9px}.quick-layer-toolbar button span{font-size:22px}.edit-handle:not(.rotate-handle){width:24px;height:24px}}
+
+/* Alpha 1.1.5 — produtos reais na escolha do novo projeto */
+.project-choice-card.has-product-photo{min-height:198px;isolation:isolate;justify-content:flex-end;padding:12px 13px 15px;gap:5px}
+.project-choice-card.has-product-photo .choice-photo{height:112px;display:grid;place-items:center;width:100%;margin:0 auto 3px;pointer-events:none}
+.project-choice-card.has-product-photo .choice-photo img{display:block;width:100%;height:100%;max-width:132px;object-fit:contain;filter:drop-shadow(0 7px 5px rgba(16,30,39,.22));user-select:none}
+.project-choice-card.has-product-photo strong,.project-choice-card.has-product-photo small{position:relative;z-index:1}
+.project-choice-card.has-product-photo .choice-arrow{z-index:2}
+@media(max-width:560px){.project-choice-card.has-product-photo{min-height:165px;padding:10px 10px 12px}.project-choice-card.has-product-photo .choice-photo{height:100px;margin-bottom:0}.project-choice-card.has-product-photo .choice-photo img{max-width:110px}}
+@media(max-width:390px){.project-choice-card.has-product-photo .choice-photo{height:105px}}
