@@ -243,8 +243,12 @@ function createTioMock3D(canvas){
    const centerY=(bmin[1]+bmax[1])*0.5;
    const centerZ=(bmin[2]+bmax[2])*0.5;
    const height=bmax[1]-bmin[1];
-   const printBottom=bmin[1]+height*.035;
-   const printHeight=height*.93;
+   // Ajuste fino da área sublimável da caneca tradicional:
+   // ampliamos a janela vertical útil sem deformar a arte no editor.
+   // Assim o mockup ocupa melhor a altura do corpo cerâmico e reduz
+   // as bordas brancas superior e inferior vistas no preview.
+   const printBottom=bmin[1]+height*.012;
+   const printHeight=height*.976;
    // 80% da circunferência; área branca atrás da caneca e sob a alça.
    // Diferente do antigo UV automático, não repete nem estica a arte na emenda.
    const halfArc=Math.PI*.80;

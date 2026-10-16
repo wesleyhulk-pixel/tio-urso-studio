@@ -1,0 +1,11 @@
+# Tio Urso Studio — Alpha 1.1.1 | Correção da altura da caneca
+
+Este ZIP é a **atualização leve** para um repositório GitHub que já tenha a **Alpha 1.1.0** instalada.
+
+## Envie somente estes arquivos à raiz do repositório
+- `index.html`: versão visível 1.1.1 e atualiza o cache do renderizador.
+- `mock3d.js`: ajusta a janela vertical de aplicação da estampa na caneca tradicional.
+
+**Não envie o ZIP como arquivo para o GitHub**: extraia primeiro e envie os dois arquivos `.html` e `.js` separados em *Add file > Upload files*. Substitua os existentes, clique em *Commit changes* e depois atualize a página.
+
+Não remova os arquivos Meshy ou outros arquivos do projeto. Os arquivos grandes 3D não foram modificados.
