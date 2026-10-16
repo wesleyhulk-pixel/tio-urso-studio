@@ -405,3 +405,15 @@
 .project-choice-card.has-product-photo .choice-arrow{z-index:2}
 @media(max-width:560px){.project-choice-card.has-product-photo{min-height:165px;padding:10px 10px 12px}.project-choice-card.has-product-photo .choice-photo{height:100px;margin-bottom:0}.project-choice-card.has-product-photo .choice-photo img{max-width:110px}}
 @media(max-width:390px){.project-choice-card.has-product-photo .choice-photo{height:105px}}
+
+/* Alpha 1.1.9 — cinco artes independentes para uma camiseta */
+.shirt-areas-panel{background:linear-gradient(140deg,#f0fbfe,#f8fbfc);padding:16px;border:1px solid #d5e8ee;border-radius:20px;margin:4px 0 18px}
+.shirt-areas-panel>strong{font-size:17px;color:#214c60}.shirt-areas-panel>p{font-size:13px;color:#617888;line-height:1.5;margin:6px 0 14px}
+.shirt-areas-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.shirt-areas-tabs button{position:relative;min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;font-size:13px;font-weight:800;line-height:1.2;padding:10px 5px;border:1.5px solid #d1e5ec;border-radius:14px;background:#fff;color:#285269}
+.shirt-areas-tabs button small{font-weight:500;font-size:11px;color:#768e9b}
+.shirt-areas-tabs button[aria-pressed="true"]{border-color:#00a5b6;background:#dbf6f9;color:#006f81;box-shadow:inset 0 0 0 1px #00a5b6}
+.shirt-areas-tabs button.has-art::after{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:#12a887;top:7px;right:8px}
+.shirt-areas-status{font-size:12px;color:#286f77;margin-top:12px;font-weight:700}
+.shirt-zone-fallback{display:none}
+@media(max-width:400px){.shirt-areas-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}

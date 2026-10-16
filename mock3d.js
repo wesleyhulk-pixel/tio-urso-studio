@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.8 — ajuste fino do topo da caneca e atualização do submenu realista da caneca de chopp.
+/* Tio Urso Studio Alpha 1.1.9 — ajuste fino do topo da caneca e atualização do submenu realista da caneca de chopp.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -82,6 +82,9 @@ function createTioMock3D(canvas){
 
  // Camiseta real (Meshy) — renderizador independente, sem alterar a lógica das canecas.
  let shirtProgram=null, meshyShirt=null;
+ const shirtZoneTextures={};
+ const shirtTextureSources={};
+ const shirtZones=['frente','costas','peito','manga_d','manga_e'];
  const shirtVS=`attribute vec3 aPos;attribute vec3 aNorm;
  uniform float yaw;uniform float aspect;varying vec3 posLocal;varying vec3 normalLocal;varying vec3 normalView;
  void main(){
@@ -97,7 +100,8 @@ function createTioMock3D(canvas){
  }`;
  const shirtFS=`precision mediump float;
  varying vec3 posLocal;varying vec3 normalLocal;varying vec3 normalView;
- uniform vec3 mainColor;uniform vec3 accentColor;uniform vec3 collarColor;uniform float zone;uniform sampler2D artwork;
+ uniform vec3 mainColor;uniform vec3 accentColor;uniform vec3 collarColor;
+ uniform sampler2D artFront;uniform sampler2D artBack;uniform sampler2D artChest;uniform sampler2D artRight;uniform sampler2D artLeft;
  void main(){
    vec3 n=normalize(normalView);
    float diff=max(dot(n,normalize(vec3(-.45,.8,1.0))),0.0);
@@ -138,24 +142,35 @@ function createTioMock3D(canvas){
    fabric*=illumination;
    // Reflexo mínimo, evita que o preto fique cinza ou pareça plástico.
    fabric+=vec3(.003)*pow(max(dot(n,vec3(0.0,0.4,1.0)),0.0),3.0);
-   float mirrored=zone>0.5 && zone<1.5 ? -1.0 : 1.0;
-   vec2 uv;
-   float face=0.0;
-   if(zone<2.5){
-     float xmin=zone>1.5 ? .12 : -.31;
-     float bottom=zone>1.5 ? .27 : -.26;
-     float width=zone>1.5 ? .22 : .62;
-     float height=zone>1.5 ? .22 : .88;
-     uv=vec2((mirrored*posLocal.x-xmin)/width,(posLocal.y-bottom)/height);
-     face=(zone>.5 && zone<1.5) ? step(.05,-posLocal.z) : step(.05,posLocal.z);
-   } else {
-     float signX=zone<3.5?-1.0:1.0;
-     uv=vec2((signX*posLocal.x-.49)/.32,(posLocal.y-.20)/.43);
-     face=step(.25,signX*posLocal.x);
+   // Cinco artes independentes numa única camiseta. A área A4 frontal
+   // não apaga a estampa do peito: o peito é composto por cima dela.
+   float front=step(.05,posLocal.z);
+   float back=step(.05,-posLocal.z);
+   float rightSide=step(.25,-posLocal.x);
+   float leftSide=step(.25,posLocal.x);
+   vec2 uvFront=vec2((posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
+   vec2 uvBack=vec2((-posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
+   vec2 uvChest=vec2((posLocal.x-.12)/.22,(posLocal.y-.27)/.22);
+   vec2 uvRight=vec2((-posLocal.x-.49)/.32,(posLocal.y-.20)/.43);
+   vec2 uvLeft=vec2((posLocal.x-.49)/.32,(posLocal.y-.20)/.43);
+   if(front>.5 && uvFront.x>=0.0 && uvFront.x<=1.0 && uvFront.y>=0.0 && uvFront.y<=1.0){
+      vec4 ink=texture2D(artFront,uvFront);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a);
    }
-   float inbounds=step(0.0,uv.x)*step(uv.x,1.0)*step(0.0,uv.y)*step(uv.y,1.0);
-   if(inbounds*face>.5){
-      vec4 ink=texture2D(artwork,uv);
+   if(back>.5 && uvBack.x>=0.0 && uvBack.x<=1.0 && uvBack.y>=0.0 && uvBack.y<=1.0){
+      vec4 ink=texture2D(artBack,uvBack);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a);
+   }
+   if(front>.5 && uvChest.x>=0.0 && uvChest.x<=1.0 && uvChest.y>=0.0 && uvChest.y<=1.0){
+      vec4 ink=texture2D(artChest,uvChest);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a);
+   }
+   if(rightSide>.5 && uvRight.x>=0.0 && uvRight.x<=1.0 && uvRight.y>=0.0 && uvRight.y<=1.0){
+      vec4 ink=texture2D(artRight,uvRight);
+      fabric=mix(fabric,ink.rgb*illumination,ink.a);
+   }
+   if(leftSide>.5 && uvLeft.x>=0.0 && uvLeft.x<=1.0 && uvLeft.y>=0.0 && uvLeft.y<=1.0){
+      vec4 ink=texture2D(artLeft,uvLeft);
       fabric=mix(fabric,ink.rgb*illumination,ink.a);
    }
    gl_FragColor=vec4(clamp(fabric,0.0,1.0),1.0);
@@ -190,7 +205,6 @@ function createTioMock3D(canvas){
    const options=shirtOptions||{};
    const orientation=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[options.zone] ?? 0;
    const angles=Number.isFinite(angle) ? angle : orientation;
-   const zones={frente:0,costas:1,peito:2,manga_d:3,manga_e:4};
    gl.viewport(0,0,canvas.width,canvas.height);
    gl.clearColor(0,0,0,0);
    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
@@ -203,19 +217,32 @@ function createTioMock3D(canvas){
    gl.enableVertexAttribArray(anS);gl.vertexAttribPointer(anS,3,gl.FLOAT,false,24,12);
    gl.uniform1f(gl.getUniformLocation(shirtProgram,'yaw'),angles*Math.PI/180);
    gl.uniform1f(gl.getUniformLocation(shirtProgram,'aspect'),canvas.width/canvas.height);
-   gl.uniform1f(gl.getUniformLocation(shirtProgram,'zone'),zones[options.zone]??0);
    gl.uniform3fv(gl.getUniformLocation(shirtProgram,'mainColor'),new Float32Array(col(options.bodyColor||'#ffffff')));
    gl.uniform3fv(gl.getUniformLocation(shirtProgram,'accentColor'),new Float32Array(col(options.trimColor||'#ffffff')));
    gl.uniform3fv(gl.getUniformLocation(shirtProgram,'collarColor'),new Float32Array(col(options.collarColor||options.trimColor||'#ffffff')));
-   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,art);
-   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
-   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-   gl.uniform1i(gl.getUniformLocation(shirtProgram,'artwork'),0);
+   // Um sampler WebGL por posição. Não altera a textura dos outros produtos.
+   const names=['artFront','artBack','artChest','artRight','artLeft'];
+   for(let i=0;i<shirtZones.length;i++){
+     const zone=shirtZones[i];
+     if(!shirtZoneTextures[zone])shirtZoneTextures[zone]=gl.createTexture();
+     gl.activeTexture(gl.TEXTURE1+i);
+     gl.bindTexture(gl.TEXTURE_2D,shirtZoneTextures[zone]);
+     const source=options.artworks?.[zone]||art;
+     if(shirtTextureSources[zone]!==source){
+       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);
+       shirtTextureSources[zone]=source;
+     }
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+     gl.uniform1i(gl.getUniformLocation(shirtProgram,names[i]),i+1);
+   }
    gl.drawArrays(gl.TRIANGLES,0,meshyShirt.count);
    const e=gl.getError();
    // Restore the original shader; approved mug/squeeze/chopp use it unchanged.
+   gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,texture);
    gl.useProgram(program);
    if(e!==gl.NO_ERROR){console.warn('Renderização camiseta WebGL',e);return false;}
    return true;

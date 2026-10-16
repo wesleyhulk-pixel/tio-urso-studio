@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.8 — ajuste fino do topo da caneca no mockup e atualização da foto realista da caneca de chopp. */
+/* Tio Urso Studio Alpha 1.1.9 — ajuste fino do topo da caneca no mockup e atualização da foto realista da caneca de chopp. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -37,23 +37,77 @@ window.addEventListener('tio-meshy-failed',()=>{
  console.warn('O modelo Meshy não carregou. Mantendo a prévia ilustrativa.');
 });
 const rotaryProducts=new Set(['caneca','chopp','squeeze','camiseta']);
-let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira',shirtZone:'frente',shirtColor:'#ffffff',shirtTrimColor:'#d9dee4',shirtCollarColor:'#d9dee4'};
+let state = {product:'caneca',bg:'#ffffff',items:[],selected:null,customFonts:{},mugFinishColor:'#ffffff',mockSceneChoice:'madeira',mockSceneImage:null,mockTableStyle:'madeira',shirtZone:'frente',shirtDesigns:{},shirtColor:'#ffffff',shirtTrimColor:'#d9dee4',shirtCollarColor:'#d9dee4'};
 let customSceneImage=null;
 const imageCache = new Map();
 // Histórico limitado; imagens mantêm a mesma referência de data URI (sem codificar de novo).
+// Cada área da camiseta tem suas próprias camadas; só a área ativa usa state.items.
+const SHIRT_ZONE_IDS=Object.keys(SHIRT_AREAS);
+const productSelectBaseHTML=$('product').innerHTML;
+let shirtPickerMode=false;
+function syncProductSelector(){
+ const picker=$('product');
+ const isShirt=state.product==='camiseta';
+ if(isShirt&&!shirtPickerMode){
+  picker.replaceChildren();
+  for(const [id,area] of Object.entries(SHIRT_AREAS)){
+   const opt=document.createElement('option');
+   opt.value='shirt:'+id;opt.textContent=area.name+' · '+area.w+' × '+area.h+' mm';
+   picker.append(opt);
+  }
+  shirtPickerMode=true;
+ }else if(!isShirt&&shirtPickerMode){
+  picker.innerHTML=productSelectBaseHTML;
+  shirtPickerMode=false;
+ }
+ picker.value=isShirt?'shirt:'+state.shirtZone:state.product;
+}
+
+function cloneShirtDesigns(data=state.shirtDesigns){
+ const out={};
+ for(const zone of SHIRT_ZONE_IDS){
+  const items=data?.[zone]?.items;
+  if(Array.isArray(items))out[zone]={items:items.slice(0,150).map(it=>({...it})),bg:data[zone].bg||'#ffffff'};
+ }
+ return out;
+}
+function snapshotShirtDesigns(){
+ const designs=cloneShirtDesigns();
+ if(state.product==='camiseta')designs[state.shirtZone]={items:state.items.map(it=>({...it})),bg:state.bg};
+ return designs;
+}
+function storeActiveShirtArea(){
+ if(state.product!=='camiseta')return;
+ state.shirtDesigns=state.shirtDesigns||{};
+ state.shirtDesigns[state.shirtZone]={items:state.items.map(it=>({...it})),bg:state.bg};
+}
+function allProjectImageItems(project){
+ const images=[...(project.items||[])];
+ for(const entry of Object.values(project.shirtDesigns||{}))if(Array.isArray(entry?.items))images.push(...entry.items);
+ return images.filter(it=>it.kind==='image'&&it.src);
+}
+function restoreShirtDesignsAfterLoad(data){
+ state.shirtDesigns=cloneShirtDesigns(data.shirtDesigns||{});
+ if(state.product==='camiseta'){
+  // Compatibilidade com arquivos antigos: a arte em items pertence à área selecionada.
+  state.shirtDesigns[state.shirtZone]={items:state.items.map(it=>({...it})),bg:state.bg};
+ }
+}
+function projectForSave(){return {...state,shirtDesigns:snapshotShirtDesigns(),selected:null};}
 const MAX_HISTORY=70;
 let history=[],historyCursor=-1,lastHistoryKey=null,lastHistoryAt=0;
 let lastLayerSignature='';
 function snapshotProject(){
  return {items:state.items.map(it=>({...it})),selected:state.selected,product:state.product,
- bg:state.bg,shirtZone:state.shirtZone,shirtColor:state.shirtColor,
+ bg:state.bg,shirtZone:state.shirtZone,shirtDesigns:snapshotShirtDesigns(),shirtColor:state.shirtColor,
  shirtTrimColor:state.shirtTrimColor,shirtCollarColor:state.shirtCollarColor};
 }
 function snapshotSignature(snapshot){
  // A fonte (src) da imagem é imutável. Basta o id para identificar essa imagem.
  const compact=snapshot.items.map(({src,...it})=>it);
+ const zones=Object.fromEntries(Object.entries(snapshot.shirtDesigns||{}).map(([zone,data])=>[zone,data.items.map(({src,...it})=>it)]));
  return JSON.stringify([snapshot.product,snapshot.bg,snapshot.shirtZone,snapshot.shirtColor,
- snapshot.shirtTrimColor,snapshot.shirtCollarColor,compact]);
+ snapshot.shirtTrimColor,snapshot.shirtCollarColor,compact,zones]);
 }
 function updateHistoryUI(){
  const previous=historyCursor>0,following=historyCursor>=0&&historyCursor<history.length-1;
@@ -84,11 +138,12 @@ function restoreHistory(){
  const shot=history[historyCursor]?.shot;if(!shot)return;
  state.items=shot.items.map(it=>({...it}));state.selected=shot.selected;
  state.product=shot.product;state.bg=shot.bg;state.shirtZone=shot.shirtZone;
+ state.shirtDesigns=cloneShirtDesigns(shot.shirtDesigns||{});
  state.shirtColor=shot.shirtColor;state.shirtTrimColor=shot.shirtTrimColor;
  state.shirtCollarColor=shot.shirtCollarColor;
  if(!state.items.some(it=>it.id===state.selected))state.selected=null;
- for(const it of state.items){
-  if(it.kind==='image'&&it.src&&!imageCache.has(it.id))decodeImage(it.src).then(img=>{imageCache.set(it.id,img);render();}).catch(()=>{});
+ for(const it of allProjectImageItems(state)){
+  if(!imageCache.has(it.id))decodeImage(it.src).then(img=>{imageCache.set(it.id,img);render();}).catch(()=>{});
  }
  drag=null;activeGuides=null;
  $('product').value=state.product;$('backgroundColor').value=state.bg;
@@ -121,11 +176,24 @@ const artH = () => Math.round(1000 * product().h/product().w);
 function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastHandle);toastHandle=setTimeout(()=>el.classList.remove('show'),3300);}
 function updateMeasurements(){const p=product();$('dims').textContent=`${p.w} × ${p.h} mm`;$('exportSize').textContent=`${p.w} × ${p.h} mm`;$('exportPixels').textContent=`${mmtoPx(p.w)} × ${mmtoPx(p.h)} px`;}
 function updateProductSpecificUI(){
+ syncProductSelector();
  const shirtCard=$('shirtOptionsCard');
  const isShirt=state.product==='camiseta';
  if(shirtCard)shirtCard.hidden=!isShirt;
  if(isShirt){
   $('shirtZone').value=state.shirtZone;
+  const designs=snapshotShirtDesigns();
+  let filled=0;
+  document.querySelectorAll('[data-shirt-area]').forEach(button=>{
+   const zone=button.dataset.shirtArea;
+   const active=zone===state.shirtZone;
+   const count=designs[zone]?.items?.length||0;
+   if(count)filled++;
+   button.setAttribute('aria-pressed',String(active));
+   button.classList.toggle('has-art',count>0);
+   button.title=`${SHIRT_AREAS[zone].label} — ${count} camada(s)`;
+  });
+  $('shirtAreasStatus').textContent=`${filled} de 5 áreas com arte · Editando: ${SHIRT_AREAS[state.shirtZone].label}`;
   $('shirtColor').value=state.shirtColor;
   $('shirtTrimColor').value=state.shirtTrimColor;
   $('shirtCollarColor').value=state.shirtCollarColor;
@@ -277,7 +345,7 @@ function endManualHandleGesture(event){
 ['pointerup','pointercancel','lostpointercapture'].forEach(type=>$('selectionOverlay').addEventListener(type,endManualHandleGesture));
 window.addEventListener('resize',()=>{if($('view-editor').classList.contains('active'))updateSelectionOverlay();});
 
-function render(){paintSurface(ctx,false);drawSmartGuides();updateControls();renderLayers();updateProductSpecificUI();queueExportPreview();updateSelectionOverlay();}
+function render(){shirtArtworksCache=null;paintSurface(ctx,false);drawSmartGuides();updateControls();renderLayers();updateProductSpecificUI();queueExportPreview();updateSelectionOverlay();}
 function selected(){return state.items.find(it=>it.id===state.selected);}
 function layerName(it){return it.label || (it.kind==='text'?(it.text?.trim()||'Texto sem conteúdo').slice(0,46):'Imagem '+it.id);}
 function renderLayers(){
@@ -409,8 +477,33 @@ function openScenePicker(){
  sceneImagePicker.click();
 }
 async function addImage(file){if(!file)return;try{const src=await loadFileAsImage(file),img=await decodeImage(src);const w=Math.min(480,img.naturalWidth),h=w*img.naturalHeight/img.naturalWidth;const it={id:'e'+(++seq),kind:'image',src,baseW:w,baseH:h,x:500,y:artH()/2,scale:1,rotation:0};imageCache.set(it.id,img);state.items.push(it);state.selected=it.id;render();recordHistory();toast('Imagem adicionada! Arraste para mover.');}catch(e){toast(e.message);}}
-function setProduct(key){if(!PRODUCTS[key])return;if(key==='camiseta')mockAngle=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[state.shirtZone]??0;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.product=key;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();recordHistory();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
-function setShirtZone(zone){if(!SHIRT_AREAS[zone])return;mockAngle=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[zone]??0;const oldH=artH();const prevRatio=state.items.map(it=>it.y/oldH);state.shirtZone=zone;state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());updateMeasurements();updateProductSpecificUI();render();recordHistory();if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();}
+function setProduct(key){
+ if(!PRODUCTS[key]||state.product===key)return;
+ const wasShirt=state.product==='camiseta';
+ if(wasShirt)storeActiveShirtArea();
+ const oldH=artH(),prevRatio=state.items.map(it=>it.y/oldH);
+ state.product=key;
+ if(key==='camiseta'){
+  const first=state.shirtDesigns?.[state.shirtZone];
+  if(first){state.items=first.items.map(it=>({...it}));state.bg=first.bg||'#ffffff';state.selected=null;}
+  else state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());
+  mockAngle=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[state.shirtZone]??0;
+ }else state.items.forEach((it,i)=>it.y=prevRatio[i]*artH());
+ lastLayerSignature='';updateMeasurements();render();recordHistory();
+ if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();
+}
+function setShirtZone(zone){
+ if(state.product!=='camiseta'||!SHIRT_AREAS[zone]||zone===state.shirtZone)return;
+ storeActiveShirtArea();
+ state.shirtZone=zone;
+ const next=state.shirtDesigns[zone];
+ state.items=next?.items?.map(it=>({...it}))||[];
+ state.bg=next?.bg||'#ffffff';state.selected=null;
+ $('backgroundColor').value=state.bg;$('bgColorSample').style.backgroundColor=state.bg;
+ mockAngle=({frente:0,costas:180,peito:0,manga_d:65,manga_e:-65})[zone]??0;
+ lastLayerSignature='';updateMeasurements();render();recordHistory();
+ if(document.getElementById('view-mockup')?.classList.contains('active'))renderMockup();
+}
 function pointerCoord(ev){const r=art.getBoundingClientRect();return {x:(ev.clientX-r.left)/r.width*1000,y:(ev.clientY-r.top)/r.height*artH()};}
 function itemAt(pt){for(let i=state.items.length-1;i>=0;i--){const it=state.items[i];if(it.hidden||it.locked)continue;const {w,h}=itemDimensions(it),r=-(it.rotation||0)*Math.PI/180,dx=pt.x-it.x,dy=pt.y-it.y,s=it.scale||1;const lx=(dx*Math.cos(r)-dy*Math.sin(r))/s,ly=(dx*Math.sin(r)+dy*Math.cos(r))/s;if(Math.abs(lx)<=w/2+13&&Math.abs(ly)<=h/2+13)return it;}return null;}
 // Referências do Canva: centro da página e as quatro bordas da arte.
@@ -590,8 +683,13 @@ $('outlineSize').addEventListener('input',ev=>changeItem(it=>{it.outlineSize=+ev
 $('textShadow').addEventListener('input',ev=>changeItem(it=>{it.shadowBlur=+ev.target.value;},'shadowBlur'));
 $('shadowColor').addEventListener('input',ev=>changeItem(it=>{it.shadowColor=ev.target.value;},'shadowColor'));
 $('backgroundColor').addEventListener('input',ev=>{state.bg=ev.target.value;$('bgColorSample').style.backgroundColor=state.bg;render();recordHistory('background');});
-$('product').addEventListener('change',ev=>setProduct(ev.target.value));
+$('product').addEventListener('change',ev=>{
+ const value=ev.target.value;
+ if(value.startsWith('shirt:'))setShirtZone(value.slice(6));
+ else setProduct(value);
+});
 $('shirtZone')?.addEventListener('change',ev=>setShirtZone(ev.target.value));
+document.querySelectorAll('[data-shirt-area]').forEach(button=>button.addEventListener('click',()=>setShirtZone(button.dataset.shirtArea)));
 $('shirtColor')?.addEventListener('input',ev=>{state.shirtColor=ev.target.value;refreshColorTrigger('shirtColor');renderMockup();recordHistory('shirtColor');});
 $('shirtTrimColor')?.addEventListener('input',ev=>{state.shirtTrimColor=ev.target.value;refreshColorTrigger('shirtTrimColor');renderMockup();recordHistory('shirtTrimColor');});
 $('shirtCollarColor')?.addEventListener('input',ev=>{state.shirtCollarColor=ev.target.value;refreshColorTrigger('shirtCollarColor');renderMockup();recordHistory('shirtCollarColor');});
@@ -609,6 +707,22 @@ function artworkCanvas(w,h,mirror=false,transparentBg=false){
  for(const it of state.items)if(!it.hidden)drawElement(g,it,false);
  g.restore();
  return off;
+}
+// Todas as cinco artes são renderizadas separadas, sempre transparentes no mockup.
+let shirtArtworksCache=null;
+function zoneArtworkCanvas(zone){
+ const zoneInfo=SHIRT_AREAS[zone];
+ const w=720,h=Math.max(1,Math.round(w*zoneInfo.h/zoneInfo.w));
+ const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+ const g=canvas.getContext('2d');
+ const items=zone===state.shirtZone?state.items:(state.shirtDesigns?.[zone]?.items||[]);
+ g.scale(w/1000,h/(1000*zoneInfo.h/zoneInfo.w));
+ for(const it of items)if(!it.hidden)drawElement(g,it,false);
+ return canvas;
+}
+function allShirtArtworks(){
+ if(!shirtArtworksCache)shirtArtworksCache=Object.fromEntries(SHIRT_ZONE_IDS.map(zone=>[zone,zoneArtworkCanvas(zone)]));
+ return shirtArtworksCache;
 }
 // Simulação 2D de uma estampa em uma superfície cilíndrica, não geometria 3D real.
 // Alpha 0.4: prévia 2D de canecas com curvatura por coluna e vista parcial ajustável.
@@ -799,7 +913,7 @@ function renderMockup(){
  if(three){
    let drawn=false;
    try{
-     drawn=mock3d.render(state.product,artworkCanvas(1000,artH(),false,state.product==='camiseta'),mockAngle,state.mugFinishColor,state.product==='camiseta'?{zone:state.shirtZone,bodyColor:state.shirtColor,trimColor:state.shirtTrimColor,collarColor:state.shirtCollarColor}:null)!==false;
+     drawn=mock3d.render(state.product,artworkCanvas(1000,artH(),false,state.product==='camiseta'),mockAngle,state.mugFinishColor,state.product==='camiseta'?{zone:state.shirtZone,bodyColor:state.shirtColor,trimColor:state.shirtTrimColor,collarColor:state.shirtCollarColor,artworks:allShirtArtworks()}:null)!==false;
    }catch(err){
      console.error('Falha no mockup 3D, usando prévia de segurança:',err);
    }
@@ -1144,9 +1258,10 @@ $('copyPrice').addEventListener('click',async()=>{
  try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}
  catch(e){window.prompt('Copie seu orçamento:',msg);}
 });
-$('saveProject').addEventListener('click',()=>{const backup={version:1,...state,selected:null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
+$('saveProject').addEventListener('click',()=>{const backup={version:1,...projectForSave()};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
 $('openProject').addEventListener('click',()=>$('projectPicker').click());
-$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4',shirtCollarColor:/^#[0-9a-f]{6}$/i.test(data.shirtCollarColor)?data.shirtCollarColor:(/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4')};
+$('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=allProjectImageItems(data);const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4',shirtCollarColor:/^#[0-9a-f]{6}$/i.test(data.shirtCollarColor)?data.shirtCollarColor:(/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4')};
+ restoreShirtDesignsAfterLoad(data);
  customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
  updateSceneMenuUI();
  setMugFinish(state.mugFinishColor,false);
@@ -1200,12 +1315,21 @@ async function galleryGetAll(){
 function galleryCategoryLabel(productKey){return GALLERY_CATEGORIES[galleryCategoryForProduct(productKey)]||'Arte';}
 async function gallerySaveCurrent(){
  try{
-  if(!state.items.length&&!window.confirm('Sua arte ainda está em branco. Deseja guardá-la na galeria mesmo assim?'))return;
+  const designs=state.product==='camiseta'?snapshotShirtDesigns():{};
+  const anyArtwork=state.items.length>0 || Object.values(designs).some(area=>area?.items?.length);
+  if(!anyArtwork&&!window.confirm('Sua arte ainda está em branco. Deseja guardá-la na galeria mesmo assim?'))return;
   const category=galleryCategoryForProduct(state.product);
-  const thumb=artworkCanvas(380,Math.max(1,Math.round(380*product().h/product().w)),false,false).toDataURL('image/webp',.78);
+  let thumb;
+  if(state.product==='camiseta'){
+    const zone=state.items.length?state.shirtZone:(SHIRT_ZONE_IDS.find(z=>designs[z]?.items?.length)||state.shirtZone);
+    const src=zoneArtworkCanvas(zone),t=document.createElement('canvas');
+    t.width=380;t.height=Math.max(1,Math.round(380*src.height/src.width));
+    const g=t.getContext('2d');g.fillStyle='#ffffff';g.fillRect(0,0,t.width,t.height);g.drawImage(src,0,0,t.width,t.height);
+    thumb=t.toDataURL('image/webp',.78);
+  }else thumb=artworkCanvas(380,Math.max(1,Math.round(380*product().h/product().w)),false,false).toDataURL('image/webp',.78);
   const now=Date.now();
   const id=window.crypto?.randomUUID?.()||`gallery-${now}-${Math.floor(Math.random()*99999)}`;
-  const project={version:1,...state,selected:null,items:state.items.map(it=>({...it})),customFonts:{...state.customFonts}};
+  const project={version:1,...projectForSave(),customFonts:{...state.customFonts}};
   await galleryPut({id,product:state.product,category,savedAt:now,thumbnail:thumb,project});
   toast(`${galleryCategoryLabel(state.product)} guardada na galeria!`);
   await refreshGallery();
@@ -1216,10 +1340,11 @@ async function galleryRestore(entry){
  try{
   const data=entry.project;
   if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items))throw new Error('Projeto incompatível.');
-  const imgEntries=data.items.filter(it=>it.kind==='image');
+  const imgEntries=allProjectImageItems(data);
   const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));
   state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items.map(it=>({...it})),selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4',shirtCollarColor:/^#[0-9a-f]{6}$/i.test(data.shirtCollarColor)?data.shirtCollarColor:(/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4')};
-  customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
+  restoreShirtDesignsAfterLoad(data);
+ customSceneImage=state.mockSceneImage?await decodeImage(state.mockSceneImage).catch(()=>null):null;
   updateSceneMenuUI();setMugFinish(state.mugFinishColor,false);
   for(const [family,info] of Object.entries(data.customFonts||{})){
    if(!/^TUS_[a-z0-9]+$/i.test(family)||typeof info?.src!=='string'||info.src.length>4000000)continue;
@@ -1309,7 +1434,7 @@ const PROJECT_CHOICE_STEPS={
 };
 function activeViewKey(){return document.querySelector('.view.active')?.id?.replace('view-','')||'home';}
 function hasCurrentProject(){
- return state.items.length>0 || state.product!=='caneca' || state.bg.toLowerCase()!=='#ffffff'
+ return state.items.length>0 || Object.values(state.shirtDesigns||{}).some(z=>z?.items?.length) || state.product!=='caneca' || state.bg.toLowerCase()!=='#ffffff'
   || state.shirtZone!=='frente' || state.shirtColor.toLowerCase()!=='#ffffff'
   || state.shirtTrimColor.toLowerCase()!=='#d9dee4' || state.shirtCollarColor.toLowerCase()!=='#d9dee4'
   || state.mugFinishColor.toLowerCase()!=='#ffffff' || state.mockSceneChoice!=='madeira'
@@ -1318,7 +1443,7 @@ function hasCurrentProject(){
 function setBlankProject(productKey='caneca'){
  state.product=PRODUCTS[productKey]?productKey:'caneca';
  state.items=[];state.selected=null;state.bg='#ffffff';
- state.shirtZone='frente';state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';state.shirtCollarColor='#d9dee4';
+ state.shirtZone='frente';state.shirtDesigns={};state.shirtColor='#ffffff';state.shirtTrimColor='#d9dee4';state.shirtCollarColor='#d9dee4';
  state.mugFinishColor='#ffffff';state.mockSceneChoice='madeira';state.mockSceneImage=null;
  state.mockTableStyle='madeira';state.customFonts={};customSceneImage=null;
  imageCache.clear();drag=null;activeGuides=null;lastLayerSignature='';
