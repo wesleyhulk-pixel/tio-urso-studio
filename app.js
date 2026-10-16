@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.0.8 — novo projeto com escolha guiada de produto e variações. */
+/* Tio Urso Studio Alpha 1.0.9 — novo projeto com escolha guiada de produto e variações. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
@@ -956,9 +956,56 @@ $('clearArtwork')?.addEventListener('click',()=>{
  recordHistory('clearArtwork');
  toast('Arte excluída do projeto.');
 });
-function calculate(){const c=['productCost','printingCost','extraCost'].reduce((a,id)=>a+Math.max(0,Number($(id).value)||0),0);const rate=Math.max(0,Number($('margin').value)||0);const lucro=c*rate/100;$('salePrice').textContent=money(c+lucro);$('priceExplanation').textContent=`Custo ${money(c)} · Lucro ${money(lucro)}`;return{c,lucro,price:c+lucro};}
-['productCost','printingCost','extraCost','margin'].forEach(id=>$(id).addEventListener('input',calculate));
-$('copyPrice').addEventListener('click',async()=>{const p=calculate();const msg=`Orçamento Tio Urso Studio\nProduto: ${product().name}\nPreço sugerido: ${money(p.price)}`;try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}catch(e){window.prompt('Copie seu orçamento:',msg);}});
+// Cada produto tem sua ficha de precificação independente, salva neste navegador.
+const PRICE_INPUTS=['productCost','printingCost','extraCost','margin','salePriceOverride'];
+const PRICING_STORAGE_KEY='tioUrsoPricingByProductV109';
+let pricingBook={};let pricingProduct=null;let updatingPriceFields=false;
+try{const stored=JSON.parse(localStorage.getItem(PRICING_STORAGE_KEY)||'{}');if(stored&&typeof stored==='object'&&!Array.isArray(stored))pricingBook=stored;}catch(_){pricingBook={};}
+function pricingDraft(){return Object.fromEntries(PRICE_INPUTS.map(id=>[id,$(id).value]));}
+function saveCurrentPricing(){
+ if(!pricingProduct||updatingPriceFields)return;
+ pricingBook[pricingProduct]=pricingDraft();
+ try{localStorage.setItem(PRICING_STORAGE_KEY,JSON.stringify(pricingBook));}catch(_){}
+}
+function syncPricingProduct(){
+ const key=state.product;
+ if(pricingProduct===key)return;
+ saveCurrentPricing();
+ pricingProduct=key;
+ const saved=pricingBook[key]||{};
+ updatingPriceFields=true;
+ for(const id of PRICE_INPUTS){
+  const value=saved[id];
+  $(id).value=(value!==undefined&&value!==null)?String(value):(id==='margin'?'100':'');
+ }
+ updatingPriceFields=false;
+ $('pricingProductName').textContent=PRODUCTS[key]?.name||product().name;
+}
+function calculate(){
+ syncPricingProduct();
+ const enteredCosts=['productCost','printingCost','extraCost'].some(id=>$(id).value.trim()!=='');
+ const c=['productCost','printingCost','extraCost'].reduce((a,id)=>a+Math.max(0,Number($(id).value)||0),0);
+ const rate=Math.max(0,Number($('margin').value)||0);
+ const custom=$('salePriceOverride').value.trim();
+ const explicit=custom!==''&&Number.isFinite(Number(custom))&&Number(custom)>=0;
+ const price=explicit?Number(custom):enteredCosts?c*(1+rate/100):null;
+ const lucro=price===null?0:price-c;
+ $('pricingResultTitle').textContent=explicit?'Seu preço de venda':'Preço calculado';
+ $('salePrice').textContent=price===null?'R$ —':money(price);
+ $('priceExplanation').textContent=price===null
+  ?'Informe os custos ou um preço de venda para este produto.'
+  :enteredCosts?`Custo ${money(c)} · ${lucro>=0?'Lucro':'Diferença'} ${money(lucro)}`
+   :'Preço escolhido manualmente, sem custos informados.';
+ return {c,lucro,price,product:PRODUCTS[state.product]?.name||product().name};
+}
+PRICE_INPUTS.forEach(id=>$(id).addEventListener('input',()=>{saveCurrentPricing();calculate();}));
+$('copyPrice').addEventListener('click',async()=>{
+ const p=calculate();
+ if(p.price===null){toast('Preencha o preço de venda ou os custos antes de copiar.');return;}
+ const msg=`Orçamento Tio Urso Studio\nProduto: ${p.product}\nPreço de venda: ${money(p.price)}`;
+ try{await navigator.clipboard.writeText(msg);toast('Orçamento copiado.');}
+ catch(e){window.prompt('Copie seu orçamento:',msg);}
+});
 $('saveProject').addEventListener('click',()=>{const backup={version:1,...state,selected:null};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});downloadBlob(blob,safeFilename('json'));toast('Projeto salvo em arquivo JSON.');});
 $('openProject').addEventListener('click',()=>$('projectPicker').click());
 $('projectPicker').addEventListener('change',async ev=>{const file=ev.target.files[0];if(!file)return;try{if(file.size>30*1024*1024)throw new Error('Arquivo muito grande.');const data=JSON.parse(await file.text());if(data.version!==1||!PRODUCTS[data.product]||!Array.isArray(data.items)||data.items.length>150)throw new Error('Projeto incompatível.');const imgEntries=data.items.filter(it=>it.kind==='image');const pairs=await Promise.all(imgEntries.map(async it=>[it.id,await decodeImage(it.src)]));state={product:data.product,bg:/^#[0-9a-f]{6}$/i.test(data.bg)?data.bg:'#ffffff',items:data.items,selected:null,customFonts:{},mugFinishColor:/^#[0-9a-f]{6}$/i.test(data.mugFinishColor)?data.mugFinishColor:'#ffffff',mockSceneChoice:['madeira','clara','limpo','imagem'].includes(data.mockSceneChoice)?data.mockSceneChoice:'madeira',mockSceneImage:typeof data.mockSceneImage==='string'?data.mockSceneImage:null,mockTableStyle:data.mockTableStyle==='clara'?'clara':'madeira',shirtZone:SHIRT_AREAS[data.shirtZone]?data.shirtZone:'frente',shirtColor:/^#[0-9a-f]{6}$/i.test(data.shirtColor)?data.shirtColor:'#ffffff',shirtTrimColor:/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4',shirtCollarColor:/^#[0-9a-f]{6}$/i.test(data.shirtCollarColor)?data.shirtCollarColor:(/^#[0-9a-f]{6}$/i.test(data.shirtTrimColor)?data.shirtTrimColor:'#d9dee4')};
