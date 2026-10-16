@@ -1,23 +1,19 @@
-# Tio Urso Studio — Alpha 1.1.11
+# Tio Urso Studio — Alpha 1.1.12
 
-## Camiseta com cinco áreas independentes + correção dos braços no mockup
+## Atualização leve: estampa única na parte externa das mangas
 
-- Frente (A4), costas (A4), peito (12 × 12 cm), braço direito (9 × 9 cm) e braço esquerdo (9 × 9 cm).
-- Cada área mantém seu próprio conjunto de camadas, mesmo depois de trocar a posição de edição.
-- O campo “Produto e medida”, durante a edição da camiseta, lista somente essas cinco posições; o painel visual de áreas também permite alternar entre elas.
-- Indicadores mostram quais áreas já possuem arte e qual está sendo editada.
-- O mockup 3D aplica as cinco texturas numa única camiseta, com a área do peito sobreposta à frente quando ambas têm estampa.
-- Os braços foram corrigidos: a arte lateral agora fica centralizada na manga, sem atravessar para o outro lado e sem duplicação espelhada.
-- Desfazer/refazer, JSON do projeto e Galeria incluem as cinco áreas.
-- Salvar a estampa PNG/PDF continua exportando **a área selecionada**, na medida correspondente. Para obter todas as estampas de produção, alterne entre as cinco posições e exporte cada uma separadamente.
-- Projetos antigos de camiseta continuam compatíveis: a arte antiga é tratada como a estampa da posição que estava selecionada.
+**Problema:** a malha 3D Meshy da camiseta possui superfície externa e parte interna da abertura das mangas. A versão 1.1.11 ainda aplicava o desenho sobre as duas superfícies, resultando em estampas atravessadas ou espelhadas, especialmente durante o giro lateral.
 
-## Instalar no GitHub
+**Alteração:** a pintura da manga direita e da manga esquerda agora usa mapeamento projetado na face externa, com máscara de orientação da superfície, janela vertical e coordenadas que acompanham a inclinação de cada braço. O sentido horizontal é invertido **somente nas coordenadas de projeção**, não na arte: assim, ela se mantém legível dos dois lados.
 
-Use o ZIP **atualização leve**. Extraia e faça upload dos cinco arquivos (`index.html`, `app.js`, `mock3d.js`, `style.css`, `README.md`) diretamente na raiz do repositório, substituindo os antigos. Não apague os binários e GLBs Meshy que já estão publicados.
+Mantidos: áreas independentes de frente, costas, peito, manga direita e manga esquerda; exportação; toque, pinça e giro livre; cenário; demais mockups; e projetos gravados.
 
-## Verificação
+## Como instalar no GitHub Pages
 
-Testados no navegador: alternância entre áreas, camadas independentes, desfazer/refazer e exportação JSON contendo múltiplas áreas. O ambiente de teste não fornece WebGL; confira a aplicação simultânea das estampas no mockup 3D real do seu Android antes de usar em produção.
+Este ZIP contém **apenas os cinco arquivos atualizados**, sem arquivos pesados. Extraia e substitua na raiz do repositório `index.html`, `app.js`, `mock3d.js`, `style.css` e `README.md`. **Não apague** as imagens e os arquivos binários 3D Meshy já presentes no GitHub.
 
-Esta versão NÃO tenta corrigir novamente o aro/borda do mockup da caneca. O foco é somente a edição multiarea da camiseta.
+A página passa a indicar **Alpha 1.1.12**. No celular, recarregue a página para obter o novo `mock3d.js` (versão do arquivo alterada para evitar cache antigo).
+
+## Limitação de validação
+
+O mapeamento e as regiões da malha 3D foram inspecionados geometricamente e uma prévia da distribuição da impressão foi conferida; porém o navegador de testes deste ambiente não disponibiliza WebGL. **Ainda é necessária validação visual no aparelho Android**; não é possível garantir o resultado final sem conferir o mockup no celular.

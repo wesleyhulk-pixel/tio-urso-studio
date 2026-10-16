@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.11 — correção do posicionamento das estampas nos braços da camiseta e melhorias acumuladas das versões anteriores. */
+/* Tio Urso Studio Alpha 1.1.12 — mapeamento externo das mangas, preservando edicao independente das cinco areas. */
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);

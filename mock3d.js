@@ -1,4 +1,4 @@
-/* Tio Urso Studio Alpha 1.1.11 — correção do posicionamento das artes nos braços da camiseta e refinamentos anteriores.
+/* Tio Urso Studio Alpha 1.1.12 — projeção das estampas somente na face externa das mangas da camiseta.
  * Ajusta proporção do corpo, posição/forma da alça e mapeamento da arte. */
 (() => {
 'use strict';
@@ -146,21 +146,36 @@ function createTioMock3D(canvas){
    // não apaga a estampa do peito: o peito é composto por cima dela.
    float front=step(.05,posLocal.z);
    float back=step(.05,-posLocal.z);
-   // As mangas agora usam um "patch" lateral com dupla proteção:
-   // 1) faixa estreita no eixo Z e altura controlada;
-   // 2) a face precisa apontar para fora da manga (normalLocal.x),
-   // evitando que a mesma arte atravesse e apareça espelhada do outro lado.
-   float rightBand=step(.33,-posLocal.x) * step(.18,-nLocal.x);
-   float leftBand=step(.33,posLocal.x) * step(.18,nLocal.x);
-   float sleeveCenter=(1.0-smoothstep(.075,.128,abs(posLocal.z)));
-   float sleeveHeight=smoothstep(-.06,.02,posLocal.y) * (1.0-smoothstep(.60,.70,posLocal.y));
-   float rightSide=rightBand * sleeveCenter * sleeveHeight;
-   float leftSide=leftBand * sleeveCenter * sleeveHeight;
+   // ALPHA 1.1.12 — CORRECAO DAS DUAS MANGAS (Meshy).
+   // A manga do GLB possui uma casca visivel e um forro voltado para DENTRO
+   // do buraco do braco. A regra anterior dependia apenas de normal.x e Z:
+   // ela atingia ambas as cascas e imprimia a arte duplicada/espelhada.
+   // O produto escalar radial seleciona a face externa do tecido em relacao
+   // ao eixo curvo da manga; Z e normal.z evitam a abertura interna.
+   float sleeveAxis=.80-.47*posLocal.y;
+   float outsideRight=(posLocal.x+sleeveAxis)*nLocal.x+(posLocal.z+.08)*nLocal.z;
+   float outsideLeft=(posLocal.x-sleeveAxis)*nLocal.x+(posLocal.z+.08)*nLocal.z;
+   float printSide=step(.015,posLocal.z)*step(.12,nLocal.z);
+   float rightOuter=step(.43,-posLocal.x)*step(.02,outsideRight)*printSide;
+   float leftOuter=step(.43,posLocal.x)*step(.02,outsideLeft)*printSide;
+
+   // UV em coordenadas tangentes ao lado da manga, acompanhando a
+   // inclinacao do ombro ao punho. A esquerda tem sentido horizontal
+   // inverso para que nenhuma estampa fique espelhada na visualizacao.
+   float centerLine=.302-.238*posLocal.y;
+   float lateralRight=.45*(-posLocal.x)-.89*posLocal.z;
+   float lateralLeft=.45*(posLocal.x)-.89*posLocal.z;
+   vec2 uvRight=vec2(.5-(lateralRight-centerLine)/.22,(posLocal.y-.14)/.36);
+   vec2 uvLeft=vec2(.5+(lateralLeft-centerLine)/.22,(posLocal.y-.14)/.36);
+   float rightSide=rightOuter * step(0.0,uvRight.x)*step(uvRight.x,1.0)
+                              *step(0.0,uvRight.y)*step(uvRight.y,1.0);
+   float leftSide=leftOuter * step(0.0,uvLeft.x)*step(uvLeft.x,1.0)
+                            *step(0.0,uvLeft.y)*step(uvLeft.y,1.0);
+
+   // Mantem sem qualquer alteracao as areas ja validadas pelo usuario.
    vec2 uvFront=vec2((posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvBack=vec2((-posLocal.x+.31)/.62,(posLocal.y+.26)/.88);
    vec2 uvChest=vec2((posLocal.x-.12)/.22,(posLocal.y-.27)/.22);
-   vec2 uvRight=vec2((posLocal.z+.075)/.15,(posLocal.y+.02)/.62);
-   vec2 uvLeft=vec2((.075-posLocal.z)/.15,(posLocal.y+.02)/.62);
    if(front>.5 && uvFront.x>=0.0 && uvFront.x<=1.0 && uvFront.y>=0.0 && uvFront.y<=1.0){
       vec4 ink=texture2D(artFront,uvFront);
       fabric=mix(fabric,ink.rgb*illumination,ink.a);
