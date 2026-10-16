@@ -894,7 +894,8 @@ async function exportMockupGif(){
  let worker=null,timeout=null;
  try{
    // 420x588 mantém a proporção retrato e o arquivo compacto para o Android.
-   const width=420,height=588,frames=16,delay=125;
+   // Giro um pouco mais lento e suave: mais quadros + intervalo maior.
+   const width=420,height=588,frames=24,delay=150;
    const workerUrl=new URL('tio-gif-worker.js?v=1080',document.baseURI).href;
    worker=new Worker(workerUrl);
    let resolveReady,rejectReady;
