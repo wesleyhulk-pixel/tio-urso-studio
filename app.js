@@ -1094,7 +1094,7 @@ function setButtonBusy(button,busy,labelBusy='Processando…'){
  button.innerHTML=busy?labelBusy:original;
  return ()=>setButtonBusy(button,false,labelBusy);
 }
-const MP4_SETTINGS={width:720,height:1008,fps:24,duration:6,bitrate:3800000};
+const MP4_SETTINGS={width:720,height:1280,fps:24,duration:6,bitrate:3800000};
 function mp4RecorderType(){
  if(typeof MediaRecorder==='undefined'||typeof MediaRecorder.isTypeSupported!=='function')return null;
  return ['video/mp4;codecs="avc1.42E01F"','video/mp4;codecs="avc1.42001F"','video/mp4;codecs=h264','video/mp4']
@@ -1112,7 +1112,7 @@ function paintMp4Frame(canvas,g,startAngle,progress){
  // Desenha o mockup já renderizado; só a posição do produto varia.
  const angle=startAngle+360*progress;
  updateMockAngle(angle);
- const image=composePortraitMockupCanvas(MP4_SETTINGS.width,MP4_SETTINGS.height);
+ const image=composeMp4PortraitCanvas(MP4_SETTINGS.width,MP4_SETTINGS.height);
  g.clearRect(0,0,canvas.width,canvas.height);
  g.drawImage(image,0,0,canvas.width,canvas.height);
 }
@@ -1772,6 +1772,27 @@ function drawStageCover(g, layer, outW, outH){
  const dx=(outW-drawW)/2;
  const dy=(outH-drawH)/2;
  g.drawImage(layer, dx, dy, drawW, drawH);
+}
+// Exportacao MP4 independente da visualizacao interativa e do PNG.
+// O cenario preenche o quadro; o produto preserva a proporcao e a rotacao 3D.
+function composeMp4PortraitCanvas(outW,outH){
+ const out=document.createElement('canvas');out.width=outW;out.height=outH;
+ const g=out.getContext('2d');
+ g.fillStyle=state.bg||'#ffffff';g.fillRect(0,0,outW,outH);
+ const scene=mockSceneCanvas;
+ if(scene&&scene.width&&scene.height&&!scene.hidden){
+  const scale=Math.max(outW/scene.width,outH/scene.height);
+  const w=scene.width*scale,h=scene.height*scale;
+  g.drawImage(scene,(outW-w)/2,(outH-h)/2,w,h);
+ }
+ const product=!mock3dCanvas.hidden?mock3dCanvas:mock;
+ if(product&&product.width&&product.height){
+  const fit=Math.min(outW/product.width,outH/product.height);
+  const scale=fit*1.16*(mockZoom/100);
+  const w=product.width*scale,h=product.height*scale;
+  g.drawImage(product,(outW-w)/2,(outH-h)/2,w,h);
+ }
+ return out;
 }
 function composePortraitMockupCanvas(outW=1080,outH=1512){
  const out=document.createElement('canvas');
